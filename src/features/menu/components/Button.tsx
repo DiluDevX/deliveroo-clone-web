@@ -13,6 +13,16 @@ type ButtonProps = ButtonBaseProps & {
   variant?: "border" | "filled";
 };
 
+const getBackgroundColor = (disabled: boolean | undefined, variant: string) => {
+  if (disabled) {
+    return Colors.background.default;
+  }
+  if (variant === "border") {
+    return Colors.background.light;
+  }
+  return Colors.background.default;
+};
+
 function Button({
   children,
   PrefixIcon,
@@ -47,12 +57,7 @@ function Button({
         paddingRight: { xs: "0.5rem", sm: "1rem" },
         paddingLeft: { xs: "0.5rem", sm: "1rem" },
 
-        backgroundColor: disabled
-          ? Colors.background.default
-          : variant === "border"
-            ? Colors.background.light
-            : Colors.background.brand,
-        color: variant === "border" ? Colors.text.default : Colors.text.inverse,
+        backgroundColor: getBackgroundColor(disabled, variant),
         ...sx,
       }}
     >

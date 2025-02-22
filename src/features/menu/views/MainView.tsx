@@ -24,10 +24,10 @@ const MainView = () => {
         padding: "2rem 1rem",
       }}
     >
-      <Grid size={{ xs: 0, sm: 0, md: 4, lg: 4 }}>
+      <Grid size={{ xs: 0, sm: 0, md: 0, lg: 4 }}>
         <Box
           sx={{
-            display: { xs: "none", sm: "none", md: "flex" },
+            display: { xs: "none", sm: "none", md: "none", lg: "flex" },
             position: "relative",
             width: "100%",
             justifyContent: "center",
@@ -50,7 +50,7 @@ const MainView = () => {
         </Box>
       </Grid>
 
-      <Grid size={{ xs: 12, sm: 8, md: 4, lg: 4 }} sx={{ zIndex: 100, mt: 4 }}>
+      <Grid size={{ xs: 12, sm: 8, md: 8, lg: 4 }} sx={{ zIndex: 100, mt: 4 }}>
         <MainViewSearchBox />
       </Grid>
 

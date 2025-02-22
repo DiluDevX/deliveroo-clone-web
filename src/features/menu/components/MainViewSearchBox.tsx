@@ -39,7 +39,7 @@ const MainViewSearchBox = () => {
           mt: "2rem",
           fontSize: { xs: "1.8rem", sm: "2.5rem", md: "2.4rem" },
           lineHeight: 1.2,
-          textAlign: { sx: "left", md: "center" },
+          textAlign: { sx: "left", md: "left", lg: "center" },
           textWrap: "none",
           whiteSpace: "pre",
           textOverflow: "ellipsis",

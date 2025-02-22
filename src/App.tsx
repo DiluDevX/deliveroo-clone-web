@@ -82,7 +82,7 @@ const App = () => {
         <Route
           path="/filtered-restaurants"
           element={
-            <WithPageTitle title="Filt-Restaurants">
+            <WithPageTitle title="Filtered-Restaurants">
               <FilteredRestaurantsPage />
             </WithPageTitle>
           }
