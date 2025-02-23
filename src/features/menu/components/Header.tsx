@@ -120,7 +120,7 @@ const Header = () => {
 
           <Button
             PrefixIcon={Person2OutlinedIcon}
-            title={`${getNameFromToken() || "Guest"}` || "Account"}
+            title={`${getNameFromToken() || ""}`}
             sx={{
               backgroundColor: Colors.background.light,
               display: "flex",

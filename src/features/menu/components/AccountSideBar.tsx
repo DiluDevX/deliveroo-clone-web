@@ -42,11 +42,9 @@ export default function AnchorTemporaryDrawer({
         }}
       >
         <Link to="/" onClick={() => toggleDrawer(false)}>
-          <img
-            src={Svgs.DeliverooLogo}
-            alt="Deliveroo Logo"
+          <Svgs.DeliverooLogo
             style={{ margin: "1rem 1rem", cursor: "pointer" }}
-          ></img>
+          />
         </Link>
         <IconButton onClick={() => toggleDrawer(false)}>
           <ClearOutlinedIcon

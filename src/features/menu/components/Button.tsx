@@ -45,8 +45,6 @@ function Button({
     <ButtonBase
       {...props}
       sx={{
-        px: 2,
-        py: 1,
         borderRadius: 1,
         fontFamily: "IBM Plex Sans, serif;",
         whiteSpace: "nowrap",
@@ -71,7 +69,7 @@ function Button({
         <PrefixIcon
           style={{
             color: Colors.background.brand,
-            height: "1.5rem",
+            height: "auto",
             width: "1.5rem",
             aspectRatio: 1,
           }}
