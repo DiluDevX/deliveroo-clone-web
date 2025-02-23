@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, IconButton, InputAdornment, Typography } from "@mui/material";
 import { Colors } from "../theme/colors";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -9,10 +9,13 @@ import { z } from "zod";
 
 import { useForm, Controller } from "react-hook-form";
 import TextInput from "../features/menu/components/TextInput";
-import { logInUser } from "../services/auth/logInUser";
-import { authenticateUser } from "../services/auth/authenticateUser";
 import { emailSchema } from "../features/menu/validations/email.validation";
-import { passwordSchema } from "../features/menu/validations/password.validation";
+import { checkPasswordSchema } from "../features/menu/validations/password.validation";
+import { checkEmail, login } from "../services/auth.service";
+import { CheckEmailResponseBodyDTO } from "../types/auth.types";
+import { useSnackbar } from "notistack";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 type LoginForm = {
   email: string;
@@ -20,56 +23,65 @@ type LoginForm = {
 };
 
 export default function Login() {
-  const [showPasswordField, setShowPasswordField] = useState(false);
-  const [buttonText, setButtonText] = useState("Continue");
-  const [emailError, setEmailError] = useState("");
+  const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
+
+  const [existingUser, setExistingUser] = useState<CheckEmailResponseBodyDTO>();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+  };
 
   const schema = useMemo(
     () =>
       z.object({
         email: emailSchema,
-        password: showPasswordField
-          ? passwordSchema
-          : passwordSchema.optional(),
+        password: existingUser
+          ? checkPasswordSchema
+          : checkPasswordSchema.optional(),
       }),
-    [showPasswordField],
+    [existingUser],
   );
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(schema),
   });
 
-  const [showCreateAccount, setShowCreateAccount] = useState(false);
-  const navigate = useNavigate();
-
   const handleSubmit = form.handleSubmit(async (values) => {
     const { email, password } = values;
 
-    const response = await authenticateUser(email);
+    if (!password) {
+      const checkEmailResponse = await checkEmail({ email });
 
-    if (response?.token) {
-      setShowPasswordField(true);
-      setButtonText("Log In");
-    }
-
-    if (response.message === "Email not found. Please create an account.") {
-      setShowCreateAccount(true);
-      setEmailError(response.message);
-      return;
-    }
-
-    if (email && password) {
-      const loginResponse = await logInUser(email, password);
-
-      if (loginResponse?.token) {
-        localStorage.setItem("token", loginResponse.token);
-        navigate("/");
+      if (checkEmailResponse.type === "EXISTING") {
+        setExistingUser(checkEmailResponse.existingUser);
+      } else if (checkEmailResponse.type === "NEW") {
+        navigate(`/Account/SignUp?email=${encodeURIComponent(email)}`);
       } else {
-        setShowPasswordField(true);
-        form.setError("password", {
-          type: "manual",
-          message: loginResponse.message || "Invalid password",
-        });
+        enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
+      }
+    } else {
+      const loginResponse = await login({ email, password });
+
+      if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
+        enqueueSnackbar({ variant: "success", message: "Login Successful!" });
+        localStorage.setItem("token", loginResponse.successResponse.token);
+        navigate("/");
+      } else if (loginResponse.type === "INVALID") {
+        enqueueSnackbar({ variant: "error", message: "Invalid Credentials" });
+      } else {
+        enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
       }
     }
   });
@@ -118,65 +130,66 @@ export default function Login() {
               color: Colors.text.default,
             }}
           >
-            {buttonText}
+            {existingUser ? "Login" : ""}
           </Typography>
           <Controller
             control={form.control}
             name="email"
             render={({ field, fieldState }) => (
               <TextInput
+                fullWidth
                 label="Email address"
                 value={field.value ?? ""}
                 onChange={field.onChange}
-                error={fieldState.error?.message ?? emailError}
+                error={fieldState.error?.message}
                 placeholder="e.g. name@example.com"
                 type="email"
                 autoComplete="email"
                 required
-                disabled={showPasswordField}
+                disabled={!!existingUser}
               />
             )}
           />
 
-          {showPasswordField && (
+          {existingUser && (
             <Controller
               control={form.control}
               name="password"
               render={({ field, fieldState }) => (
                 <TextInput
+                  fullWidth
                   label="Password"
                   value={field.value ?? ""}
                   onChange={field.onChange}
                   error={fieldState.error?.message}
                   placeholder="Please enter the password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="password"
                   required
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end" sx={{ mr: 2 }}>
+                          <IconButton
+                            aria-label={
+                              showPassword
+                                ? "hide the password"
+                                : "display the password"
+                            }
+                            onClick={handleClickShowPassword}
+                            onMouseDown={handleMouseDownPassword}
+                            onMouseUp={handleMouseUpPassword}
+                            edge="end"
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
                 />
               )}
             />
-          )}
-
-          {showCreateAccount && (
-            <Button
-              type="button"
-              onClick={() =>
-                navigate(
-                  `/Account/SignUp?email=${encodeURIComponent(form.getValues("email"))}`,
-                )
-              }
-              sx={{
-                cursor: "pointer",
-                padding: "0.7rem",
-                fontWeight: "bold",
-                mb: 1,
-                width: "100%",
-                backgroundColor: Colors.background.brand,
-                color: Colors.text.inverse,
-              }}
-            >
-              Create Account
-            </Button>
           )}
 
           <Button
@@ -184,27 +197,24 @@ export default function Login() {
             type="submit"
             variant="filled"
             sx={{
-              display: showCreateAccount ? "none" : "flex",
               fontWeight: "bold",
               mt: 2,
               mb: 1,
               width: "100%",
             }}
           >
-            {showPasswordField ? "Log in" : "Continue"}
+            {existingUser ? "Login" : "Continue"}
           </Button>
 
           <Button
-            style={{
-              padding: "0.7rem",
-              fontWeight: "normal",
+            type="button"
+            variant="border"
+            sx={{
               width: "100%",
-              border: `1px solid ${Colors.border.default}`,
-              backgroundColor: Colors.background.defaultLight,
               color: Colors.background.brand,
             }}
           >
-            {showPasswordField ? "Forgot Password?" : "Forgot Email?"}
+            {existingUser ? "Forgot Password?" : "Forgot Email?"}
           </Button>
         </form>
       </Box>

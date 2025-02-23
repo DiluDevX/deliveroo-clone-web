@@ -17,9 +17,15 @@ const getBackgroundColor = (disabled: boolean | undefined, variant: string) => {
   if (disabled) {
     return Colors.background.default;
   }
+
   if (variant === "border") {
     return Colors.background.light;
   }
+
+  if (variant === "filled") {
+    return Colors.background.brand;
+  }
+
   return Colors.background.default;
 };
 
@@ -56,7 +62,7 @@ function Button({
         justifyContent: "center",
         paddingRight: { xs: "0.5rem", sm: "1rem" },
         paddingLeft: { xs: "0.5rem", sm: "1rem" },
-
+        color: variant === "border" ? Colors.text.default : Colors.text.inverse,
         backgroundColor: getBackgroundColor(disabled, variant),
         ...sx,
       }}

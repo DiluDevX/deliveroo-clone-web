@@ -6,7 +6,7 @@ import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import { Link } from "react-router-dom";
 import { Colors, Svgs } from "../theme";
 
-const AccountPage = () => {
+const AuthPage = () => {
   return (
     <Box
       sx={{
@@ -171,4 +171,4 @@ const AccountPage = () => {
   );
 };
 
-export default AccountPage;
+export default AuthPage;

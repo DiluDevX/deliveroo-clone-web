@@ -67,7 +67,7 @@ const Header = () => {
           }}
         >
           <Link to="/">
-            <img src={Svgs.DeliverooLogo} height={32} alt="Deliveroo Logo" />
+            <Svgs.DeliverooLogo height={32} />
           </Link>
         </Box>
 
@@ -120,7 +120,7 @@ const Header = () => {
 
           <Button
             PrefixIcon={Person2OutlinedIcon}
-            title={`${getNameFromToken()}` || "Account"}
+            title={`${getNameFromToken() || "Guest"}` || "Account"}
             sx={{
               backgroundColor: Colors.background.light,
               display: "flex",

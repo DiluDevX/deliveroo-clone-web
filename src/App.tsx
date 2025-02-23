@@ -5,7 +5,7 @@ import {
   createBrowserRouter,
 } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-import AccountPage from "./pages/AccountPage";
+import AuthPage from "./pages/AuthPage";
 import MainLayout from "./layout/MainLayout";
 import WithPageTitle from "./hocs/WithPageTitle";
 import LandingPage from "./pages/LandingPage";
@@ -42,7 +42,7 @@ const App = () => {
             index
             element={
               <WithPageTitle title="Account">
-                <AccountPage />
+                <AuthPage />
               </WithPageTitle>
             }
           ></Route>
@@ -82,7 +82,7 @@ const App = () => {
         <Route
           path="/filtered-restaurants"
           element={
-            <WithPageTitle title="Filtered-Restaurants">
+            <WithPageTitle title="Restaurants">
               <FilteredRestaurantsPage />
             </WithPageTitle>
           }

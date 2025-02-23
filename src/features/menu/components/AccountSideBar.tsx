@@ -97,7 +97,9 @@ export default function AnchorTemporaryDrawer({
               fontWeight: "bold",
               color: Colors.text.default,
             }}
-          >{`Hello! ${firstName || "Guest"}`}</Typography>
+          >
+            {`Hello! ${firstName || "Guest"}`}
+          </Typography>
           {token && (firstName === "" || firstName === undefined) && (
             <Box
               onClick={() => {

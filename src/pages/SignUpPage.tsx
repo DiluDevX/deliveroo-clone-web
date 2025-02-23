@@ -3,7 +3,6 @@ import Box from "@mui/material/Box";
 import { Colors } from "../theme/colors";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { createNewUser } from "../services/auth/createNewUser";
 import { useSnackbar } from "notistack";
 import Checkbox from "@mui/material/Checkbox";
 import FormGroup from "@mui/material/FormGroup";
@@ -15,11 +14,17 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { emailSchema } from "../features/menu/validations/email.validation";
-import { passwordSchema } from "../features/menu/validations/password.validation";
+import {
+  checkPasswordSchema,
+  createPasswordSchema,
+} from "../features/menu/validations/password.validation";
+import { signup } from "../services/auth.service";
 
 type SignUpForm = {
   email: string;
   password: string;
+  firstName: string;
+  lastName: string;
   confirmPassword: string;
 };
 
@@ -30,13 +35,13 @@ const SignUpPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const emailFromLogin = searchParams.get("email") ?? "";
-
   const schema = z
     .object({
       email: emailSchema,
-      password: passwordSchema,
-      confirmPassword: z.string().min(6),
+      password: createPasswordSchema,
+      firstName: z.string().min(2).max(20),
+      lastName: z.string().min(2).max(20),
+      confirmPassword: checkPasswordSchema,
     })
     .superRefine(({ password, confirmPassword }, ctx) => {
       if (password !== confirmPassword) {
@@ -54,38 +59,28 @@ const SignUpPage = () => {
   });
 
   useEffect(() => {
-    if (emailFromLogin) {
-      form.setValue("email", emailFromLogin);
-    }
-  }, [emailFromLogin, form]);
+    form.setValue("email", searchParams.get("email") ?? "");
+  }, [form, searchParams]);
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    const { email, confirmPassword } = values;
+    const response = await signup(values);
 
-    const data = await createNewUser(email, confirmPassword);
-
-    if (data?.token) {
-      localStorage.setItem("token", data.token);
-      enqueueSnackbar("Account created successfully!", {
+    if (response.type === "CONFLICT") {
+      enqueueSnackbar({
+        variant: "error",
+        message: "User Already Exists. Please Login.",
+      });
+    } else if (response.type === "SUCCESS" && response.successResponse) {
+      localStorage.setItem("token", response.successResponse.token);
+      enqueueSnackbar({
         variant: "success",
+        message: "Account created successfully!",
       });
       navigate("/");
+    } else {
+      enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
     }
   });
-
-  function label() {
-    return (
-      <Typography sx={{ fontWeight: "normal", color: Colors.text.default }}>
-        I Agree to{" "}
-        <Link
-          to={"https://deliveroo.co.uk/legal"}
-          style={{ color: Colors.background.brand, textDecoration: "none" }}
-        >
-          Terms and conditions
-        </Link>
-      </Typography>
-    );
-  }
 
   return (
     <Box
@@ -128,12 +123,47 @@ const SignUpPage = () => {
             name="email"
             render={({ field, fieldState }) => (
               <TextInput
-                label="Email address"
                 {...field}
+                fullWidth
+                label="Email address"
                 error={fieldState.error?.message}
                 placeholder="e.g. name@example.com"
                 type="email"
                 autoComplete="email"
+                required
+                disabled
+              />
+            )}
+          />
+
+          <Controller
+            control={form.control}
+            name="firstName"
+            render={({ field, fieldState }) => (
+              <TextInput
+                {...field}
+                fullWidth
+                label="First Name"
+                error={fieldState.error?.message}
+                placeholder="John"
+                type="firstName"
+                autoComplete="given-name"
+                required
+              />
+            )}
+          />
+          <Controller
+            control={form.control}
+            name="lastName"
+            render={({ field, fieldState }) => (
+              <TextInput
+                {...field}
+                fullWidth
+                label="Last Name"
+                error={fieldState.error?.message}
+                placeholder="Doe"
+                type="lastName"
+                autoComplete="family-name"
                 required
               />
             )}
@@ -144,8 +174,9 @@ const SignUpPage = () => {
             name="password"
             render={({ field, fieldState }) => (
               <TextInput
-                label="Password"
                 {...field}
+                fullWidth
+                label="Password"
                 error={fieldState.error?.message}
                 placeholder="Please enter a password"
                 type="password"
@@ -160,8 +191,9 @@ const SignUpPage = () => {
             name="confirmPassword"
             render={({ field, fieldState }) => (
               <TextInput
-                label="Confirm Password"
                 {...field}
+                fullWidth
+                label="Confirm Password"
                 error={fieldState.error?.message}
                 placeholder="Confirm password"
                 type="password"
@@ -179,7 +211,22 @@ const SignUpPage = () => {
                   onChange={(e) => setChecked(e.target.checked)}
                 />
               }
-              label={label()}
+              label={
+                <Typography
+                  sx={{ fontWeight: "normal", color: Colors.text.default }}
+                >
+                  I Agree to{" "}
+                  <Link
+                    to={"https://deliveroo.co.uk/legal"}
+                    style={{
+                      color: Colors.background.brand,
+                      textDecoration: "none",
+                    }}
+                  >
+                    Terms and conditions
+                  </Link>
+                </Typography>
+              }
             />
           </FormGroup>
 
