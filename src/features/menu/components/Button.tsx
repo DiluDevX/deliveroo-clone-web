@@ -10,7 +10,7 @@ type ButtonProps = ButtonBaseProps & {
   PrefixComponent?: React.ReactNode;
   SuffixComponent?: React.ReactNode;
   linkTo?: To;
-  variant?: "border" | "filled";
+  variant?: "border" | "filled" | undefined;
 };
 
 const getBackgroundColor = (disabled: boolean | undefined, variant: string) => {
@@ -36,7 +36,7 @@ function Button({
   SuffixComponent,
   sx = {},
   title,
-  variant = "border",
+  variant,
   linkTo,
   disabled,
   ...props
@@ -61,7 +61,7 @@ function Button({
         paddingRight: { xs: "0.5rem", sm: "1rem" },
         paddingLeft: { xs: "0.5rem", sm: "1rem" },
         color: variant === "border" ? Colors.text.default : Colors.text.inverse,
-        backgroundColor: getBackgroundColor(disabled, variant),
+        backgroundColor: getBackgroundColor(disabled, variant ?? "border"),
         ...sx,
       }}
     >

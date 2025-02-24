@@ -25,14 +25,18 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
     <Grid
       size={{ xs: 12, sm: 6, md: 6, lg: 6 }}
       key={restaurant.name}
-      sx={{ p: 3 }}
+      sx={{
+        p: 3,
+        minWidth: "600px",
+        width: "100%",
+      }}
     >
       <Link
         to={`/restaurants/${restaurant.name}/menu`}
         style={{
           textDecoration: "none",
           color: "inherit",
-          display: "block",
+          display: "flex",
           width: "100%",
         }}
       >
@@ -88,7 +92,8 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
               display: "flex",
               flexDirection: "column",
               gap: 1,
-              textAlign: "left",
+              justifyContent: "center",
+              textAlign: "center",
             }}
           >
             <Typography

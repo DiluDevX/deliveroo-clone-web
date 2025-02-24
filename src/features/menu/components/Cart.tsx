@@ -7,6 +7,7 @@ const Cart = () => {
     <Box
       sx={{
         marginTop: "2rem",
+        mb: 2,
         marginLeft: "0.5rem",
         height: "830px",
         display: "flex",

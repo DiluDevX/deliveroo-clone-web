@@ -5,17 +5,10 @@ import { useSearchParams } from "react-router-dom";
 
 import RestaurantView from "../features/menu/components/RestaurantView";
 import LoadingIndicator from "../features/menu/components/LoadingIndicator";
-
-interface FilteredRestaurant {
-  name: string;
-  image: string;
-  description: string;
-  tags: string[];
-  openingAt: string;
-  closingAt: string;
-  minimumValue: string;
-  deliveryCharge: string;
-}
+import { FilteredRestaurant } from "../types/restaurants";
+import Button from "../features/menu/components/Button";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { Colors } from "../theme/colors";
 
 const FilteredRestaurantsPage = () => {
   const [loading, setLoading] = useState(true);
@@ -31,18 +24,21 @@ const FilteredRestaurantsPage = () => {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const data = await delay(1000).then(() => getFilteredRestaurants());
+        const data: FilteredRestaurant[] = await delay(1000).then(() =>
+          getFilteredRestaurants(),
+        );
         if (!searchQuery) {
           setFilteredRestaurants(data);
+        } else {
+          const filterRestaurants = data.filter(
+            (restaurant: FilteredRestaurant) =>
+              restaurant.name.toLowerCase().includes(searchQuery),
+          );
+          setFilteredRestaurants(filterRestaurants);
         }
-        const filterRestaurants = data.filter(
-          (restaurant: FilteredRestaurant) => {
-            return restaurant.name.toLowerCase().includes(searchQuery);
-          },
-        );
-        setFilteredRestaurants(filterRestaurants);
       } catch (error) {
         console.error("Error fetching restaurants", error);
+        setFilteredRestaurants([]);
       } finally {
         setLoading(false);
       }
@@ -50,7 +46,6 @@ const FilteredRestaurantsPage = () => {
     fetchRestaurants();
   }, [searchQuery]);
 
-  let content;
   if (loading) {
     return (
       <Box
@@ -64,7 +59,10 @@ const FilteredRestaurantsPage = () => {
         <LoadingIndicator />
       </Box>
     );
-  } else if (filteredRestaurants.length === 0) {
+  }
+
+  let content;
+  if (filteredRestaurants.length === 0) {
     content = (
       <Box
         sx={{
@@ -106,15 +104,35 @@ const FilteredRestaurantsPage = () => {
       sx={{
         paddingTop: "4rem",
         paddingX: "2rem 2rem",
+        paddingLeft: { md: "6rem", lg: "8rem" },
         display: "flex",
-        flexDirection: { sm: "column", xs: "column", lg: "row" },
+        flexDirection: { sm: "column", xs: "column", lg: "column" },
         flexWrap: "wrap",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
+
+        width: { xs: "100%", sm: "100%", md: "90%", lg: "90%" },
         height: "auto",
       }}
     >
+      <Box sx={{ paddingBottom: "0.5rem" }}>
+        <Button
+          variant="border"
+          PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
+          onClick={() => window.history.back()}
+          sx={{
+            "&:hover": {
+              border: "none",
+            },
+            border: "none",
+            mt: 4,
+            color: Colors.background.brand,
+            fontSize: "1rem",
+            fontWeight: "normal",
+            left: "0",
+          }}
+        >
+          Back
+        </Button>
+      </Box>
       <Grid container>{content}</Grid>
     </Box>
   );

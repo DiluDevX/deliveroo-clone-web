@@ -1,15 +1,22 @@
 import axios from "axios";
-import { CheckFilteredRestaurantsResponse } from "../../types/restaurants";
+import { FilteredRestaurant } from "../../types/restaurants";
 
-export const getFilteredRestaurants = async () => {
+interface CheckFilteredRestaurantsResponse {
+  data: FilteredRestaurant[];
+}
+
+export const getFilteredRestaurants = async (): Promise<
+  FilteredRestaurant[]
+> => {
   try {
-    const response = await axios.get("/api/restaurants/");
+    const response =
+      await axios.get<CheckFilteredRestaurantsResponse>("/api/restaurants/");
     if (!response.data) {
       throw new Error("Failed to fetch filtered Restaurants.");
     }
-    const data: CheckFilteredRestaurantsResponse = await response.data;
-    return data.data;
+    return response.data.data;
   } catch (error) {
-    console.error("Error fetching filtered Restaurants.", error);
+    console.error("Error fetching filtered Restaurants:", error);
+    return [];
   }
 };
