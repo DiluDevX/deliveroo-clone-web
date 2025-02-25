@@ -157,7 +157,7 @@ const MainViewSearchBox = () => {
           }}
         >
           <Link
-            to={"/SignPage/login"}
+            to={"/account"}
             style={{
               color: Colors.background.brand,
               textDecoration: "none",

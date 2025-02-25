@@ -38,7 +38,7 @@ const Dish = ({ data }: DishProps) => {
         }}
       >
         <img
-          src={data.image}
+          src="/src/assets/images/salad.jpeg"
           alt={data.name}
           style={{
             width: "100%",

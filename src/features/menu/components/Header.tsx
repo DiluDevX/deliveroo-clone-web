@@ -100,6 +100,7 @@ const Header = () => {
         >
           {location.pathname === "/" && (
             <Button
+              variant="border"
               PrefixIcon={ExpandMoreIcon}
               title="Partner with Us"
               sx={{ backgroundColor: Colors.background.light }}
@@ -120,6 +121,7 @@ const Header = () => {
 
           <Button
             PrefixIcon={Person2OutlinedIcon}
+            variant="border"
             title={`${getNameFromToken() || ""}`}
             sx={{
               backgroundColor: Colors.background.light,

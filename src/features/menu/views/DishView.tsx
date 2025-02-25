@@ -1,53 +1,97 @@
 import { Box, Grid2 as Grid, Typography } from "@mui/material";
-import { dishes, IDish } from "../../../data/Sides";
-import Dish from "../components/Dish";
-import { useMemo } from "react";
 import { categories } from "../../../data/categories";
 import { Colors } from "../../../theme/colors";
+import Dish from "../components/Dish";
+import { useEffect, useState, useMemo } from "react";
+import { IDish } from "../../../data/Sides";
+import { getDishes } from "../../../services/dish.service";
+import LoadingIndicator from "../components/LoadingIndicator";
 
 const DishView = () => {
-  const groupedDishes = useMemo(() => {
-    const result: Record<number, IDish[]> = {};
-    for (const dish of dishes) {
-      if (result[dish.categoryId]) {
-        result[dish.categoryId].push(dish);
-      } else {
-        result[dish.categoryId] = [dish];
-      }
-    }
+  console.log(categories);
+  const [dishesByCategory, setDishesByCategory] = useState<{
+    [key: string]: IDish[];
+  }>({});
+  const [isLoading, setIsLoading] = useState(true);
 
-    return result;
-  }, []);
-
-  const mappedCategories = useMemo(
-    () =>
-      Object.entries(groupedDishes).map(([categoryId, dishes]) => {
-        const category = categories.find(
-          (category) => category.id.toString() === categoryId,
-        );
-
-        return {
-          category,
-          dishes,
-        };
-      }),
-    [groupedDishes],
+  const categoryIds = useMemo(
+    () => categories.map((category) => category.id),
+    [categories],
   );
+
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  useEffect(() => {
+    const fetchDishes = async (categoryId: string) => {
+      try {
+        console.log(`Fetching dishes for category: ${categoryId}`);
+        const response: IDish[] = await delay(2000).then(() =>
+          getDishes(categoryId),
+        );
+        console.log(`Dishes for ${categoryId}:`, response);
+        setDishesByCategory((prev) => ({ ...prev, [categoryId]: response }));
+      } catch (error) {
+        console.error(
+          `Error fetching dishes for category ${categoryId}:`,
+          error,
+        );
+      }
+    };
+
+    const fetchAllDishes = async () => {
+      if (categoryIds.length === 0) {
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      await Promise.all(
+        categoryIds.map((categoryId) => fetchDishes(categoryId.toString())),
+      );
+      setIsLoading(false);
+    };
+
+    fetchAllDishes();
+  }, [categoryIds]);
+
+  if (!categories.length || isLoading) {
+    return (
+      <Box>
+        <Typography sx={{ color: Colors.text.default }}>
+          {categories.length === 0 ? (
+            "No categories available"
+          ) : (
+            <Box
+              sx={{
+                mb: 4,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <LoadingIndicator />
+            </Box>
+          )}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>
-      {mappedCategories.map(({ category, dishes }, index) => (
-        <Box key={category?.id ?? "" + index}>
+      {categories.map((category) => (
+        <Box key={category.id} sx={{ marginBottom: "2rem" }}>
           <Typography
             sx={{
               fontWeight: "bold",
               fontSize: "1.3rem",
-              marginTop: "5rem",
-              marginBottom: "1.5rem",
+              marginTop: "1.5rem",
+              marginBottom: "1rem",
               color: Colors.text.default,
             }}
           >
-            {category?.name}
+            {category.name}
           </Typography>
           <Grid
             container
@@ -57,20 +101,26 @@ const DishView = () => {
               lg: 2,
             }}
           >
-            {dishes.map((dish) => (
-              <Grid
-                sx={{ marginBottom: "1rem" }}
-                key={dish.id}
-                size={{
-                  xs: 12,
-                  sm: 12,
-                  md: 6,
-                  lg: 6,
-                }}
-              >
-                <Dish data={dish} />
-              </Grid>
-            ))}
+            {dishesByCategory[category.id]?.length > 0 ? (
+              dishesByCategory[category.id].map((dish) => (
+                <Grid
+                  sx={{ marginBottom: "1rem" }}
+                  key={dish.id}
+                  size={{
+                    xs: 12,
+                    sm: 12,
+                    md: 6,
+                    lg: 6,
+                  }}
+                >
+                  <Dish data={dish} key={dish.id} />
+                </Grid>
+              ))
+            ) : (
+              <Typography sx={{ color: Colors.text.default }}>
+                No dishes available
+              </Typography>
+            )}
           </Grid>
         </Box>
       ))}

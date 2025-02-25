@@ -1,3 +1,3 @@
-import { ICategory } from "./Sides";
+import { ICategory } from "../data/Sides";
 
 export const categories: ICategory[] = [];

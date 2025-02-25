@@ -128,9 +128,10 @@ export default function Login() {
               mb: 3,
               fontSize: "1.5rem",
               color: Colors.text.default,
+              fontSmoothing: "antialiased",
             }}
           >
-            {existingUser ? "Login" : ""}
+            Sign Up or Log In
           </Typography>
           <Controller
             control={form.control}
@@ -208,6 +209,11 @@ export default function Login() {
 
           <Button
             type="button"
+            onClick={() =>
+              existingUser
+                ? navigate("/account/forgot-password")
+                : navigate("/account/forgot-email")
+            }
             variant="border"
             sx={{
               width: "100%",

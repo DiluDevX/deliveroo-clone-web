@@ -27,7 +27,7 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
       key={restaurant.name}
       sx={{
         p: 3,
-        minWidth: "600px",
+        minWidth: "500px",
         width: "100%",
       }}
     >

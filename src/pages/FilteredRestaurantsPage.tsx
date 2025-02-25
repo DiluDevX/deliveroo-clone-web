@@ -71,6 +71,7 @@ const FilteredRestaurantsPage = () => {
           alignItems: "center",
           marginTop: "6rem",
           width: "100vw",
+          paddingLeft: { md: "6rem", lg: "-8rem" },
           mt: 4,
         }}
       >

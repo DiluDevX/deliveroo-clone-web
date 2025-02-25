@@ -12,6 +12,7 @@ import { getRestaurants } from "../../../services/restaurant/getRestaurants";
 import { Colors } from "../../../theme";
 
 type Restaurant = {
+  id: string;
   name: string;
   image: string;
   description: string;
@@ -38,6 +39,7 @@ const RestaurantInfoView = () => {
             setError("Restaurant not found.");
           } else {
             setRestaurant(data);
+            localStorage.setItem("id", data.id);
           }
         } catch {
           setError("Failed to fetch restaurant data");
@@ -213,6 +215,7 @@ const RestaurantInfoView = () => {
             >
               <LocationSelector />
               <Button
+                variant="border"
                 sx={{ my: 2, border: "0.5px solid #ccc" }}
                 PrefixComponent={
                   <PeopleOutlineOutlinedIcon
@@ -241,6 +244,7 @@ const RestaurantInfoView = () => {
           >
             <LocationSelector />
             <Button
+              variant="border"
               sx={{ my: 2, border: `0.5px solid ${Colors.border.subtle}` }}
               PrefixComponent={
                 <PeopleOutlineOutlinedIcon

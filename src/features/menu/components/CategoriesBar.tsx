@@ -4,9 +4,12 @@ import CategoryChip from "./CategoryChip";
 import { getCategories } from "../../../services/category/getCategories";
 import { ICategory } from "../../../data/Sides";
 import { Colors } from "../../../theme";
+import { categories as categoriesData } from "../../../data/categories";
 
 export const CategoriesBar = () => {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(0);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    null,
+  );
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [error, setError] = useState("");
 
@@ -14,14 +17,23 @@ export const CategoriesBar = () => {
     const fetchCategories = async () => {
       try {
         const data = await getCategories();
-        if (!data) {
-          setError("categories not found.");
+        if (!data || data.length === 0) {
+          setError("No categories found.");
+          setCategories([]);
         } else {
           setCategories(data);
-          setSelectedCategoryId(data[0].id);
+          setSelectedCategoryId(data[0]?.id || null);
+          categoriesData.length = 0;
+          categoriesData.push(
+            ...data.map((category) => ({
+              id: category.id,
+              name: category.name,
+            })),
+          );
         }
       } catch (error) {
         console.error("Error fetching categories", error);
+        setError("Failed to fetch categories.");
       }
     };
     fetchCategories();
@@ -35,7 +47,7 @@ export const CategoriesBar = () => {
     return <div>{error}</div>;
   }
 
-  if (!categories) {
+  if (!categories.length) {
     return <div>Loading...</div>;
   }
 

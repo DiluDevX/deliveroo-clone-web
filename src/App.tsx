@@ -15,6 +15,8 @@ import SignUpPage from "./pages/SignUpPage";
 import SignPageLayout from "./layout/SignPageLayout";
 import LoginPage from "./pages/LoginPage";
 import AccountCompletionPage from "./pages/AccountCompletionPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+import RecoverEmailPage from "./pages/RecoverEmailPage";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -37,7 +39,7 @@ const App = () => {
             </WithPageTitle>
           }
         ></Route>
-        <Route path="/Account" element={<SignPageLayout />}>
+        <Route path="/account" element={<SignPageLayout />}>
           <Route
             index
             element={
@@ -47,7 +49,7 @@ const App = () => {
             }
           ></Route>
           <Route
-            path="CompleteSignUp"
+            path="complete-signup"
             element={
               <WithPageTitle title="Complete SignUp">
                 <AccountCompletionPage />
@@ -55,7 +57,7 @@ const App = () => {
             }
           ></Route>
           <Route
-            path="SignUp"
+            path="signup"
             element={
               <WithPageTitle title="SignUp">
                 <SignUpPage />
@@ -63,10 +65,26 @@ const App = () => {
             }
           ></Route>
           <Route
-            path="LogIn"
+            path="login"
             element={
               <WithPageTitle title="Login">
                 <LoginPage />
+              </WithPageTitle>
+            }
+          ></Route>
+          <Route
+            path="forgot-password"
+            element={
+              <WithPageTitle title="Forgot Password">
+                <ResetPasswordPage />
+              </WithPageTitle>
+            }
+          ></Route>
+          <Route
+            path="forgot-email"
+            element={
+              <WithPageTitle title="Recover Email">
+                <RecoverEmailPage />
               </WithPageTitle>
             }
           ></Route>

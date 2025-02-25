@@ -1,11 +1,8 @@
 import axios from "axios";
-import { ICategory } from "../../data/Sides";
-
-export const getCategories = async (): Promise<ICategory[]> => {
+import { IDish } from "../data/Sides";
+export const getDishes = async (categoryId: string): Promise<IDish[]> => {
   try {
-    const response = await axios.get(
-      `/api/categories?restaurant=${localStorage.getItem("id")}`,
-    );
+    const response = await axios.get(`/api/dishes?category=${categoryId}`);
     if (!response.data) {
       throw new Error("Failed to fetch categories.");
     }
