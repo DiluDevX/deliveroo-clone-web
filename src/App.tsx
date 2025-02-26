@@ -15,8 +15,8 @@ import SignUpPage from "./pages/SignUpPage";
 import SignPageLayout from "./layout/SignPageLayout";
 import LoginPage from "./pages/LoginPage";
 import AccountCompletionPage from "./pages/AccountCompletionPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import RecoverEmailPage from "./pages/RecoverEmailPage";
+import RecoveryPage from "./pages/RecoveryPage";
+import RecoveryConfirmationPage from "./pages/RecoveryConfirmationPage";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -72,19 +72,20 @@ const App = () => {
               </WithPageTitle>
             }
           ></Route>
+
           <Route
-            path="forgot-password"
+            path="recovery"
             element={
-              <WithPageTitle title="Forgot Password">
-                <ResetPasswordPage />
+              <WithPageTitle title="Recover Account">
+                <RecoveryPage />
               </WithPageTitle>
             }
           ></Route>
           <Route
-            path="forgot-email"
+            path="recovery-confirmation"
             element={
-              <WithPageTitle title="Recover Email">
-                <RecoverEmailPage />
+              <WithPageTitle title="Recovery Sent">
+                <RecoveryConfirmationPage />
               </WithPageTitle>
             }
           ></Route>

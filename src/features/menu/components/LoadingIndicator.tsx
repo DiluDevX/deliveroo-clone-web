@@ -1,23 +1,35 @@
 import Lottie from "react-lottie-player";
 import loadingAnimation from "../../../assets/animations/lottie-loading-dot-animation.json";
 import { Colors } from "../../../theme";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
-const LoadingIndicator = () => {
+type LoadingIndicatorProps = {
+  variant?: "button";
+  text?: string;
+};
+
+const LoadingIndicator = ({ variant, text }: LoadingIndicatorProps) => {
   return (
     <Box
-      style={{
+      sx={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "100vh",
+        height: variant === "button" ? "auto" : "100vh",
+        width: variant === "button" ? "auto" : "100%",
       }}
     >
+      <Typography sx={{ color: Colors.background.brand }}>{text}</Typography>
+
       <Lottie
         loop
         animationData={loadingAnimation}
         play
-        style={{ width: 150, height: 150, color: Colors.background.brand }}
+        style={{
+          width: variant === "button" ? 30 : 150,
+          height: variant === "button" ? 30 : 150,
+          color: Colors.background.brand,
+        }}
       />
     </Box>
   );

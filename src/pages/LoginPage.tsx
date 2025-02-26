@@ -211,8 +211,10 @@ export default function Login() {
             type="button"
             onClick={() =>
               existingUser
-                ? navigate("/account/forgot-password")
-                : navigate("/account/forgot-email")
+                ? navigate("/account/recovery")
+                : navigate("/account/recovery", {
+                    state: { type: "forgotEmail" },
+                  })
             }
             variant="border"
             sx={{
