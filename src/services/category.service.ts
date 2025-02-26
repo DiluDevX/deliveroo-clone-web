@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ICategory } from "../../data/Sides";
+import { ICategory } from "../data/Sides";
 
 export const getCategories = async (): Promise<ICategory[]> => {
   try {

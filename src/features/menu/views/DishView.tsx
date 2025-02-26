@@ -16,7 +16,7 @@ const DishView = () => {
 
   const categoryIds = useMemo(
     () => categories.map((category) => category.id),
-    [categories],
+    [],
   );
 
   const delay = (ms: number) =>

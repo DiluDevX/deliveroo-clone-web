@@ -1,20 +1,10 @@
 import { Box, Grid2 as Grid } from "@mui/material";
-import { getAllRestaurants } from "../services/restaurant/getAllRestaurants";
 import { useEffect, useState } from "react";
 
 import RestaurantView from "../features/menu/components/RestaurantView";
 import LoadingIndicator from "../features/menu/components/LoadingIndicator";
-
-interface Restaurant {
-  name: string;
-  image: string;
-  description: string;
-  tags: string[];
-  openingAt: string;
-  closingAt: string;
-  minimumValue: string;
-  deliveryCharge: string;
-}
+import { getAllRestaurants } from "../services/restaurant.service";
+import { Restaurant } from "../types/restaurants";
 
 const AllRestaurantsPage = () => {
   const [restaurant, setRestaurant] = useState<Restaurant[]>([]);

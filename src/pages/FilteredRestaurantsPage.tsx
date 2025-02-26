@@ -1,20 +1,20 @@
-import { getFilteredRestaurants } from "../services/restaurant/getFilteredRestaurants";
 import { Box, Grid2 as Grid, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import RestaurantView from "../features/menu/components/RestaurantView";
 import LoadingIndicator from "../features/menu/components/LoadingIndicator";
-import { FilteredRestaurant } from "../types/restaurants";
 import Button from "../features/menu/components/Button";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Colors } from "../theme/colors";
+import { getFilteredRestaurants } from "../services/restaurant.service";
+import { Restaurant } from "../types/restaurants";
 
 const FilteredRestaurantsPage = () => {
   const [loading, setLoading] = useState(true);
-  const [filteredRestaurants, setFilteredRestaurants] = useState<
-    FilteredRestaurant[]
-  >([]);
+  const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>(
+    [],
+  );
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get("search")?.toLowerCase() ?? "";
 
@@ -24,15 +24,14 @@ const FilteredRestaurantsPage = () => {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const data: FilteredRestaurant[] = await delay(1000).then(() =>
+        const data: Restaurant[] = await delay(1000).then(() =>
           getFilteredRestaurants(),
         );
         if (!searchQuery) {
           setFilteredRestaurants(data);
         } else {
-          const filterRestaurants = data.filter(
-            (restaurant: FilteredRestaurant) =>
-              restaurant.name.toLowerCase().includes(searchQuery),
+          const filterRestaurants = data.filter((restaurant: Restaurant) =>
+            restaurant.name.toLowerCase().includes(searchQuery),
           );
           setFilteredRestaurants(filterRestaurants);
         }
