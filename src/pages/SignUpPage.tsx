@@ -69,16 +69,22 @@ const SignUpPage = () => {
       enqueueSnackbar({
         variant: "error",
         message: "User Already Exists. Please Login.",
+        autoHideDuration: 5000,
       });
     } else if (response.type === "SUCCESS" && response.successResponse) {
       localStorage.setItem("token", response.successResponse.token);
       enqueueSnackbar({
         variant: "success",
         message: "Account created successfully!",
+        autoHideDuration: 3000,
       });
       navigate("/");
     } else {
-      enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
+      enqueueSnackbar({
+        variant: "error",
+        message: "Something Went Wrong",
+        autoHideDuration: 5000,
+      });
     }
   });
 
@@ -118,6 +124,17 @@ const SignUpPage = () => {
       </Box>
       <Box sx={{ width: "100%", minWidth: "200px", maxWidth: "400px" }}>
         <form onSubmit={handleSubmit}>
+          <Typography
+            sx={{
+              fontWeight: "bolder",
+              mb: 3,
+              fontSize: "1.5rem",
+              color: Colors.text.default,
+              fontSmoothing: "antialiased",
+            }}
+          >
+            Sign Up
+          </Typography>
           <Controller
             control={form.control}
             name="email"

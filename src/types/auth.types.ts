@@ -31,3 +31,13 @@ export type SignupResponseBodyDTO = {
   token: string;
   user: IUser;
 };
+
+export type EmailOrPhoneResponseBodyDTO = {
+  firstName: string;
+  lastName: string;
+  email: string;
+};
+
+export type EmailOrPhoneRequestBodyDTO = {
+  emailOrPhone: string;
+};

@@ -1,10 +1,10 @@
 import { Box, Container } from "@mui/material";
 import { useEffect, useState } from "react";
 import CategoryChip from "./CategoryChip";
-import { getCategories } from "../../../services/category/getCategories";
 import { ICategory } from "../../../data/Sides";
 import { Colors } from "../../../theme";
 import { categories as categoriesData } from "../../../data/categories";
+import { getCategories } from "../../../services/category.service";
 
 export const CategoriesBar = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(

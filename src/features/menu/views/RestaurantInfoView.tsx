@@ -8,20 +8,9 @@ import PeopleOutlineOutlinedIcon from "@mui/icons-material/PeopleOutlineOutlined
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getRestaurants } from "../../../services/restaurant/getRestaurants";
 import { Colors } from "../../../theme";
-
-type Restaurant = {
-  id: string;
-  name: string;
-  image: string;
-  description: string;
-  tags: [string];
-  openingAt: string;
-  closingAt: string;
-  minimumValue: string;
-  deliveryCharge: string;
-};
+import { getSingleRestaurant } from "../../../services/restaurant.service";
+import { Restaurant } from "../../../types/restaurants";
 
 const RestaurantInfoView = () => {
   const [imageError, setImageError] = useState(false);
@@ -33,7 +22,7 @@ const RestaurantInfoView = () => {
     const fetchData = async () => {
       if (orgId) {
         try {
-          const data = await getRestaurants(orgId);
+          const data = await getSingleRestaurant(orgId);
 
           if (!data) {
             setError("Restaurant not found.");

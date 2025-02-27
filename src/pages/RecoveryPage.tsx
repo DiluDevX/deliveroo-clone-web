@@ -10,9 +10,13 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import LoadingIndicator from "../features/menu/components/LoadingIndicator";
 import { useState } from "react";
+import { sendEmail } from "../services/mail.service";
+import { enqueueSnackbar } from "notistack";
 
 type RecoveryForm = {
   emailOrPhone: string;
+  email?: string;
+  phone?: string;
 };
 
 const RecoveryPage = () => {
@@ -25,14 +29,7 @@ const RecoveryPage = () => {
   const schema = z.object({
     emailOrPhone: z
       .string()
-      .min(1, "Please enter your email or phone number")
-      .refine(
-        (value) =>
-          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || /^\d{10,15}$/.test(value),
-        {
-          message: "Enter a valid email or phone number",
-        },
-      ),
+      .min(7, "Please enter your registered phone number or email address"),
   });
 
   const form = useForm<RecoveryForm>({
@@ -43,25 +40,41 @@ const RecoveryPage = () => {
   const handleSubmit = form.handleSubmit(async (values) => {
     setIsSubmitting(true);
     try {
-      if (isForgotEmail) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log("Form submitted:", values);
-        localStorage.setItem("emailOrPhone", values.emailOrPhone);
-        navigate("/account/recovery-confirmation");
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.emailOrPhone);
+      const inputType = isEmail ? "email" : "phone";
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await sendEmail(values.emailOrPhone);
+
+      if (!response.message) {
+        enqueueSnackbar("An error occurred. Please try again.", {
+          variant: "error",
+          autoHideDuration: 1500,
+        });
       } else {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log("Form submitted:", values);
+        enqueueSnackbar("Request submitted successfully", {
+          variant: "success",
+          autoHideDuration: 1500,
+        });
         localStorage.setItem("emailOrPhone", values.emailOrPhone);
         navigate("/account/recovery-confirmation", {
-          state: { type: "passwordReset" },
+          state: {
+            type: isForgotEmail ? "forgotEmail" : "forgotPassword",
+            inputType,
+          },
         });
       }
     } catch (error) {
+      enqueueSnackbar("An error occurred. Please try again.", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
       console.error("Submission failed:", error);
     } finally {
       setIsSubmitting(false);
     }
   });
+
   return (
     <Box
       sx={{
@@ -78,7 +91,7 @@ const RecoveryPage = () => {
     >
       <Box sx={{ width: "100%", minWidth: "200px", maxWidth: "400px" }}>
         <Button
-          onClick={() => navigate("/Account")}
+          onClick={() => window.history.back()}
           PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
           sx={{
             border: "none",
@@ -88,10 +101,7 @@ const RecoveryPage = () => {
             borderRadius: "150px",
             left: -20,
             mb: 3,
-
-            "&:hover": {
-              border: "none",
-            },
+            "&:hover": { border: "none" },
           }}
         >
           Back to Login
@@ -106,7 +116,9 @@ const RecoveryPage = () => {
               fontSmoothing: "antialiased",
             }}
           >
-            {isForgotEmail ? "Recover Your Email" : "Reset Your Password"}
+            {isForgotEmail
+              ? "Retrieve Your Registered Email"
+              : "Reset Your Account Password"}
           </Typography>
           <Controller
             control={form.control}
@@ -116,17 +128,13 @@ const RecoveryPage = () => {
                 fullWidth
                 label={
                   isForgotEmail
-                    ? "Enter your phone number or recovery email"
-                    : "Enter your phone number or email"
+                    ? "Provide your recovery email or registered phone number"
+                    : "Please enter your registered phone number or email address"
                 }
                 value={field.value ?? ""}
                 onChange={field.onChange}
                 error={fieldState.error?.message}
-                placeholder={
-                  isForgotEmail
-                    ? "e.g. recovery@example.com or 1234567890"
-                    : "e.g. name@example.com or 1234567890"
-                }
+                placeholder="e.g. johndoe@example.com or +9476123456"
                 type="text"
                 autoComplete="email"
                 required
@@ -138,12 +146,7 @@ const RecoveryPage = () => {
             disabled={!form.formState.isValid || isSubmitting}
             type="submit"
             variant="filled"
-            sx={{
-              fontWeight: "bold",
-              mt: 3,
-              mb: 1,
-              width: "100%",
-            }}
+            sx={{ fontWeight: "bold", mt: 3, mb: 1, width: "100%" }}
           >
             {isSubmitting && form.formState.isValid ? (
               <LoadingIndicator variant="button" text="Sending" />

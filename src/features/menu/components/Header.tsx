@@ -25,6 +25,8 @@ const Header = () => {
 
   const token = localStorage.getItem("token");
 
+  const title = getNameFromToken() || "Guest";
+
   return (
     <Box
       sx={{
@@ -122,12 +124,13 @@ const Header = () => {
           <Button
             PrefixIcon={Person2OutlinedIcon}
             variant="border"
-            title={`${getNameFromToken() || ""}`}
+            title={title}
             sx={{
               backgroundColor: Colors.background.light,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              padding: "6px",
             }}
             onClick={() => toggleDrawer(true)}
           />

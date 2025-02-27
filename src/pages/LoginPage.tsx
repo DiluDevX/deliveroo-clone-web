@@ -131,7 +131,7 @@ export default function Login() {
               fontSmoothing: "antialiased",
             }}
           >
-            Sign Up or Log In
+            Log In
           </Typography>
           <Controller
             control={form.control}

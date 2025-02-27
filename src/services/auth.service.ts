@@ -2,6 +2,8 @@ import axios, { isAxiosError } from "axios";
 import {
   CheckEmailRequestBodyDTO,
   CheckEmailResponseBodyDTO,
+  EmailOrPhoneRequestBodyDTO,
+  EmailOrPhoneResponseBodyDTO,
   LoginRequestBodyDTO,
   LoginResponseBodyDTO,
   SignupRequestBodyDTO,
@@ -20,6 +22,37 @@ export const checkEmail = async (
     const response = await axios.post<
       CommonResponseDTO<CheckEmailResponseBodyDTO>
     >("/api/auth/check-email", body);
+
+    return {
+      type: "EXISTING",
+      existingUser: response.data.data,
+    };
+  } catch (error) {
+    if (isAxiosError(error) && error.response?.status === 404) {
+      return {
+        type: "NEW",
+      };
+    }
+
+    console.error("checkEmail", error);
+    return {
+      type: "UNKNOWN",
+    };
+  }
+};
+
+type IEmailOrPhoneResponse = {
+  type: "NEW" | "EXISTING" | "UNKNOWN";
+  existingUser?: CheckEmailResponseBodyDTO;
+};
+export const checkEmailOrPhone = async (
+  body: EmailOrPhoneRequestBodyDTO,
+): Promise<IEmailOrPhoneResponse> => {
+  try {
+    console.log(body);
+    const response = await axios.post<
+      CommonResponseDTO<EmailOrPhoneResponseBodyDTO>
+    >("/api/auth/check-email-or-password", body);
 
     return {
       type: "EXISTING",

@@ -8,7 +8,8 @@ const RecoveryConfirmationPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isPasswordReset = location.state?.type === "passwordReset";
+  const isForgotPassword = location.state?.type === "forgotPassword";
+  const inputType = location.state?.inputType === "email" ? "email" : "phone";
 
   return (
     <Box
@@ -32,14 +33,20 @@ const RecoveryConfirmationPage = () => {
           color: Colors.text.default,
         }}
       >
-        {isPasswordReset ? "Check Your Email" : "Recovery Link Sent!"}
+        {isForgotPassword
+          ? inputType === "email"
+            ? "Check Your Email"
+            : "Check Your Phone"
+          : "Recovery Link Sent!"}
       </Typography>
       <Typography
         sx={{ fontSize: "1rem", color: Colors.text.placeholder, mb: 4 }}
       >
-        {isPasswordReset
-          ? "We’ve sent you a link to reset your password. Please check your inbox."
-          : "We've sent a recovery link to your email or phone. Follow the instructions to recover your account."}
+        {isForgotPassword
+          ? inputType === "email"
+            ? "A password reset link has been sent to your email. Please check your inbox and spam folder."
+            : "A recovery link has been sent to your phone. Follow the instructions to regain access to your account."
+          : "A recovery link has been sent to your email or phone. Follow the instructions to recover your account."}
       </Typography>
 
       <Button

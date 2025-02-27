@@ -13,7 +13,6 @@ import { useState } from "react";
 const MainViewSearchBox = () => {
   const [searchInput, setSearchInput] = useState("");
   const navigate = useNavigate();
-
   const token = localStorage.getItem("token");
 
   const handleSearchInput = () => {
@@ -30,7 +29,9 @@ const MainViewSearchBox = () => {
         display: "flex",
         flexDirection: "column",
         width: "100%",
+        alignItems: "center",
         zIndex: 1,
+        textAlign: "center",
       }}
     >
       <Typography
@@ -39,12 +40,10 @@ const MainViewSearchBox = () => {
           mt: "2rem",
           fontSize: { xs: "1.8rem", sm: "2.5rem", md: "2.4rem" },
           lineHeight: 1.2,
-          textAlign: { sx: "left", md: "left", lg: "center" },
-          textWrap: "none",
-          whiteSpace: "pre",
-          textOverflow: "ellipsis",
+          textAlign: "center",
+          whiteSpace: "pre-wrap",
           color: Colors.text.default,
-          width: "100%",
+          maxWidth: "100%",
         }}
       >
         Restaurants, takeaways,
@@ -59,28 +58,22 @@ const MainViewSearchBox = () => {
           marginTop: "30px",
           width: "100%",
           maxWidth: "900px",
-          alignContent: "center",
-          justifyContent: "center",
-          padding: "3rem 2rem",
-          borderRadius: "4px",
+          padding: "2.5rem",
+          borderRadius: "8px",
           color: Colors.text.default,
           boxShadow: `0px 4px 10px ${Colors.boxShadow.default}`,
         }}
       >
-        <Typography sx={{ fontSize: "13px", paddingBottom: "1rem" }}>
+        <Typography sx={{ fontSize: "14px", pb: "1rem", textAlign: "left" }}>
           Enter a restaurant name to see what we deliver:
         </Typography>
 
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Search Restaurants"
+          placeholder="Search Restaurants..."
           value={searchInput}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleSearchInput();
-            }
-          }}
+          onKeyDown={(e) => e.key === "Enter" && handleSearchInput()}
           onChange={(e) => setSearchInput(e.target.value)}
           sx={{
             "& .MuiOutlinedInput-root": {
@@ -94,20 +87,18 @@ const MainViewSearchBox = () => {
               "&:hover fieldset": {
                 border: `1px solid ${Colors.border.subtleLight}`,
               },
-              borderRadius: "25px",
+              borderRadius: "26px",
               caretColor: Colors.background.brand,
-
-              fontSize: { xs: "1rem", sm: "2.5rem", md: "1rem" },
-              height: "50px",
-              textAlign: "center",
+              fontSize: { xs: "1rem", sm: "1.2rem" },
+              height: "55px",
+              display: "flex",
+              alignItems: "center",
             },
             "& .MuiInputBase-input": {
-              borderColor: Colors.border.default,
-              alignItems: "center",
-              marginBottom: { xs: "0", sm: "0.1rem" },
+              padding: "14px",
               "&::placeholder": {
-                fontSize: { xs: "0.75rem", sm: "1rem" },
-                opacity: 0.4,
+                fontSize: "1rem",
+                opacity: 0.5,
               },
             },
           }}
@@ -116,9 +107,7 @@ const MainViewSearchBox = () => {
               <InputAdornment position="start">
                 <IconButton
                   sx={{
-                    "&:hover": {
-                      backgroundColor: "transparent",
-                    },
+                    "&:hover": { backgroundColor: "transparent" },
                   }}
                 >
                   <NearMeOutlinedIcon sx={{ color: Colors.background.brand }} />
@@ -131,8 +120,8 @@ const MainViewSearchBox = () => {
                   onClick={handleSearchInput}
                   sx={{
                     backgroundColor: Colors.background.brand,
-                    borderRadius: "25px",
-                    padding: "0.5rem 1rem",
+                    borderRadius: "24px",
+                    padding: "0.7rem 2rem",
                     "&:hover": {
                       backgroundColor: Colors.background.brandHover,
                     },
@@ -149,25 +138,27 @@ const MainViewSearchBox = () => {
           }}
         />
 
-        <Typography
-          sx={{
-            fontSize: "12px",
-            marginTop: "1rem",
-            display: token ? "none" : "flex",
-          }}
-        >
-          <Link
-            to={"/account"}
-            style={{
-              color: Colors.background.brand,
-              textDecoration: "none",
-              paddingRight: "5px",
+        {!token && (
+          <Typography
+            sx={{
+              fontSize: "13px",
+              marginTop: "1rem",
+              textAlign: "left",
             }}
           >
-            Log in
-          </Link>
-          for your recent addresses.
-        </Typography>
+            <Link
+              to={"/account"}
+              style={{
+                color: Colors.background.brand,
+                textDecoration: "none",
+                paddingRight: "5px",
+              }}
+            >
+              Log in
+            </Link>
+            for your recent addresses.
+          </Typography>
+        )}
       </Box>
     </Box>
   );
