@@ -4,12 +4,19 @@ import CategoriesBar from "../features/menu/components/CategoriesBar";
 import MenuView from "../features/menu/views/MenuView";
 import Cart from "../features/menu/components/Cart";
 import { Colors } from "../theme";
+import { useState } from "react";
 
 const HomePage = () => {
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    null,
+  );
   return (
     <Box sx={{ flexGrow: 1, width: "100%", mt: 7 }}>
       <RestaurantInfoView />
-      <CategoriesBar />
+      <CategoriesBar
+        selectedCategoryId={selectedCategoryId}
+        setSelectedCategoryId={setSelectedCategoryId}
+      />
       <Box
         sx={{
           flexGrow: 1,

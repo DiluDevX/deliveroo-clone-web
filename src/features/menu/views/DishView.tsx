@@ -81,7 +81,11 @@ const DishView = () => {
   return (
     <Box>
       {categories.map((category) => (
-        <Box key={category.id} sx={{ marginBottom: "2rem" }}>
+        <Box
+          key={category.id}
+          sx={{ marginBottom: "2rem" }}
+          id={`categoryId-${category.id}`}
+        >
           <Typography
             sx={{
               fontWeight: "bold",

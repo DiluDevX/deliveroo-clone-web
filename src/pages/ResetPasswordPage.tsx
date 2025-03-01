@@ -101,12 +101,18 @@ const ResetPasswordPage = () => {
         ) {
           enqueueSnackbar("Password updated successfully", {
             variant: "success",
+            preventDuplicate: true,
+            autoHideDuration: 1500,
           });
           navigate("/account/login");
         }
       }
     } catch (error) {
-      enqueueSnackbar("Something went wrong", { variant: "error" });
+      enqueueSnackbar("Something went wrong", {
+        variant: "error",
+        preventDuplicate: true,
+        autoHideDuration: 1500,
+      });
       console.error(error);
     } finally {
       setIsSubmitting(false);

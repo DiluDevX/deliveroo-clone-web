@@ -6,10 +6,15 @@ import { Colors } from "../../../theme";
 import { categories as categoriesData } from "../../../data/categories";
 import { getCategories } from "../../../services/category.service";
 
-export const CategoriesBar = () => {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-    null,
-  );
+interface categoryProps {
+  selectedCategoryId: number | null;
+  setSelectedCategoryId: (id: number | null) => void;
+}
+
+export const CategoriesBar = ({
+  selectedCategoryId,
+  setSelectedCategoryId,
+}: categoryProps) => {
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [error, setError] = useState("");
 
@@ -41,6 +46,12 @@ export const CategoriesBar = () => {
 
   const handleOnCategoryClick = (id: number) => {
     setSelectedCategoryId(id);
+    const section = document.getElementById(`categoryId-${id}`);
+    if (section) {
+      const offset = 150;
+      const top = section.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
   };
 
   if (error) {
@@ -81,7 +92,7 @@ export const CategoriesBar = () => {
           <CategoryChip
             key={category.id}
             data={category}
-            onClick={handleOnCategoryClick}
+            onClick={() => handleOnCategoryClick(category.id)}
             selected={selectedCategoryId === category.id}
           />
         ))}
