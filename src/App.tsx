@@ -17,6 +17,7 @@ import LoginPage from "./pages/LoginPage";
 import AccountCompletionPage from "./pages/AccountCompletionPage";
 import RecoveryPage from "./pages/RecoveryPage";
 import RecoveryConfirmationPage from "./pages/RecoveryConfirmationPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -53,6 +54,14 @@ const App = () => {
             element={
               <WithPageTitle title="Complete SignUp">
                 <AccountCompletionPage />
+              </WithPageTitle>
+            }
+          ></Route>
+          <Route
+            path="reset-password"
+            element={
+              <WithPageTitle title="Reset Password">
+                <ResetPasswordPage />
               </WithPageTitle>
             }
           ></Route>

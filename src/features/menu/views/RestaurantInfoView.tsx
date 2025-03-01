@@ -65,12 +65,18 @@ const RestaurantInfoView = () => {
             PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
             onClick={() => window.history.back()}
             sx={{
+              "&:hover": {
+                border: "none",
+              },
               border: "none",
               gap: 1,
               color: Colors.background.brand,
               fontSize: "1rem",
               fontWeight: "normal",
-              left: "0",
+              left: "-20px",
+              display: "flex",
+              alignItems: "left",
+              justifyContent: "left",
             }}
           >
             Back
@@ -144,19 +150,18 @@ const RestaurantInfoView = () => {
                 display: "flex",
               }}
             >
-              {restaurant.tags &&
-                restaurant.tags.map((tag, index) => (
-                  <Box key={index + tag} component="span">
-                    <Typography variant="body1" component="span">
-                      {tag}
+              {restaurant.tags?.map((tag, index) => (
+                <Box key={index + tag} component="span">
+                  <Typography variant="body1" component="span">
+                    {tag}
+                  </Typography>
+                  {restaurant.tags?.length > index + 1 && (
+                    <Typography sx={{ mx: 1 }} component="span">
+                      •
                     </Typography>
-                    {restaurant.tags.length > index + 1 && (
-                      <Typography sx={{ mx: 1 }} component="span">
-                        •
-                      </Typography>
-                    )}
-                  </Box>
-                ))}
+                  )}
+                </Box>
+              ))}
             </Box>
             <Box
               sx={{

@@ -133,3 +133,16 @@ export const signup = async (
     };
   }
 };
+
+export const validateToken = async ({ token }: { token: string }) => {
+  try {
+    const response = await axios.post("/api/auth/validate-token", { token });
+    if (!response.data?.data) {
+      return false;
+    }
+    return response.data.data;
+  } catch (error) {
+    console.error("Error validating token", error);
+    return false;
+  }
+};
