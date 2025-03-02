@@ -54,83 +54,76 @@ const DishView = ({ categories = [] }: { categories: ICategory[] }) => {
   if (!categories.length || isLoading) {
     return (
       <Box>
-        <Typography sx={{ color: Colors.text.default }}>
-          {categories.length === 0 ? (
-            "No categories available"
-          ) : (
-            <Box
-              sx={{
-                mb: 4,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <LoadingIndicator />
-            </Box>
-          )}
-        </Typography>
+        {categories.length === 0 ? (
+          <Typography sx={{ color: Colors.text.default }}>
+            No categories available
+          </Typography>
+        ) : (
+          <Box
+            sx={{
+              mb: 4,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <LoadingIndicator text="Loading..." />
+          </Box>
+        )}
       </Box>
     );
   }
 
   return (
     <Box>
-      {categories.map((category) => (
-        <Box
-          key={category.id}
-          sx={{ marginBottom: "2rem" }}
-          id={`categoryId-${category.id}`}
-        >
-          <Typography
-            sx={{
-              fontWeight: "bold",
-              fontSize: "1.3rem",
-              marginTop: "1.5rem",
-              marginBottom: "1rem",
-              color: Colors.text.default,
-            }}
+      {categories.map((category) => {
+        return (
+          <Box
+            key={category.id}
+            sx={{ marginBottom: "2rem" }}
+            id={`categoryId-${category.id}`}
           >
-            {category.name}
-          </Typography>
-          <Grid
-            container
-            spacing={{
-              sm: 0,
-              md: 2,
-              lg: 2,
-            }}
-          >
-            {dishesByCategory[category.id]?.length > 0 ? (
-              dishesByCategory[category.id].map((dish) => (
-                <Grid
-                  sx={{ marginBottom: "1rem" }}
-                  key={dish.id}
-                  size={{
-                    xs: 12,
-                    sm: 12,
-                    md: 6,
-                    lg: 6,
+            <Typography
+              sx={{
+                fontWeight: "bold",
+                fontSize: "1.3rem",
+                marginTop: "1.5rem",
+                marginBottom: "1rem",
+                color: Colors.text.default,
+              }}
+            >
+              {category.name}
+            </Typography>
+            <Grid container spacing={{ sm: 0, md: 2, lg: 2 }}>
+              {dishesByCategory[category.id]?.length > 0 ? (
+                dishesByCategory[category.id].map((dish) => {
+                  return (
+                    <Grid
+                      sx={{ marginBottom: "1rem" }}
+                      key={dish._id}
+                      size={{ xs: 12, sm: 12, md: 6, lg: 6 }}
+                    >
+                      <Dish data={dish} />
+                    </Grid>
+                  );
+                })
+              ) : (
+                <Typography
+                  key={`no-dishes-${category.id}`}
+                  sx={{
+                    color: Colors.text.default,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
                   }}
                 >
-                  <Dish data={dish} key={dish.id} />
-                </Grid>
-              ))
-            ) : (
-              <Typography
-                sx={{
-                  color: Colors.text.default,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                No dishes available
-              </Typography>
-            )}
-          </Grid>
-        </Box>
-      ))}
+                  No dishes available
+                </Typography>
+              )}
+            </Grid>
+          </Box>
+        );
+      })}
     </Box>
   );
 };

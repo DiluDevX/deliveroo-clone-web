@@ -3,6 +3,7 @@ import { IDish } from "../data/Sides";
 export const getDishes = async (categoryId: string): Promise<IDish[]> => {
   try {
     const response = await axios.get(`/api/dishes?category=${categoryId}`);
+    console.log(response.data);
     if (!response.data) {
       throw new Error("Failed to fetch categories.");
     }

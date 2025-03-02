@@ -1,7 +1,7 @@
 import Lottie from "react-lottie-player";
 import loadingAnimation from "../../../assets/animations/lottie-loading-dot-animation.json";
 import { Colors } from "../../../theme";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 
 type LoadingIndicatorProps = {
   variant?: "button";
@@ -19,7 +19,7 @@ const LoadingIndicator = ({ variant, text }: LoadingIndicatorProps) => {
         width: variant === "button" ? "auto" : "100%",
       }}
     >
-      <Typography sx={{ color: Colors.background.brand }}>{text}</Typography>
+      <span style={{ color: Colors.background.brand }}>{text}</span>
 
       <Lottie
         loop
