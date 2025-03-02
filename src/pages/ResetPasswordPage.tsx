@@ -84,7 +84,7 @@ const ResetPasswordPage = () => {
         setIsLoading(false);
       }
     }
-  }, [token]);
+  }, [token, form]);
 
   const handleSubmit = form.handleSubmit(async (values) => {
     setIsSubmitting(true);

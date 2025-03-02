@@ -1,14 +1,12 @@
 import { Box, Grid2 as Grid, Typography } from "@mui/material";
-import { categories } from "../../../data/categories";
 import { Colors } from "../../../theme/colors";
 import Dish from "../components/Dish";
 import { useEffect, useState, useMemo } from "react";
-import { IDish } from "../../../data/Sides";
+import { ICategory, IDish } from "../../../data/Sides";
 import { getDishes } from "../../../services/dish.service";
 import LoadingIndicator from "../components/LoadingIndicator";
 
-const DishView = () => {
-  console.log(categories);
+const DishView = ({ categories = [] }: { categories: ICategory[] }) => {
   const [dishesByCategory, setDishesByCategory] = useState<{
     [key: string]: IDish[];
   }>({});
@@ -16,7 +14,7 @@ const DishView = () => {
 
   const categoryIds = useMemo(
     () => categories.map((category) => category.id),
-    [],
+    [categories],
   );
 
   const delay = (ms: number) =>
@@ -25,12 +23,10 @@ const DishView = () => {
   useEffect(() => {
     const fetchDishes = async (categoryId: string) => {
       try {
-        console.log(`Fetching dishes for category: ${categoryId}`);
         const response: IDish[] = await delay(2000).then(() =>
           getDishes(categoryId),
         );
-        console.log(`Dishes for ${categoryId}:`, response);
-        setDishesByCategory((prev) => ({ ...prev, [categoryId]: response }));
+        setDishesByCategory({ [categoryId]: response });
       } catch (error) {
         console.error(
           `Error fetching dishes for category ${categoryId}:`,

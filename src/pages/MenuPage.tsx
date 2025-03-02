@@ -1,19 +1,66 @@
-import { Box, Container, Grid2 as Grid } from "@mui/material";
+import { Box, Container, Grid2 as Grid, Typography } from "@mui/material";
 import RestaurantInfoView from "../features/menu/views/RestaurantInfoView";
 import CategoriesBar from "../features/menu/components/CategoriesBar";
 import MenuView from "../features/menu/views/MenuView";
 import Cart from "../features/menu/components/Cart";
 import { Colors } from "../theme";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getCategories } from "../services/category.service";
+import { ICategory } from "../data/Sides";
+import { useParams } from "react-router-dom";
+import { getSingleRestaurant } from "../services/restaurant.service";
+import { Restaurant } from "../types/restaurants";
 
 const MenuPage = () => {
+  const { orgId } = useParams();
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     null,
   );
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRestaurantAndCategories = async () => {
+      if (!orgId) {
+        setError("No restaurant ID provided in URL.");
+        return;
+      }
+
+      try {
+        const restaurantData = await getSingleRestaurant(orgId);
+        if (!restaurantData) {
+          setError("Restaurant not found.");
+          return;
+        }
+        setRestaurant(restaurantData);
+        localStorage.setItem("id", restaurantData.id);
+
+        const categoryData = await getCategories();
+        if (!categoryData) {
+          setError("Categories not found.");
+        }
+        const validCategories = Array.isArray(categoryData) ? categoryData : [];
+        setCategories(validCategories);
+        setSelectedCategoryId(validCategories[0]?.id || null);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Failed to load restaurant or categories.");
+      }
+    };
+
+    fetchRestaurantAndCategories();
+  }, [orgId]);
+
+  if (error) {
+    return <Typography>{error}</Typography>;
+  }
   return (
     <Box sx={{ flexGrow: 1, width: "100%", mt: 7 }}>
-      <RestaurantInfoView />
+      <RestaurantInfoView restaurant={restaurant} />
       <CategoriesBar
+        error={error}
+        categories={categories}
         selectedCategoryId={selectedCategoryId}
         setSelectedCategoryId={setSelectedCategoryId}
       />
@@ -34,7 +81,7 @@ const MenuPage = () => {
                 md: 8,
               }}
             >
-              <MenuView />
+              <MenuView categories={categories} />
             </Grid>
             <Grid
               sx={{

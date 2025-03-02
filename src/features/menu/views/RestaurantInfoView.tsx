@@ -6,43 +6,20 @@ import LocationSelector from "../components/LocationSelector";
 import Button from "../components/Button";
 import PeopleOutlineOutlinedIcon from "@mui/icons-material/PeopleOutlineOutlined";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Colors } from "../../../theme";
-import { getSingleRestaurant } from "../../../services/restaurant.service";
 import { Restaurant } from "../../../types/restaurants";
+import NotFoundScreen from "../components/NotFoundScreen";
 
-const RestaurantInfoView = () => {
+const RestaurantInfoView = ({
+  restaurant,
+}: {
+  restaurant: Restaurant | null;
+}) => {
   const [imageError, setImageError] = useState(false);
-  const { orgId } = useParams();
-  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (orgId) {
-        try {
-          const data = await getSingleRestaurant(orgId);
-
-          if (!data) {
-            setError("Restaurant not found.");
-          } else {
-            setRestaurant(data);
-            localStorage.setItem("id", data.id);
-          }
-        } catch {
-          setError("Failed to fetch restaurant data");
-        }
-      } else {
-        setError("Please check the OrgID.");
-      }
-    };
-
-    fetchData();
-  }, [orgId]);
-
-  if (error) {
-    return <div>{error}</div>;
+  if (!restaurant) {
+    return <NotFoundScreen text="Restaurant not found" />;
   }
 
   if (restaurant) {

@@ -1,4 +1,4 @@
-import { Box, Grid2 as Grid, Typography } from "@mui/material";
+import { Box, Grid2 as Grid } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -9,6 +9,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Colors } from "../theme/colors";
 import { getFilteredRestaurants } from "../services/restaurant.service";
 import { Restaurant } from "../types/restaurants";
+import NotFoundScreen from "../features/menu/components/NotFoundScreen";
 
 const FilteredRestaurantsPage = () => {
   const [loading, setLoading] = useState(true);
@@ -62,41 +63,7 @@ const FilteredRestaurantsPage = () => {
 
   let content;
   if (filteredRestaurants.length === 0) {
-    content = (
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          marginTop: "6rem",
-          width: "100%",
-          maxWidth: { xs: "100vw", md: "70vw", lg: "70vw" },
-          paddingLeft: { md: "6rem", lg: "-8rem" },
-          mt: 4,
-          mb: 10,
-          ml: { lg: "5rem" },
-        }}
-      >
-        <Typography
-          variant="h6"
-          color="gray"
-          sx={{
-            fontWeight: "bold",
-            fontSize: "1.5rem",
-            textWrap: "nowrap",
-          }}
-          component="div"
-        >
-          No Restaurants Found
-        </Typography>
-        <img
-          src="/src/assets/svgs/NotFound.svg"
-          alt="No Restaurants Found"
-          style={{ width: "100%", height: "auto", maxWidth: "300px" }}
-        />
-      </Box>
-    );
+    content = <NotFoundScreen text={"Restaurants not found"} />;
   } else {
     content = filteredRestaurants.map((restaurant) => (
       <RestaurantView key={restaurant.name} restaurant={restaurant} />

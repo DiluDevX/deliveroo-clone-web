@@ -2,13 +2,14 @@ import { Box } from "@mui/material";
 import SpecialView from "./SpecialView";
 import PopularView from "./PopularView";
 import DishView from "./DishView";
+import { ICategory } from "../../../data/Sides";
 
-const MenuView = () => {
+const MenuView = ({ categories }: { categories: ICategory[] }) => {
   return (
     <Box>
       <SpecialView />
       <PopularView />
-      <DishView />
+      <DishView categories={categories} />
     </Box>
   );
 };

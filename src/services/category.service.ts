@@ -3,17 +3,21 @@ import { ICategory } from "../data/Sides";
 
 export const getCategories = async (): Promise<ICategory[]> => {
   try {
-    const response = await axios.get(
-      `/api/categories?restaurant=${localStorage.getItem("id")}`,
-    );
-    if (!response.data) {
-      throw new Error("Failed to fetch categories.");
-    }
-    const result = await response.data;
+    const restaurantId = localStorage.getItem("id");
 
-    return Array.isArray(result.data) ? result.data : [];
+    const response = await axios.get(
+      `/api/categories?restaurant=${restaurantId}`,
+    );
+
+    if (!response.data) {
+      console.error("Category not found");
+    }
+
+    const data = response.data.data || response.data;
+    const categories = Array.isArray(data) ? data : [];
+    return categories;
   } catch (error) {
-    console.error("Error fetching categories.", error);
+    console.error("Error fetching categories:", error);
     return [];
   }
 };

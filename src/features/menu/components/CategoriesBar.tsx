@@ -1,49 +1,21 @@
 import { Box, Container, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
 import CategoryChip from "./CategoryChip";
 import { ICategory } from "../../../data/Sides";
 import { Colors } from "../../../theme";
-import { categories as categoriesData } from "../../../data/categories";
-import { getCategories } from "../../../services/category.service";
 
 interface CategoryProps {
+  error: string | null;
+  categories: ICategory[];
   selectedCategoryId: number | null;
   setSelectedCategoryId: (id: number | null) => void;
 }
 
 export const CategoriesBar = ({
+  error,
+  categories,
   selectedCategoryId,
   setSelectedCategoryId,
 }: CategoryProps) => {
-  const [categories, setCategories] = useState<ICategory[]>([]);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await getCategories();
-        if (!data || data.length === 0) {
-          setError("No categories found.");
-          setCategories([]);
-        } else {
-          setCategories(data);
-          setSelectedCategoryId(data[0]?.id || null);
-          categoriesData.length = 0;
-          categoriesData.push(
-            ...data.map((category) => ({
-              id: category.id,
-              name: category.name,
-            })),
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching categories", error);
-        setError("Failed to fetch categories.");
-      }
-    };
-    fetchCategories();
-  }, []);
-
   const handleOnCategoryClick = (id: number) => {
     setSelectedCategoryId(id);
     const section = document.getElementById(`categoryId-${id}`);
