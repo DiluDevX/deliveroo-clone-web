@@ -26,7 +26,7 @@ const DishView = ({ categories = [] }: { categories: ICategory[] }) => {
         const response: IDish[] = await delay(2000).then(() =>
           getDishes(categoryId),
         );
-        setDishesByCategory({ [categoryId]: response });
+        setDishesByCategory((prev) => ({ ...prev, [categoryId]: response }));
       } catch (error) {
         console.error(
           `Error fetching dishes for category ${categoryId}:`,
