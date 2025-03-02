@@ -9,6 +9,7 @@ import { Colors, Paddings, Svgs } from "../../../theme";
 import AnchorTemporaryDrawer from "./AccountSideBar";
 import React from "react";
 import { getNameFromToken } from "../../../utils/common";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 
 const Header = () => {
   const location = useLocation();
@@ -25,7 +26,7 @@ const Header = () => {
 
   const token = localStorage.getItem("token");
 
-  const title = getNameFromToken() || "Guest";
+  const title = getNameFromToken() || "";
 
   return (
     <Box
@@ -64,7 +65,8 @@ const Header = () => {
             height: "100%",
             display: "flex",
             alignItems: "center",
-
+            width: { xs: "170px", sm: "auto", md: "auto", lg: "auto" },
+            ml: "-1.5rem",
             paddingTop: Paddings.Left.header.PaddingTop,
           }}
         >
@@ -108,12 +110,24 @@ const Header = () => {
               sx={{ backgroundColor: Colors.background.light }}
             />
           )}
+          <Button
+            variant="border"
+            sx={{
+              display: {
+                xs: "flex",
+                sm: "none",
+                md: "none",
+                lg: "none",
+              },
+            }}
+            PrefixComponent={<SearchOutlinedIcon />}
+          ></Button>
 
           {!token && (
             <Button
               PrefixIcon={HomeOutlinedIcon}
               title="Sign up or login"
-              linkTo="/Account"
+              linkTo="/account"
               sx={{
                 backgroundColor: Colors.background.light,
                 display: notShowing ? "none" : "flex",
@@ -131,6 +145,7 @@ const Header = () => {
               alignItems: "center",
               justifyContent: "center",
               padding: "6px",
+              mr: "-0.4rem",
             }}
             onClick={() => toggleDrawer(true)}
           />

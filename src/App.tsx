@@ -4,7 +4,6 @@ import {
   createRoutesFromElements,
   createBrowserRouter,
 } from "react-router-dom";
-import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
 import MainLayout from "./layout/MainLayout";
 import WithPageTitle from "./hocs/WithPageTitle";
@@ -18,6 +17,7 @@ import AccountCompletionPage from "./pages/AccountCompletionPage";
 import RecoveryPage from "./pages/RecoveryPage";
 import RecoveryConfirmationPage from "./pages/RecoveryConfirmationPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import MenuPage from "./pages/MenuPage";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -36,7 +36,7 @@ const App = () => {
           path="/restaurants/:orgId/menu"
           element={
             <WithPageTitle title="Tossed">
-              <HomePage />
+              <MenuPage />
             </WithPageTitle>
           }
         ></Route>

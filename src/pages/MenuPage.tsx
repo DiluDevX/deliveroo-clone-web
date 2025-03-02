@@ -6,7 +6,7 @@ import Cart from "../features/menu/components/Cart";
 import { Colors } from "../theme";
 import { useState } from "react";
 
-const HomePage = () => {
+const MenuPage = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     null,
   );
@@ -58,4 +58,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default MenuPage;

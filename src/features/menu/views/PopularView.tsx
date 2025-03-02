@@ -23,6 +23,9 @@ const PopularView = () => {
           flexDirection: "row",
           alignItems: "center",
           overflow: "scroll",
+          "::-webkit-scrollbar": {
+            display: "none",
+          },
         }}
       >
         {popular.map((item) => (

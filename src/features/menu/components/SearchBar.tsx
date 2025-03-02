@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import { Box, IconButton, InputAdornment, OutlinedInput } from "@mui/material";
+import { Box, InputAdornment, OutlinedInput } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { Colors } from "../../../theme/colors";
 
@@ -16,11 +16,10 @@ const SearchBar = () => {
       sx={{
         display: "flex",
         flexDirection: "row",
-        mx: 5,
+        mx: 1,
         alignItems: "center",
         width: "100%",
         maxWidth: "600px",
-        minWidth: "250px",
       }}
     >
       <OutlinedInput
@@ -33,7 +32,7 @@ const SearchBar = () => {
           height: 43,
           display: {
             xs: "none",
-            sm: "none",
+            sm: "flex",
             md: "flex",
           },
           "& .MuiOutlinedInput-notchedOutline": {
@@ -54,18 +53,6 @@ const SearchBar = () => {
           ) : undefined
         }
       />
-      <IconButton
-        sx={{
-          display: {
-            xs: "block",
-            sm: "block",
-            md: "none",
-            lg: "none",
-          },
-        }}
-      >
-        <SearchOutlinedIcon />
-      </IconButton>
     </Box>
   );
 };

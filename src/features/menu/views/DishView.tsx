@@ -121,7 +121,14 @@ const DishView = () => {
                 </Grid>
               ))
             ) : (
-              <Typography sx={{ color: Colors.text.default }}>
+              <Typography
+                sx={{
+                  color: Colors.text.default,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
                 No dishes available
               </Typography>
             )}

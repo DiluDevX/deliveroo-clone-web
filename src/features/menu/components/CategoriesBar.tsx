@@ -1,4 +1,4 @@
-import { Box, Container } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import CategoryChip from "./CategoryChip";
 import { ICategory } from "../../../data/Sides";
@@ -6,7 +6,7 @@ import { Colors } from "../../../theme";
 import { categories as categoriesData } from "../../../data/categories";
 import { getCategories } from "../../../services/category.service";
 
-interface categoryProps {
+interface CategoryProps {
   selectedCategoryId: number | null;
   setSelectedCategoryId: (id: number | null) => void;
 }
@@ -14,7 +14,7 @@ interface categoryProps {
 export const CategoriesBar = ({
   selectedCategoryId,
   setSelectedCategoryId,
-}: categoryProps) => {
+}: CategoryProps) => {
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [error, setError] = useState("");
 
@@ -55,7 +55,11 @@ export const CategoriesBar = ({
   };
 
   if (error) {
-    return <div>{error}</div>;
+    return (
+      <Typography sx={{ display: "flex", justifyContent: "center" }}>
+        {error}
+      </Typography>
+    );
   }
 
   if (!categories.length) {
@@ -80,6 +84,7 @@ export const CategoriesBar = ({
       <Container
         maxWidth="xl"
         sx={{
+          ml: { xs: 0, sm: 0, md: 0, lg: 0, xl: "57px" },
           display: "flex",
           alignItems: "center",
           overflowX: "auto",
