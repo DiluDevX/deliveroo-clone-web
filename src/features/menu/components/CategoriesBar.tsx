@@ -34,10 +34,6 @@ export const CategoriesBar = ({
     );
   }
 
-  if (!categories.length) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <Box
       sx={{
@@ -65,6 +61,19 @@ export const CategoriesBar = ({
           },
         }}
       >
+        {categories.length === 0 && (
+          <Typography
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mb: 2,
+              mt: 2,
+            }}
+          >
+            No categories Found
+          </Typography>
+        )}
         {categories.map((category) => (
           <CategoryChip
             key={category.id}
