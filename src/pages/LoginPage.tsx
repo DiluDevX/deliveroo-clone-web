@@ -65,6 +65,7 @@ export default function Login() {
       const checkEmailResponse = await checkEmail({ email });
 
       if (checkEmailResponse.type === "EXISTING") {
+        localStorage.setItem("existingUser", true.toString());
         setExistingUser(checkEmailResponse.existingUser);
       } else if (checkEmailResponse.type === "NEW") {
         navigate(`/Account/SignUp?email=${encodeURIComponent(email)}`);
@@ -77,6 +78,7 @@ export default function Login() {
       if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
         enqueueSnackbar({ variant: "success", message: "Login Successful!" });
         localStorage.setItem("token", loginResponse.successResponse.token);
+        localStorage.clearItem("existingUser");
         navigate("/");
       } else if (loginResponse.type === "INVALID") {
         enqueueSnackbar({ variant: "error", message: "Invalid Credentials" });
@@ -131,7 +133,7 @@ export default function Login() {
               fontSmoothing: "antialiased",
             }}
           >
-            Log In
+            {existingUser ? "Log In" : "Log In or Sign Up"}
           </Typography>
           <Controller
             control={form.control}

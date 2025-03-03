@@ -29,18 +29,17 @@ const MainViewSearchBox = () => {
         display: "flex",
         flexDirection: "column",
         width: "100%",
-        alignItems: "center",
         zIndex: 1,
-        textAlign: "center",
+        textAlign: { xs: "left", sm: "left", md: "left", lg: "center" },
       }}
     >
       <Typography
         sx={{
           fontWeight: "bolder",
           mt: "2rem",
-          fontSize: { xs: "1.8rem", sm: "2.5rem", md: "2.4rem" },
+          fontSize: { xs: "1.8rem", sm: "2rem", md: "2.5rem", lg: "2.5rem" },
           lineHeight: 1.2,
-          textAlign: "center",
+          textAlign: { xs: "left", sm: "left", md: "left", lg: "center" },
           whiteSpace: "pre-wrap",
           color: Colors.text.default,
           maxWidth: "100%",
@@ -95,7 +94,6 @@ const MainViewSearchBox = () => {
               alignItems: "center",
             },
             "& .MuiInputBase-input": {
-              padding: "14px",
               "&::placeholder": {
                 fontSize: "1rem",
                 opacity: 0.5,

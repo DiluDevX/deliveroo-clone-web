@@ -19,9 +19,9 @@ createRoot(document.getElementById("root")!).render(
     <ThemeProvider theme={theme}>
       <StrictMode>
         <SnackbarProvider
-          maxSnack={3}
+          maxSnack={2}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          style={{ marginTop: "3rem" }}
+          style={{ marginTop: "4rem", fontFamily: "IBM Plex Sans, serif" }}
         >
           <App />
         </SnackbarProvider>

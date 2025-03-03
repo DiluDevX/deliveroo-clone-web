@@ -91,7 +91,7 @@ const Dish = ({ data }: DishProps) => {
             color: Colors.text.default,
           }}
         >
-          {data.price}
+          $ {parseFloat(data.price).toFixed(2)}
         </Typography>
       </Box>
 

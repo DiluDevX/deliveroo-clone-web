@@ -87,10 +87,20 @@ const LocationView = () => {
 
           <Box
             sx={{
-              width: { xs: "150px", sm: "350px" },
+              "@media (max-width: 400px)": {
+                width: "170px",
+                top: "-6%",
+                right: "-4%",
+              },
+              width: {
+                xs: "220px",
+                sm: "350px",
+                md: "400px",
+                lg: "350px",
+              },
               position: "absolute",
-              top: "-4%",
-              right: "1%",
+              top: "-3%",
+              right: { xs: "-2%", sm: "-2%", md: "-2%", lg: "-2%" },
               backgroundColor: "transparent",
               padding: "10px",
               display: "flex",

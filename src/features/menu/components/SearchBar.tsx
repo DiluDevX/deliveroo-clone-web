@@ -27,7 +27,7 @@ const SearchBar = () => {
         value={searchKey}
         onChange={handleOnChange}
         id="outlined-basic"
-        placeholder="Search Tossed - Baker Street"
+        placeholder={`Search ${localStorage.getItem("restaurantName")}`}
         sx={{
           height: 43,
           display: {

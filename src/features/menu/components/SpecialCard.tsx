@@ -1,11 +1,11 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import Button from "./Button";
-import { IDish } from "../../../data/Sides";
+import { IDishFake } from "../../../data/Sides";
 import AddIcon from "@mui/icons-material/Add";
 import { Colors } from "../../../theme";
 
 type SpecialCardProps = {
-  data: IDish;
+  data: IDishFake;
 };
 
 const SpecialCard = ({ data }: SpecialCardProps) => {

@@ -26,7 +26,7 @@ const Header = () => {
 
   const token = localStorage.getItem("token");
 
-  const title = getNameFromToken() || "";
+  const title = getNameFromToken() || "Guest";
 
   return (
     <Box
@@ -110,18 +110,20 @@ const Header = () => {
               sx={{ backgroundColor: Colors.background.light }}
             />
           )}
-          <Button
-            variant="border"
-            sx={{
-              display: {
-                xs: "flex",
-                sm: "none",
-                md: "none",
-                lg: "none",
-              },
-            }}
-            PrefixComponent={<SearchOutlinedIcon />}
-          ></Button>
+          {location.pathname === "/menu" && (
+            <Button
+              variant="border"
+              sx={{
+                display: {
+                  xs: "flex",
+                  sm: "none",
+                  md: "none",
+                  lg: "none",
+                },
+              }}
+              PrefixComponent={<SearchOutlinedIcon />}
+            ></Button>
+          )}
 
           {!token && (
             <Button
