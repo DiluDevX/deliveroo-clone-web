@@ -15,8 +15,9 @@ const Header = () => {
   const location = useLocation();
   const isTransparent = location.pathname === "/";
   const notShowing =
-    location.pathname === "/SignPage/login" ||
-    location.pathname === "/SignPage/signup";
+    location.pathname === "/Account/login" ||
+    location.pathname === "/Account/signup" ||
+    location.pathname === "/account";
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
@@ -125,14 +126,19 @@ const Header = () => {
             ></Button>
           )}
 
-          {!token && (
+          {!token && !notShowing && (
             <Button
               PrefixIcon={HomeOutlinedIcon}
               title="Sign up or login"
               linkTo="/account"
               sx={{
                 backgroundColor: Colors.background.light,
-                display: notShowing ? "none" : "flex",
+                display: {
+                  xs: "none",
+                  sm: "none",
+                  md: "flex",
+                  lg: "flex",
+                },
               }}
             />
           )}

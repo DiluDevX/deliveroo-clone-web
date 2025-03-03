@@ -46,12 +46,11 @@ export default function AnchorTemporaryDrawer({
             style={{ margin: "1rem 1rem", cursor: "pointer" }}
           />
         </Link>
-        <IconButton onClick={() => toggleDrawer(false)}>
+        <IconButton onClick={() => toggleDrawer(false)} sx={{ mr: "0.5rem" }}>
           <ClearOutlinedIcon
             style={{
               width: "2rem",
               height: "2rem",
-              marginRight: "13px",
               color: Colors.background.brand,
               cursor: "pointer",
             }}

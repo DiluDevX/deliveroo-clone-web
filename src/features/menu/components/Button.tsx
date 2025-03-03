@@ -70,7 +70,7 @@ function Button({
           style={{
             color: Colors.background.brand,
             height: "auto",
-            width: "1.5rem",
+            width: "1.6rem",
             aspectRatio: 1,
           }}
         />
