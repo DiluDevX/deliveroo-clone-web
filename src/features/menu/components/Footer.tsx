@@ -38,9 +38,10 @@ const Footer = () => {
             backgroundColor: Colors.background.dark,
             padding: "1.5rem",
             flex: 1,
-            minWidth: "240px",
-            minHeight: "450px",
-            maxWidth: "500px",
+            minWidth: { xs: "100%", sm: "40%", md: "40%", lg: "auto" },
+            maxHeight: { xs: "200px", sm: "300px", md: "200px", lg: "450px" },
+            minHeight: { xs: "200px", sm: "200px", md: "200px", lg: "450px" },
+            maxWidth: { xs: "100vw", sm: "50vw", md: "auto", lg: "auto" },
           }}
         >
           <Typography
@@ -97,9 +98,10 @@ const Footer = () => {
             backgroundColor: Colors.background.dark,
             padding: "1.5rem",
             flex: 1,
-            minWidth: "240px",
-            minHeight: "450px",
-            maxWidth: "500px",
+            minWidth: { xs: "100%", sm: "50%", md: "50%", lg: "auto" },
+
+            minHeight: { xs: "200px", sm: "200px", md: "200px", lg: "450px" },
+            maxWidth: { xs: "100vw", sm: "50vw", md: "auto", lg: "auto" },
           }}
         >
           <Typography
@@ -143,9 +145,11 @@ const Footer = () => {
             backgroundColor: Colors.background.dark,
             padding: "1.5rem",
             flex: 1,
-            minWidth: "240px",
-            minHeight: "450px",
-            maxWidth: "500px",
+            minWidth: "200px",
+            width: { xs: "100vw", sm: "50%", md: "50%", lg: "auto" },
+
+            minHeight: { xs: "200px", sm: "200px", md: "200px", lg: "450px" },
+            maxWidth: { xs: "100vw", sm: "50vw", md: "auto", lg: "auto" },
           }}
         >
           <Typography
@@ -189,14 +193,10 @@ const Footer = () => {
             backgroundColor: Colors.background.dark,
             padding: "1.5rem",
             flex: 1,
-            minWidth: "240px",
-            minHeight: "450px",
-            maxWidth: "auto",
-            textAlign: {
-              xs: "center",
-              sm: "center",
-              md: "left",
-            },
+            minWidth: { xs: "100%", sm: "50%", md: "50%", lg: "auto" },
+            maxHeight: { xs: "200px", sm: "200px", md: "200px", lg: "450px" },
+            minHeight: { xs: "200px", sm: "200px", md: "200px", lg: "450px" },
+            maxWidth: { xs: "100vw", sm: "50vw", md: "auto", lg: "auto" },
           }}
         >
           <Typography
