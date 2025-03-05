@@ -1,4 +1,6 @@
 import { initializeApp } from "firebase/app";
+import dotenv from "dotenv";
+dotenv.config();
 import {
   FacebookAuthProvider,
   getAuth,
@@ -8,7 +10,7 @@ import {
 } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAR0Dy13dDspMIxAJZw4VaDJyCtRcnHHqc",
+  apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
   authDomain: "deliveroo-clone-433c7.firebaseapp.com",
   projectId: "deliveroo-clone-433c7",
   storageBucket: "deliveroo-clone-433c7.firebasestorage.app",
