@@ -18,6 +18,8 @@ import RecoveryPage from "./pages/RecoveryPage";
 import RecoveryConfirmationPage from "./pages/RecoveryConfirmationPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import MenuPage from "./pages/MenuPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import DataDeletionPage from "./pages/DataDeletionPage";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -112,6 +114,22 @@ const App = () => {
           element={
             <WithPageTitle title="Restaurants">
               <FilteredRestaurantsPage />
+            </WithPageTitle>
+          }
+        ></Route>
+        <Route
+          path="/privacy-policy"
+          element={
+            <WithPageTitle title="Privacy Policy">
+              <PrivacyPolicyPage />
+            </WithPageTitle>
+          }
+        ></Route>
+        <Route
+          path="/data-deletion"
+          element={
+            <WithPageTitle title="Data Deletion">
+              <DataDeletionPage />
             </WithPageTitle>
           }
         ></Route>

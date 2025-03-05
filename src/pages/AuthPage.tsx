@@ -5,8 +5,80 @@ import AppleIcon from "@mui/icons-material/Apple";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import { Link } from "react-router-dom";
 import { Colors, Svgs } from "../theme";
+import { enqueueSnackbar } from "notistack";
+import {
+  handleAppleSignIn,
+  handleFacebookSignIn,
+  handleGoogleSignIn,
+} from "../services/firebase.service";
 
 const AuthPage = () => {
+  const FacebookButtonOnClick = async () => {
+    try {
+      const response = await handleFacebookSignIn();
+      if (!response) {
+        enqueueSnackbar("Something went wrong", {
+          variant: "error",
+          autoHideDuration: 1500,
+        });
+        return;
+      }
+      enqueueSnackbar("Signed in successfully", {
+        variant: "success",
+        autoHideDuration: 1500,
+      });
+    } catch {
+      enqueueSnackbar("Something went wrong", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
+      return;
+    }
+  };
+  const GoogleButtonOnClick = async () => {
+    try {
+      const response = await handleGoogleSignIn();
+      if (!response) {
+        enqueueSnackbar("Something went wrong", {
+          variant: "error",
+          autoHideDuration: 1500,
+        });
+        return;
+      }
+      enqueueSnackbar("Signed in successfully", {
+        variant: "success",
+        autoHideDuration: 1500,
+      });
+    } catch {
+      enqueueSnackbar("Something went wrong", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
+      return;
+    }
+  };
+  const AppleButtonOnClick = async () => {
+    try {
+      const response = await handleAppleSignIn();
+      if (!response) {
+        enqueueSnackbar("Something went wrong", {
+          variant: "error",
+          autoHideDuration: 1500,
+        });
+        return;
+      }
+      enqueueSnackbar("Signed in successfully", {
+        variant: "success",
+        autoHideDuration: 1500,
+      });
+    } catch {
+      enqueueSnackbar("Something went wrong", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
+      return;
+    }
+  };
   return (
     <Box
       sx={{
@@ -40,6 +112,7 @@ const AuthPage = () => {
         </Typography>
 
         <Button
+          onClick={FacebookButtonOnClick}
           PrefixComponent={<FacebookOutlinedIcon />}
           sx={{
             color: Colors.text.inverse,
@@ -56,6 +129,7 @@ const AuthPage = () => {
 
         <Button
           PrefixComponent={<Svgs.GoogleLogo width={"1.5rem"} />}
+          onClick={GoogleButtonOnClick}
           sx={{
             color: Colors.text.default,
             border: "1px solid grey",
@@ -75,6 +149,7 @@ const AuthPage = () => {
         </Button>
         <Button
           PrefixComponent={<AppleIcon />}
+          onClick={AppleButtonOnClick}
           sx={{
             color: Colors.text.inverse,
             backgroundColor: "black",
