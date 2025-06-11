@@ -3,16 +3,18 @@ import { Box, Typography, Divider } from "@mui/material";
 import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
 import AppleIcon from "@mui/icons-material/Apple";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Colors, Svgs } from "../theme";
 import { enqueueSnackbar } from "notistack";
 import {
-  handleAppleSignIn,
   handleFacebookSignIn,
   handleGoogleSignIn,
 } from "../services/firebase.service";
+import { checkEmail } from "../services/auth.service";
 
 const AuthPage = () => {
+  const navigate = useNavigate();
+
   const FacebookButtonOnClick = async () => {
     try {
       const response = await handleFacebookSignIn();
@@ -23,10 +25,32 @@ const AuthPage = () => {
         });
         return;
       }
-      enqueueSnackbar("Signed in successfully", {
-        variant: "success",
-        autoHideDuration: 1500,
+      const fullName = response.displayName ?? "";
+      const nameParts = fullName.split(" ");
+
+      const firstName = nameParts[0];
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+      const isThereAnUser = await checkEmail({
+        email: response.email ?? "",
       });
+      if (isThereAnUser.type === "EXISTING") {
+        localStorage.setItem("token", isThereAnUser.token ?? "");
+        enqueueSnackbar("Signed in successfully", {
+          variant: "success",
+          autoHideDuration: 1500,
+        });
+        navigate("/");
+      } else if (isThereAnUser.type === "NEW") {
+        navigate(
+          `account/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
+        );
+      } else {
+        enqueueSnackbar("Something went wrong", {
+          variant: "error",
+          autoHideDuration: 1500,
+        });
+      }
     } catch {
       enqueueSnackbar("Something went wrong", {
         variant: "error",
@@ -35,6 +59,7 @@ const AuthPage = () => {
       return;
     }
   };
+
   const GoogleButtonOnClick = async () => {
     try {
       const response = await handleGoogleSignIn();
@@ -45,32 +70,32 @@ const AuthPage = () => {
         });
         return;
       }
-      enqueueSnackbar("Signed in successfully", {
-        variant: "success",
-        autoHideDuration: 1500,
+      const fullName = response.displayName ?? "";
+      const nameParts = fullName.split(" ");
+
+      const firstName = nameParts[0];
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+      const isThereAnUser = await checkEmail({
+        email: response.email ?? "",
       });
-    } catch {
-      enqueueSnackbar("Something went wrong", {
-        variant: "error",
-        autoHideDuration: 1500,
-      });
-      return;
-    }
-  };
-  const AppleButtonOnClick = async () => {
-    try {
-      const response = await handleAppleSignIn();
-      if (!response) {
+      if (isThereAnUser.type === "EXISTING") {
+        localStorage.setItem("token", isThereAnUser.token ?? "");
+        enqueueSnackbar("Signed in successfully", {
+          variant: "success",
+          autoHideDuration: 1500,
+        });
+        navigate("/");
+      } else if (isThereAnUser.type === "NEW") {
+        navigate(
+          `account/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
+        );
+      } else {
         enqueueSnackbar("Something went wrong", {
           variant: "error",
           autoHideDuration: 1500,
         });
-        return;
       }
-      enqueueSnackbar("Signed in successfully", {
-        variant: "success",
-        autoHideDuration: 1500,
-      });
     } catch {
       enqueueSnackbar("Something went wrong", {
         variant: "error",
@@ -79,6 +104,7 @@ const AuthPage = () => {
       return;
     }
   };
+
   return (
     <Box
       sx={{
@@ -149,7 +175,6 @@ const AuthPage = () => {
         </Button>
         <Button
           PrefixComponent={<AppleIcon />}
-          onClick={AppleButtonOnClick}
           sx={{
             color: Colors.text.inverse,
             backgroundColor: "black",

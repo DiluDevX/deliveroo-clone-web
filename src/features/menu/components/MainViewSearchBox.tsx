@@ -40,7 +40,6 @@ const MainViewSearchBox = () => {
           fontSize: { xs: "1.8rem", sm: "2rem", md: "2.5rem", lg: "2.5rem" },
           lineHeight: 1.2,
           textAlign: { xs: "left", sm: "left", md: "left", lg: "center" },
-          whiteSpace: "pre-wrap",
           color: Colors.text.default,
           maxWidth: "100%",
         }}

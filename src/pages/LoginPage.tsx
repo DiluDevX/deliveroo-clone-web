@@ -76,10 +76,9 @@ export default function Login() {
       const loginResponse = await login({ email, password });
 
       if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
-        enqueueSnackbar({ variant: "success", message: "Login Successful!" });
         localStorage.setItem("token", loginResponse.successResponse.token);
         localStorage.clearItem("existingUser");
-        navigate("/");
+        await navigate("/");
       } else if (loginResponse.type === "INVALID") {
         enqueueSnackbar({ variant: "error", message: "Invalid Credentials" });
       } else {

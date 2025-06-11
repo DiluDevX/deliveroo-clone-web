@@ -4,6 +4,7 @@ export type CheckEmailResponseBodyDTO = {
   firstName: string;
   lastName: string;
   email: string;
+  token?: string;
 };
 
 export type CheckEmailRequestBodyDTO = {

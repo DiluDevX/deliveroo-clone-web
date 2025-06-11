@@ -60,6 +60,8 @@ const SignUpPage = () => {
 
   useEffect(() => {
     form.setValue("email", searchParams.get("email") ?? "");
+    form.setValue("firstName", searchParams.get("firstName") ?? "");
+    form.setValue("lastName", searchParams.get("lastName") ?? "");
   }, [form, searchParams]);
 
   const handleSubmit = form.handleSubmit(async (values) => {

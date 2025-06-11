@@ -12,6 +12,7 @@ import {
 import { CommonResponseDTO } from "../types/common";
 
 type ICheckEmailResponse = {
+  token?: string;
   type: "NEW" | "EXISTING" | "UNKNOWN";
   existingUser?: CheckEmailResponseBodyDTO;
 };
@@ -26,6 +27,7 @@ export const checkEmail = async (
     return {
       type: "EXISTING",
       existingUser: response.data.data,
+      token: response.data.data.token,
     };
   } catch (error) {
     if (isAxiosError(error) && error.response?.status === 404) {
