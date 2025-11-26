@@ -1,4 +1,7 @@
-# 🍔 Deliveroo Clone
+<div align="center">
+  <img src="./src/assets/svgs/deliverooLogo.svg" alt="Deliveroo Logo" width="300"/>
+  
+  # Deliveroo Clone
 
 A full-stack food delivery application clone inspired by Deliveroo, built with modern web technologies. This project features a React frontend with TypeScript and a Node.js backend with MongoDB.
 
@@ -7,6 +10,8 @@ A full-stack food delivery application clone inspired by Deliveroo, built with m
 ![Vite](https://img.shields.io/badge/Vite-6.0.1-646CFF?logo=vite)
 ![Node.js](https://img.shields.io/badge/Node.js-Backend-green?logo=node.js)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Database-green?logo=mongodb)
+
+</div>
 
 ## ✨ Features
 
