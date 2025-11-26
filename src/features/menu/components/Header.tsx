@@ -4,12 +4,12 @@ import Button from "./Button";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import SearchBar from "./SearchBar";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Colors, Paddings, Svgs } from "../../../theme";
 import AnchorTemporaryDrawer from "./AccountSideBar";
 import React from "react";
 import { getNameFromToken } from "../../../utils/common";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import PartnerWithUs from "./PartnerWithUs";
 
 const Header = () => {
   const location = useLocation();
@@ -103,14 +103,7 @@ const Header = () => {
             paddingTop: Paddings.Left.header.PaddingTop,
           }}
         >
-          {location.pathname === "/" && (
-            <Button
-              variant="border"
-              PrefixIcon={ExpandMoreIcon}
-              title="Partner with Us"
-              sx={{ backgroundColor: Colors.background.light }}
-            />
-          )}
+          {location.pathname === "/" && <PartnerWithUs />}
           {location.pathname === "/menu" && (
             <Button
               variant="border"
@@ -142,21 +135,22 @@ const Header = () => {
               }}
             />
           )}
-
-          <Button
-            PrefixIcon={Person2OutlinedIcon}
-            variant="border"
-            title={title}
-            sx={{
-              backgroundColor: Colors.background.light,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "6px",
-              mr: "-0.4rem",
-            }}
-            onClick={() => toggleDrawer(true)}
-          />
+          {location.pathname !== "/account" && (
+            <Button
+              PrefixIcon={Person2OutlinedIcon}
+              variant="border"
+              title={title}
+              sx={{
+                backgroundColor: Colors.background.light,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "6px",
+                mr: "-0.4rem",
+              }}
+              onClick={() => toggleDrawer(true)}
+            />
+          )}
         </Box>
         <AnchorTemporaryDrawer open={drawerOpen} toggleDrawer={toggleDrawer} />
       </Container>

@@ -43,7 +43,7 @@ const AuthPage = () => {
         navigate("/");
       } else if (isThereAnUser.type === "NEW") {
         navigate(
-          `account/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
+          `/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
         );
       } else {
         enqueueSnackbar("Something went wrong", {
@@ -88,7 +88,7 @@ const AuthPage = () => {
         navigate("/");
       } else if (isThereAnUser.type === "NEW") {
         navigate(
-          `account/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
+          `/account/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
         );
       } else {
         enqueueSnackbar("Something went wrong", {

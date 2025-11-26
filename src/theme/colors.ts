@@ -22,6 +22,7 @@ export const Colors = {
     subtle: "#ccc",
     subtleLight: "#00000014",
     dark: "#2e3333",
+    brand: "#02bdae",
   },
   boxShadow: {
     default: "rgba(0, 0, 0, 0.1)",

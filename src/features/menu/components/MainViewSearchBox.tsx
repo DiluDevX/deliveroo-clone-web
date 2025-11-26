@@ -80,7 +80,8 @@ const MainViewSearchBox = () => {
                 boxShadow: `0px 2px 8px ${Colors.boxShadow.default}`,
               },
               "&.Mui-focused fieldset": {
-                borderColor: Colors.border.dark,
+                borderColor: Colors.border.subtleLight,
+                outline: "none",
               },
               "&:hover fieldset": {
                 border: `1px solid ${Colors.border.subtleLight}`,

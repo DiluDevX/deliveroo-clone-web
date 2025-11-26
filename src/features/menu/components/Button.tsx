@@ -52,6 +52,15 @@ function Button({
         "&:hover": {
           border: `0.5px solid ${Colors.border.subtle}`,
         },
+        "&:focus": {
+          border: `2px solid rgba(2, 189, 174, 0.5)`,
+          borderWidth: "2.7px",
+          outline: "none",
+        },
+        "&:active": {
+          border: `2px solid rgba(2, 189, 174, 0.5)`,
+          borderWidth: "2.7px",
+        },
         display: { xs: "flex", sm: "flex" },
         fontSize: "1rem",
 

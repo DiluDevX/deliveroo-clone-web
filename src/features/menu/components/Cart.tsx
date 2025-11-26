@@ -16,7 +16,7 @@ const Cart = () => {
         alignItems: "center",
         justifyContent: "center",
         position: "sticky",
-        top: "160px",
+        top: "170px",
         zIndex: "100",
         borderRadius: "5px",
         border: `1px solid ${Colors.border.subtle}`,
