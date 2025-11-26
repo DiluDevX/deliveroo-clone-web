@@ -1,7 +1,5 @@
 <div align="center">
   <img src="./src/assets/svgs/deliverooLogo.svg" alt="Deliveroo Logo" width="300"/>
-  
-  # Deliveroo Clone
 
 A full-stack food delivery application clone inspired by Deliveroo, built with modern web technologies. This project features a React frontend with TypeScript and a Node.js backend with MongoDB.
 
