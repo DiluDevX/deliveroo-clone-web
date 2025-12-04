@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 
 export interface IDish {
-  _id: string | number;
+  _id: string;
   name: string;
   description: string;
   price: string;

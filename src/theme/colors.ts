@@ -6,6 +6,7 @@ export const Colors = {
     brand: "#00ccbc",
     brandHover: "#02bdae",
     light: "#ffffff",
+    lighterDark: "#cccc",
     dark: "#3d4141",
     darker: "#2e3333",
   },

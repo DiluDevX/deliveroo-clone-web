@@ -4,7 +4,7 @@ import CategoriesBar from "../features/menu/components/CategoriesBar";
 import MenuView from "../features/menu/views/MenuView";
 import Cart from "../features/menu/components/Cart";
 import { Colors } from "../theme";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getCategories } from "../services/category.service";
 import { ICategory } from "../data/Sides";
 import { useParams } from "react-router-dom";
@@ -19,6 +19,11 @@ const MenuPage = () => {
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDishesLoading, setIsDishesLoading] = useState(true);
+
+  const handleDishesLoadingChange = useCallback((isLoading: boolean) => {
+    setIsDishesLoading(isLoading);
+  }, []);
 
   useEffect(() => {
     const fetchRestaurantAndCategories = async () => {
@@ -82,7 +87,10 @@ const MenuPage = () => {
                 md: 8,
               }}
             >
-              <MenuView categories={categories} />
+              <MenuView
+                categories={categories}
+                onDishesLoadingChange={handleDishesLoadingChange}
+              />
             </Grid>
             <Grid
               sx={{
@@ -97,7 +105,7 @@ const MenuPage = () => {
                 md: 4,
               }}
             >
-              <Cart />
+              {!isDishesLoading && <Cart />}
             </Grid>
           </Grid>
         </Container>

@@ -15,7 +15,7 @@ type ButtonProps = ButtonBaseProps & {
 
 const getBackgroundColor = (disabled: boolean | undefined, variant: string) => {
   if (disabled) {
-    return Colors.background.default;
+    return Colors.background.lighterDark;
   }
 
   if (variant === "border") {
@@ -44,33 +44,39 @@ function Button({
   return (
     <ButtonBase
       {...props}
+      disabled={disabled}
       sx={{
         borderRadius: 1,
         fontFamily: "IBM Plex Sans, serif;",
         whiteSpace: "nowrap",
         border: `0.01px solid ${Colors.border.default}`,
         "&:hover": {
-          border: `0.5px solid ${Colors.border.subtle}`,
+          border: disabled ? "none" : `0.5px solid ${Colors.border.subtle}`,
         },
         "&:focus": {
-          border: `2px solid rgba(2, 189, 174, 0.5)`,
-          borderWidth: "2.7px",
-          outline: "none",
+          outline: disabled ? "none" : `2.7px solid rgba(2, 189, 174, 0.5)`,
+          outlineOffset: "-2.7px",
         },
         "&:active": {
-          border: `2px solid rgba(2, 189, 174, 0.5)`,
-          borderWidth: "2.7px",
+          outline: disabled ? "none" : `2.7px solid rgba(2, 189, 174, 0.5)`,
+          outlineOffset: "-2.7px",
         },
         display: { xs: "flex", sm: "flex" },
         fontSize: "1rem",
-
         minHeight: "42px",
         alignItems: "center",
         justifyContent: "center",
         paddingRight: { xs: "0.5rem", sm: "1rem" },
         paddingLeft: { xs: "0.5rem", sm: "1rem" },
-        color: variant === "border" ? Colors.text.default : Colors.text.inverse,
+        color: disabled
+          ? Colors.text.placeholder
+          : variant === "border"
+            ? Colors.text.default
+            : Colors.text.inverse,
         backgroundColor: getBackgroundColor(disabled, variant ?? "border"),
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+        pointerEvents: disabled ? "none" : "auto",
         ...sx,
       }}
     >

@@ -4,6 +4,8 @@ import App from "./App.tsx";
 import { createTheme, ThemeProvider } from "@mui/material";
 import { HelmetProvider } from "react-helmet-async";
 import { SnackbarProvider } from "notistack";
+import { Provider } from "react-redux";
+import { store } from "./store/store.tsx";
 
 const theme = createTheme({
   typography: {
@@ -23,7 +25,9 @@ createRoot(document.getElementById("root")!).render(
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
           style={{ marginTop: "4rem", fontFamily: "IBM Plex Sans, serif" }}
         >
-          <App />
+          <Provider store={store}>
+            <App />
+          </Provider>
         </SnackbarProvider>
       </StrictMode>
     </ThemeProvider>

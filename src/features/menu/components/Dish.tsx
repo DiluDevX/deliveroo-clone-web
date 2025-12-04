@@ -3,12 +3,19 @@ import { IDish } from "../../../data/Sides";
 import Button from "./Button";
 import AddIcon from "@mui/icons-material/Add";
 import { Colors } from "../../../theme";
+import { useAppDispatch } from "../../../store/hooks/cartHooks";
+import { addItem } from "../../../store/cartSlice";
 
 type DishProps = {
   data: IDish;
 };
 
 const Dish = ({ data }: DishProps) => {
+  const dispatch = useAppDispatch();
+
+  const handleAddToCart = () => {
+    dispatch(addItem(data));
+  };
   return (
     <Card
       sx={{
@@ -96,6 +103,7 @@ const Dish = ({ data }: DishProps) => {
       </Box>
 
       <Button
+        onClick={handleAddToCart}
         sx={{
           backgroundColor: Colors.background.defaultLight,
           color: Colors.text.inverse,

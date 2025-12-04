@@ -4,9 +4,13 @@ import Dish from "../components/Dish";
 import { useEffect, useState, useMemo } from "react";
 import { ICategory, IDish } from "../../../data/Sides";
 import { getDishes } from "../../../services/dish.service";
-import LoadingIndicator from "../components/LoadingIndicator";
 
-const DishView = ({ categories = [] }: { categories: ICategory[] }) => {
+interface DishViewProps {
+  categories: ICategory[];
+  onLoadingChange?: (isLoading: boolean) => void;
+}
+
+const DishView = ({ categories = [], onLoadingChange }: DishViewProps) => {
   const [dishesByCategory, setDishesByCategory] = useState<{
     [key: string]: IDish[];
   }>({});
@@ -17,15 +21,26 @@ const DishView = ({ categories = [] }: { categories: ICategory[] }) => {
     [categories],
   );
 
-  const delay = (ms: number) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
+  // Filter categories that have dishes
+  const categoriesWithDishes = useMemo(
+    () =>
+      categories.filter(
+        (category) =>
+          dishesByCategory[category.id] &&
+          dishesByCategory[category.id].length > 0,
+      ),
+    [categories, dishesByCategory],
+  );
+
+  // Notify parent when loading state changes
+  useEffect(() => {
+    onLoadingChange?.(isLoading);
+  }, [isLoading, onLoadingChange]);
 
   useEffect(() => {
     const fetchDishes = async (categoryId: string) => {
       try {
-        const response: IDish[] = await delay(2000).then(() =>
-          getDishes(categoryId),
-        );
+        const response: IDish[] = await getDishes(categoryId);
         setDishesByCategory((prev) => ({ ...prev, [categoryId]: response }));
       } catch (error) {
         console.error(
@@ -51,32 +66,27 @@ const DishView = ({ categories = [] }: { categories: ICategory[] }) => {
     fetchAllDishes();
   }, [categoryIds]);
 
-  if (!categories.length || isLoading) {
+  // Don't render anything - parent handles loading state
+  if (!categories.length) {
     return (
-      <Box>
-        {categories.length === 0 ? (
-          <Typography sx={{ color: Colors.text.default }}>
-            No categories available
-          </Typography>
-        ) : (
-          <Box
-            sx={{
-              mb: 4,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <LoadingIndicator text="Loading..." />
-          </Box>
-        )}
-      </Box>
+      <Typography sx={{ color: Colors.text.default }}>
+        No categories available
+      </Typography>
+    );
+  }
+
+  // Show message if no categories have dishes
+  if (!isLoading && categoriesWithDishes.length === 0) {
+    return (
+      <Typography sx={{ color: Colors.text.default }}>
+        No dishes available
+      </Typography>
     );
   }
 
   return (
     <Box>
-      {categories.map((category) => {
+      {categoriesWithDishes.map((category) => {
         return (
           <Box
             key={category.id}
@@ -95,31 +105,17 @@ const DishView = ({ categories = [] }: { categories: ICategory[] }) => {
               {category.name}
             </Typography>
             <Grid container spacing={{ sm: 0, md: 2, lg: 2 }}>
-              {dishesByCategory[category.id]?.length > 0 ? (
-                dishesByCategory[category.id].map((dish) => {
-                  return (
-                    <Grid
-                      sx={{ marginBottom: "1rem" }}
-                      key={dish._id}
-                      size={{ xs: 12, sm: 12, md: 6, lg: 6 }}
-                    >
-                      <Dish data={dish} />
-                    </Grid>
-                  );
-                })
-              ) : (
-                <Typography
-                  key={`no-dishes-${category.id}`}
-                  sx={{
-                    color: Colors.text.default,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  No dishes available
-                </Typography>
-              )}
+              {dishesByCategory[category.id].map((dish) => {
+                return (
+                  <Grid
+                    sx={{ marginBottom: "1rem" }}
+                    key={dish._id}
+                    size={{ xs: 12, sm: 12, md: 6, lg: 6 }}
+                  >
+                    <Dish data={dish} />
+                  </Grid>
+                );
+              })}
             </Grid>
           </Box>
         );

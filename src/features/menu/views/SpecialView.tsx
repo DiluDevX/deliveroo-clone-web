@@ -1,8 +1,32 @@
 import { Box, Container, Typography } from "@mui/material";
 import SpecialCard from "../components/SpecialCard";
 import { specials } from "../../../data/Sides";
+import { useEffect, useState } from "react";
 
-const SpecialView = () => {
+interface SpecialViewProps {
+  onLoadingChange?: (isLoading: boolean) => void;
+}
+
+const SpecialView = ({ onLoadingChange }: SpecialViewProps) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading or fetch data here
+    const loadData = async () => {
+      setIsLoading(true);
+      // If you fetch data, do it here
+      // For static data, just simulate a brief load
+      setIsLoading(false);
+    };
+
+    loadData();
+  }, []);
+
+  // Notify parent when loading state changes
+  useEffect(() => {
+    onLoadingChange?.(isLoading);
+  }, [isLoading, onLoadingChange]);
+
   return (
     <Container disableGutters sx={{ mt: 2, mb: 2 }}>
       <Typography
