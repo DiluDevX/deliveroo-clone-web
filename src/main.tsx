@@ -5,7 +5,8 @@ import { createTheme, ThemeProvider } from "@mui/material";
 import { HelmetProvider } from "react-helmet-async";
 import { SnackbarProvider } from "notistack";
 import { Provider } from "react-redux";
-import { store } from "./store/store.tsx";
+import { persistor, store } from "./store/store.tsx";
+import { PersistGate } from "redux-persist/integration/react";
 
 const theme = createTheme({
   typography: {
@@ -26,7 +27,9 @@ createRoot(document.getElementById("root")!).render(
           style={{ marginTop: "4rem", fontFamily: "IBM Plex Sans, serif" }}
         >
           <Provider store={store}>
-            <App />
+            <PersistGate loading={null} persistor={persistor}>
+              <App />
+            </PersistGate>
           </Provider>
         </SnackbarProvider>
       </StrictMode>
