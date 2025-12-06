@@ -10,7 +10,15 @@ import {
   SignupResponseBodyDTO,
 } from "../types/auth.types";
 import { CommonResponseDTO } from "../types/common";
+import { jwtDecode } from "jwt-decode";
 
+interface DecodedToken {
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  role?: string;
+  email: string;
+}
 type ICheckEmailResponse = {
   token?: string;
   type: "NEW" | "EXISTING" | "UNKNOWN";
@@ -82,14 +90,32 @@ export const login = async (
   body: LoginRequestBodyDTO,
 ): Promise<ILoginResponse> => {
   try {
-    const response = await axios.post<CommonResponseDTO<LoginResponseBodyDTO>>(
+    const response = await axios.post<CommonResponseDTO<{ token: string }>>(
       "/api/auth/login",
       body,
     );
 
+    if (response.status === 200 && response.data.data.token) {
+      // Decode JWT to extract user info
+      const decodedToken: DecodedToken = jwtDecode(response.data.data.token);
+
+      return {
+        type: "SUCCESS",
+        successResponse: {
+          token: response.data.data.token,
+          user: {
+            email: decodedToken.email,
+            firstName: decodedToken.firstName,
+            lastName: decodedToken.lastName,
+            phone: decodedToken.phone,
+            role: decodedToken.role,
+          },
+        },
+      };
+    }
+
     return {
-      type: "SUCCESS",
-      successResponse: response.data.data,
+      type: "UNKNOWN",
     };
   } catch (error) {
     if (isAxiosError(error) && error.response?.status === 401) {

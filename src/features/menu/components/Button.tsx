@@ -49,7 +49,7 @@ function Button({
         borderRadius: 1,
         fontFamily: "IBM Plex Sans, serif;",
         whiteSpace: "nowrap",
-        border: `0.01px solid ${Colors.border.default}`,
+        border: `0.5px solid ${Colors.border.subtle}`,
         "&:hover": {
           border: disabled ? "none" : `0.5px solid ${Colors.border.subtle}`,
         },

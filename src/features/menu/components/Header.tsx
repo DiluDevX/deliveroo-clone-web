@@ -122,6 +122,7 @@ const Header = () => {
           {!token && !notShowing && (
             <Button
               PrefixIcon={HomeOutlinedIcon}
+              onClick={() => sessionStorage.removeItem("redirectAfterLogin")}
               title="Sign up or login"
               linkTo="/account"
               sx={{

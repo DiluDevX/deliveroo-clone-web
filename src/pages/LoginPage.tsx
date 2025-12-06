@@ -16,6 +16,8 @@ import { CheckEmailResponseBodyDTO } from "../types/auth.types";
 import { useSnackbar } from "notistack";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { setCredentials } from "../store/authSlice";
+import { useAppDispatch } from "../store/hooks/cartHooks";
 
 type LoginForm = {
   email: string;
@@ -24,6 +26,7 @@ type LoginForm = {
 
 export default function Login() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
   const [existingUser, setExistingUser] = useState<CheckEmailResponseBodyDTO>();
@@ -60,6 +63,7 @@ export default function Login() {
 
   const handleSubmit = form.handleSubmit(async (values) => {
     const { email, password } = values;
+    console.log("Form submitted with:", { email, password }); // Debug log
 
     if (!password) {
       const checkEmailResponse = await checkEmail({ email });
@@ -74,11 +78,35 @@ export default function Login() {
       }
     } else {
       const loginResponse = await login({ email, password });
+      console.log("Login response:", loginResponse); // Debug log
 
       if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
+        console.log("Login successful, dispatching credentials..."); // Debug log
+        dispatch(
+          setCredentials({
+            user: {
+              email: loginResponse.successResponse.user.email,
+              firstName: loginResponse.successResponse.user.firstName,
+              lastName: loginResponse.successResponse.user.lastName,
+              phone: loginResponse.successResponse.user.phone,
+              role: loginResponse.successResponse.user.role,
+            },
+            token: loginResponse.successResponse.token,
+          }),
+        );
+
         localStorage.setItem("token", loginResponse.successResponse.token);
-        localStorage.clearItem("existingUser");
-        await navigate("/");
+        localStorage.removeItem("existingUser");
+
+        // Check for redirect after login
+        const redirectPath = sessionStorage.getItem("redirectAfterLogin");
+        console.log("Navigating to:", redirectPath || "/"); // Debug log
+        if (redirectPath) {
+          sessionStorage.removeItem("redirectAfterLogin");
+          navigate(redirectPath);
+        } else {
+          navigate("/");
+        }
       } else if (loginResponse.type === "INVALID") {
         enqueueSnackbar({ variant: "error", message: "Invalid Credentials" });
       } else {

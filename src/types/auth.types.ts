@@ -17,6 +17,7 @@ export type LoginRequestBodyDTO = {
 };
 
 export type LoginResponseBodyDTO = {
+  user: IUser;
   token: string;
 };
 

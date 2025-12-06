@@ -20,6 +20,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import MenuPage from "./pages/MenuPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import DataDeletionPage from "./pages/DataDeletionPage";
+import CheckoutPage from "./pages/CheckoutPage";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -42,6 +43,14 @@ const App = () => {
             </WithPageTitle>
           }
         ></Route>
+        <Route
+          path="/checkout"
+          element={
+            <WithPageTitle title="Checkout">
+              <CheckoutPage />
+            </WithPageTitle>
+          }
+        ></Route>
         <Route path="/account" element={<SignPageLayout />}>
           <Route
             index
@@ -51,6 +60,7 @@ const App = () => {
               </WithPageTitle>
             }
           ></Route>
+
           <Route
             path="complete-signup"
             element={
