@@ -1,5 +1,3 @@
-import React from "react";
-
 const DataDeletionPage = () => {
   return <div>DataDeletionPage</div>;
 };

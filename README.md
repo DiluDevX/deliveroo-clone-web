@@ -136,7 +136,7 @@ deliveroo-clone-web/
    # Frontend (default port: 5173)
    npm run dev
 
-   # Backend (default port: 4000)
+   # Backend (default port: 3000)
    # Run this in your backend directory
    npm start
    ```
@@ -162,7 +162,7 @@ The frontend is configured to proxy API requests to the backend server. Check `v
 server: {
   proxy: {
     '/api': {
-      target: 'http://localhost:4000',
+      target: 'http://localhost:3000',
       changeOrigin: true,
       secure: false,
     },

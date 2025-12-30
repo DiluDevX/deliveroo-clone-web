@@ -11,7 +11,7 @@ const MainView = () => {
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: Colors.background.default,
-        backgroundImage: "url(src/assets/svgs/route.svg)",
+        backgroundImage: "url(/svgs/route.svg)",
         backgroundSize: { xs: "contain 30%", sm: "contain", md: "contain" },
 
         backgroundPosition: {
@@ -35,7 +35,7 @@ const MainView = () => {
           }}
         >
           <img
-            src="/src/assets/images/left-2x.png"
+            src="/left-2x.png"
             alt="Left Graphic"
             style={{
               position: "absolute",
@@ -66,7 +66,7 @@ const MainView = () => {
           }}
         >
           <img
-            src="/src/assets/images/right-2x.png"
+            src="/right-2x.png"
             alt="Right Graphic"
             style={{
               maxWidth: "1000px",

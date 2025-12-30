@@ -30,7 +30,7 @@ const NotFoundScreen = ({ text }: { text: string }) => {
         {text}
       </Typography>
       <img
-        src="/src/assets/svgs/NotFound.svg"
+        src="/svgs/NotFound.svg"
         alt="No Restaurants Found"
         style={{ width: "100%", height: "auto", maxWidth: "300px" }}
       />

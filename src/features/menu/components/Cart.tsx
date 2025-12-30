@@ -16,9 +16,9 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Colors } from "../../../theme";
 import { useAppSelector, useAppDispatch } from "../../../store/hooks/cartHooks";
 import {
-  clearCart,
-  removeItem,
-  updateQuantity,
+  clearCartAndSync,
+  removeItemAndSync,
+  updateQuantityAndSync,
 } from "../../../store/cartSlice";
 import Button from "./Button";
 import { useNavigate } from "react-router-dom";
@@ -38,23 +38,27 @@ const Cart = () => {
   const handleIncrement = (dishId: string) => {
     const item = cartItems.find((item) => item._id === dishId);
     if (item) {
-      dispatch(updateQuantity({ _id: dishId, quantity: item.quantity + 1 }));
+      dispatch(
+        updateQuantityAndSync({ _id: dishId, quantity: item.quantity + 1 }),
+      );
     }
   };
 
   const handleDecrement = (dishId: string) => {
     const item = cartItems.find((item) => item._id === dishId);
     if (item && item.quantity > 1) {
-      dispatch(updateQuantity({ _id: dishId, quantity: item.quantity - 1 }));
+      dispatch(
+        updateQuantityAndSync({ _id: dishId, quantity: item.quantity - 1 }),
+      );
     }
   };
 
   const handleRemove = (dishId: string) => {
-    dispatch(removeItem(dishId));
+    dispatch(removeItemAndSync(dishId));
   };
 
   const handleClearCart = () => {
-    dispatch(clearCart());
+    dispatch(clearCartAndSync());
   };
 
   const handleCheckout = () => {
@@ -263,7 +267,7 @@ const Cart = () => {
                     }}
                   >
                     <img
-                      src="/src/assets/images/salad.jpeg"
+                      src="/salad.jpeg"
                       alt={item.name}
                       style={{
                         width: "100%",

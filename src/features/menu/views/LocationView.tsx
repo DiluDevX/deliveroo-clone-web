@@ -110,7 +110,7 @@ const LocationView = () => {
           >
             <img
               alt="notification-img"
-              src="/src/assets/images/notification.png"
+              src="/notification.png"
               style={{
                 width: "100%",
                 height: "auto",

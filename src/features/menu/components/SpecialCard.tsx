@@ -37,7 +37,7 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
           width: "148px",
           borderRadius: "3px",
           objectFit: "cover",
-          backgroundImage: "url(/src/assets/svgs/placeholder-menu.svg)",
+          backgroundImage: "url(/svgs/placeholder-menu.svg)",
           backgroundPosition: "center",
           backgroundSize: "contain",
         }}

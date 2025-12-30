@@ -64,7 +64,7 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
               height: "200px",
               position: "relative",
               backgroundImage: imageError
-                ? "url(/src/assets/svgs/placeholder-menu.svg)"
+                ? "url(/svgs/placeholder-menu.svg)"
                 : "none",
               backgroundSize: "cover",
               backgroundPosition: "center",

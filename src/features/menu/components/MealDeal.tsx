@@ -1,5 +1,4 @@
 import { Box, Typography } from "@mui/material";
-import React from "react";
 import { Colors } from "../../../theme";
 
 const MealDeal = () => {
@@ -24,7 +23,7 @@ const MealDeal = () => {
         }}
       >
         <img
-          src="src/assets/svgs/MealDealsBackground.svg"
+          src="/svgs/MealDealsBackground.svg"
           alt="Meal Deals Background"
           style={{
             width: "100%",
@@ -51,7 +50,7 @@ const MealDeal = () => {
           sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}
         >
           <img
-            src="src/assets/svgs/merch-sparkleleft.svg"
+            src="/svgs/merch-sparkleleft.svg"
             alt="Sparkle Left"
             style={{
               minWidth: "50px",
@@ -73,7 +72,7 @@ const MealDeal = () => {
             Up to 25% off meal deals
           </Typography>
           <img
-            src="src/assets/svgs/merch-sparkleright.svg"
+            src="/svgs/merch-sparkleright.svg"
             alt="Sparkle Right"
             style={{
               minWidth: "50px",
@@ -112,7 +111,7 @@ const MealDeal = () => {
       </Box>
 
       <img
-        src="src/assets/svgs/merch-itemrow.svg"
+        src="/svgs/merch-itemrow.svg"
         alt="item-row"
         style={{
           minHeight: "40px",

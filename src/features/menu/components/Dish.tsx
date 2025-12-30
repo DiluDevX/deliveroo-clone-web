@@ -4,7 +4,7 @@ import Button from "./Button";
 import AddIcon from "@mui/icons-material/Add";
 import { Colors } from "../../../theme";
 import { useAppDispatch } from "../../../store/hooks/cartHooks";
-import { addItem } from "../../../store/cartSlice";
+import { addItemAndSync } from "../../../store/cartSlice";
 
 type DishProps = {
   data: IDish;
@@ -14,7 +14,7 @@ const Dish = ({ data }: DishProps) => {
   const dispatch = useAppDispatch();
 
   const handleAddToCart = () => {
-    dispatch(addItem(data));
+    dispatch(addItemAndSync(data));
   };
   return (
     <Card
@@ -45,13 +45,13 @@ const Dish = ({ data }: DishProps) => {
         }}
       >
         <img
-          src="/src/assets/images/salad.jpeg"
+          src="/salad.jpeg"
           alt={data.name}
           style={{
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            backgroundImage: "url(/src/assets/svgs/placeholder-menu.svg)",
+            backgroundImage: "url(/svgs/placeholder-menu.svg)",
             backgroundPosition: "center",
             backgroundSize: "contain",
           }}
