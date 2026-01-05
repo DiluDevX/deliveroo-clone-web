@@ -65,7 +65,8 @@ const SignUpPage = () => {
   }, [form, searchParams]);
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    const response = await signup(values);
+    const { email, password, firstName, lastName } = values;
+    const response = await signup({ email, password, firstName, lastName });
 
     if (response.type === "CONFLICT") {
       enqueueSnackbar({

@@ -10,15 +10,7 @@ import {
   SignupResponseBodyDTO,
 } from "../types/auth.types";
 import { CommonResponseDTO } from "../types/common";
-import { jwtDecode } from "jwt-decode";
 
-interface DecodedToken {
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  role?: string;
-  email: string;
-}
 type ICheckEmailResponse = {
   token?: string;
   type: "NEW" | "EXISTING" | "UNKNOWN";
@@ -28,16 +20,24 @@ export const checkEmail = async (
   body: CheckEmailRequestBodyDTO,
 ): Promise<ICheckEmailResponse> => {
   try {
-    const response = await axios.post<
-      CommonResponseDTO<CheckEmailResponseBodyDTO>
-    >("/api/auth/check-email", body);
+    console.log("checkEmail request:", body);
+    const response = await axios.post<CheckEmailResponseBodyDTO>(
+      "/api/auth/check-email",
+      body,
+    );
+    console.log("checkEmail response:", response.data);
 
     return {
       type: "EXISTING",
-      existingUser: response.data.data,
-      token: response.data.data.token,
+      existingUser: response.data,
+      token: response.data.token,
     };
   } catch (error) {
+    console.error("checkEmail error:", error);
+    if (isAxiosError(error)) {
+      console.error("checkEmail error response:", error.response?.data);
+      console.error("checkEmail error status:", error.response?.status);
+    }
     if (isAxiosError(error) && error.response?.status === 404) {
       return {
         type: "NEW",
@@ -86,29 +86,49 @@ type ILoginResponse = {
   type: "SUCCESS" | "INVALID" | "UNKNOWN";
   successResponse?: LoginResponseBodyDTO;
 };
+
+interface LoginApiResponse {
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string | null;
+    role: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  accessToken: string;
+  refreshToken: string;
+}
+
 export const login = async (
   body: LoginRequestBodyDTO,
 ): Promise<ILoginResponse> => {
   try {
-    const response = await axios.post<CommonResponseDTO<{ token: string }>>(
+    console.log("login request:", body);
+    const response = await axios.post<LoginApiResponse>(
       "/api/auth/login",
       body,
     );
+    console.log("login response:", response.data);
 
-    if (response.status === 200 && response.data.data.token) {
-      // Decode JWT to extract user info
-      const decodedToken: DecodedToken = jwtDecode(response.data.data.token);
+    if (response.data.accessToken) {
+      const { user, accessToken, refreshToken } = response.data;
+
+      // Store refresh token for later use
+      localStorage.setItem("refreshToken", refreshToken);
 
       return {
         type: "SUCCESS",
         successResponse: {
-          token: response.data.data.token,
+          token: accessToken,
           user: {
-            email: decodedToken.email,
-            firstName: decodedToken.firstName,
-            lastName: decodedToken.lastName,
-            phone: decodedToken.phone,
-            role: decodedToken.role,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phone: user.phone ?? undefined,
+            role: user.role,
           },
         },
       };
@@ -118,10 +138,15 @@ export const login = async (
       type: "UNKNOWN",
     };
   } catch (error) {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      return {
-        type: "INVALID",
-      };
+    console.error("login error:", error);
+    if (isAxiosError(error)) {
+      console.error("login error response:", error.response?.data);
+      console.error("login error status:", error.response?.status);
+      if (error.response?.status === 401) {
+        return {
+          type: "INVALID",
+        };
+      }
     }
 
     console.error("login", error);
@@ -139,23 +164,26 @@ export const signup = async (
   body: SignupRequestBodyDTO,
 ): Promise<ISignupResponse> => {
   try {
-    const response = await axios.post<CommonResponseDTO<SignupResponseBodyDTO>>(
+    console.log("Signup request body:", body);
+    const response = await axios.post<SignupResponseBodyDTO>(
       "/api/auth/signup",
       body,
     );
+    console.log("Signup response:", response.data);
 
     return {
       type: "SUCCESS",
-      successResponse: response.data.data,
+      successResponse: response.data,
     };
   } catch (error) {
-    if (isAxiosError(error) && error.response?.status === 403) {
-      return {
-        type: "CONFLICT",
-      };
+    if (isAxiosError(error)) {
+      if (error.response?.status === 403 || error.response?.status === 409) {
+        return {
+          type: "CONFLICT",
+        };
+      }
     }
 
-    console.error("login", error);
     return {
       type: "UNKNOWN",
     };

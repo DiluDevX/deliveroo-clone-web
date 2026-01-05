@@ -7,9 +7,9 @@ import SearchBar from "./SearchBar";
 import { Colors, Paddings, Svgs } from "../../../theme";
 import AnchorTemporaryDrawer from "./AccountSideBar";
 import React from "react";
-import { getNameFromToken } from "../../../utils/common";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PartnerWithUs from "./PartnerWithUs";
+import { store } from "../../../store/store";
 
 const Header = () => {
   const location = useLocation();
@@ -27,7 +27,7 @@ const Header = () => {
 
   const token = localStorage.getItem("token");
 
-  const title = getNameFromToken() || "Guest";
+  const title = store.getState().auth.user?.firstName || "Guest";
 
   return (
     <Box

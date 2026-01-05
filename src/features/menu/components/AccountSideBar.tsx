@@ -7,7 +7,7 @@ import { IconButton, Typography } from "@mui/material";
 import Button from "./Button";
 
 import ShowBarWithProgress from "./ShowBarWithProgress";
-import { getNameFromToken } from "../../../utils/common";
+import { store } from "../../../store/store";
 
 type AnchorTemporaryDrawerProps = {
   open: boolean;
@@ -19,7 +19,7 @@ export default function AnchorTemporaryDrawer({
   toggleDrawer,
 }: Readonly<AnchorTemporaryDrawerProps>) {
   const token = localStorage.getItem("token");
-  const firstName = getNameFromToken();
+  const firstName = store.getState().auth.user?.firstName;
 
   function LogOut() {
     localStorage.clear();
