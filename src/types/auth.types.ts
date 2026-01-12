@@ -31,7 +31,6 @@ export type SignupRequestBodyDTO = {
 
 export type SignupResponseBodyDTO = {
   token: string;
-  refreshToken: string;
   user: IUser;
 };
 

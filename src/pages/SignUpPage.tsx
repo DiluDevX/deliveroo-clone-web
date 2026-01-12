@@ -75,7 +75,8 @@ const SignUpPage = () => {
         autoHideDuration: 5000,
       });
     } else if (response.type === "SUCCESS" && response.successResponse) {
-      localStorage.setItem("token", response.successResponse.token);
+      // The server should set the session via HttpOnly cookie. Do not persist tokens in client JS.
+      // If you must fallback to client storage, ensure comprehensive XSS mitigations and document why.
       enqueueSnackbar({
         variant: "success",
         message: "Account created successfully!",

@@ -95,7 +95,8 @@ export default function Login() {
           }),
         );
 
-        localStorage.setItem("token", loginResponse.successResponse.token);
+        // The server should set the session via HttpOnly cookie. Do not persist tokens in client JS.
+        // If you must fallback to client storage, ensure comprehensive XSS mitigations and document why.
         localStorage.removeItem("existingUser");
 
         // Check for redirect after login

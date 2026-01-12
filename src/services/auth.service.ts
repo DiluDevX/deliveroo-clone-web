@@ -99,7 +99,7 @@ interface LoginApiResponse {
     updatedAt: string;
   };
   accessToken: string;
-  refreshToken: string;
+  // refreshToken is now handled via HttpOnly cookie, not returned to client
 }
 
 export const login = async (
@@ -114,10 +114,9 @@ export const login = async (
     console.log("login response:", response.data);
 
     if (response.data.accessToken) {
-      const { user, accessToken, refreshToken } = response.data;
+      const { user, accessToken } = response.data;
 
-      // Store refresh token for later use
-      localStorage.setItem("refreshToken", refreshToken);
+      // The refresh token is now set by the server in an HttpOnly, Secure, SameSite cookie.
 
       return {
         type: "SUCCESS",
@@ -171,6 +170,7 @@ export const signup = async (
     );
     console.log("Signup response:", response.data);
 
+    // The refresh token is now set by the server in an HttpOnly, Secure, SameSite cookie.
     return {
       type: "SUCCESS",
       successResponse: response.data,
