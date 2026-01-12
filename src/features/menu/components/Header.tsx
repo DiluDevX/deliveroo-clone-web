@@ -9,7 +9,8 @@ import AnchorTemporaryDrawer from "./AccountSideBar";
 import React from "react";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PartnerWithUs from "./PartnerWithUs";
-import { store } from "../../../store/store";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store/store";
 
 const Header = () => {
   const location = useLocation();
@@ -25,10 +26,9 @@ const Header = () => {
     setDrawerOpen(open);
   };
 
-  const token = localStorage.getItem("token");
+  const user = useSelector((state: RootState) => state.auth.user);
 
-  const title = store.getState().auth.user?.firstName || "Guest";
-
+  const title = user?.firstName || "Guest";
   return (
     <Box
       sx={{
@@ -119,7 +119,7 @@ const Header = () => {
             ></Button>
           )}
 
-          {!token && !notShowing && (
+          {!user && !notShowing && (
             <Button
               PrefixIcon={HomeOutlinedIcon}
               onClick={() => sessionStorage.removeItem("redirectAfterLogin")}
@@ -136,7 +136,7 @@ const Header = () => {
               }}
             />
           )}
-          {location.pathname !== "/account" && store.getState().auth.user && (
+          {location.pathname !== "/account" && user && (
             <Button
               PrefixIcon={Person2OutlinedIcon}
               variant="border"
