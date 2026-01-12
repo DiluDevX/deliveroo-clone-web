@@ -136,7 +136,7 @@ const Header = () => {
               }}
             />
           )}
-          {location.pathname !== "/account" && (
+          {location.pathname !== "/account" && store.getState().auth.user && (
             <Button
               PrefixIcon={Person2OutlinedIcon}
               variant="border"
