@@ -433,7 +433,7 @@ const CheckoutPage = () => {
                       }}
                     >
                       <img
-                        src="https://assets.dilum.me/deliveroo-clone/images/salad.jpeg"
+                        src={item.image}
                         alt={item.name}
                         style={{
                           width: "100%",
