@@ -37,7 +37,8 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
           width: "148px",
           borderRadius: "3px",
           objectFit: "cover",
-          backgroundImage: "url(/svgs/placeholder-menu.svg)",
+          backgroundImage:
+            "url(https://assets.dilum.me/deliveroo-clone/svgs/placeholder-menu.svg)",
           backgroundPosition: "center",
           backgroundSize: "contain",
         }}

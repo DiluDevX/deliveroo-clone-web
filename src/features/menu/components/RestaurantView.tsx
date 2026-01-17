@@ -64,7 +64,7 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
               height: "200px",
               position: "relative",
               backgroundImage: imageError
-                ? "url(/svgs/placeholder-menu.svg)"
+                ? "url(https://assets.dilum.me/deliveroo-clone/svgs/placeholder-menu.svg)"
                 : "none",
               backgroundSize: "cover",
               backgroundPosition: "center",

@@ -132,7 +132,11 @@ const ResetPasswordPage = () => {
         alignItems={"center"}
         flexDirection={"column"}
       >
-        <Svgs.ExpiredLink style={{ width: "300px", height: "auto" }} />
+        <img
+          src={Svgs.ExpiredLink}
+          alt="Expired Link"
+          style={{ width: "300px", height: "auto" }}
+        />
         <Typography color="error" mt={3} fontWeight="bold">
           Oops! This reset link is invalid or has expired.
         </Typography>

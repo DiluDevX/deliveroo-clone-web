@@ -45,13 +45,14 @@ const Dish = ({ data }: DishProps) => {
         }}
       >
         <img
-          src="/salad.jpeg"
+          src="https://assets.dilum.me/deliveroo-clone/images/salad.jpeg"
           alt={data.name}
           style={{
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            backgroundImage: "url(/svgs/placeholder-menu.svg)",
+            backgroundImage:
+              "url(https://assets.dilum.me/deliveroo-clone/svgs/placeholder-menu.svg)",
             backgroundPosition: "center",
             backgroundSize: "contain",
           }}

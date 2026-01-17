@@ -1,6 +1,9 @@
-import DeliverooLogo from "../assets/svgs/deliveroo-logo.svg?react";
-import GoogleLogo from "../assets/svgs/google-logo.svg?react";
-import ExpiredLink from "../assets/svgs/ExpiredLink.svg?react";
+const DeliverooLogo =
+  "https://assets.dilum.me/deliveroo-clone/svgs/deliveroo-logo.svg";
+const GoogleLogo =
+  "https://assets.dilum.me/deliveroo-clone/svgs/google-logo.svg";
+const ExpiredLink =
+  "https://assets.dilum.me/deliveroo-clone/svgs/ExpiredLink.svg";
 
 export const Svgs = {
   DeliverooLogo,

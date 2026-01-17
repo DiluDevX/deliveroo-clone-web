@@ -433,7 +433,7 @@ const CheckoutPage = () => {
                       }}
                     >
                       <img
-                        src="/salad.jpeg"
+                        src={item.image}
                         alt={item.name}
                         style={{
                           width: "100%",

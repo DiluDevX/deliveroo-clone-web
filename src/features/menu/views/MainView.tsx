@@ -11,7 +11,8 @@ const MainView = () => {
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: Colors.background.default,
-        backgroundImage: "url(/svgs/route.svg)",
+        backgroundImage:
+          "url(https://assets.dilum.me/deliveroo-clone/svgs/route.svg)",
         backgroundSize: { xs: "contain 30%", sm: "contain", md: "contain" },
 
         backgroundPosition: {
@@ -35,7 +36,7 @@ const MainView = () => {
           }}
         >
           <img
-            src="/left-2x.png"
+            src="https://assets.dilum.me/deliveroo-clone/images/left-2x.png"
             alt="Left Graphic"
             style={{
               position: "absolute",
@@ -66,7 +67,7 @@ const MainView = () => {
           }}
         >
           <img
-            src="/right-2x.png"
+            src="https://assets.dilum.me/deliveroo-clone/images/right-2x.png"
             alt="Right Graphic"
             style={{
               maxWidth: "1000px",

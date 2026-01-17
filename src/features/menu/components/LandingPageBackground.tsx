@@ -1,7 +1,7 @@
 const LandingPageBackground = () => {
   return (
     <img
-      src="../../public/assets/rooute.svg"
+      src="https://assets.dilum.me/deliveroo-clone/svgs/rooute.svg"
       alt="Landing Page Background"
       style={{
         display: "flex",
