@@ -154,7 +154,13 @@ const AuthPage = () => {
         </Button>
 
         <Button
-          PrefixComponent={<Svgs.GoogleLogo width={"1.5rem"} />}
+          PrefixComponent={
+            <img
+              src={Svgs.GoogleLogo}
+              alt="Google Logo"
+              style={{ width: "1.5rem", height: "1.5rem" }}
+            />
+          }
           onClick={GoogleButtonOnClick}
           sx={{
             color: Colors.text.default,

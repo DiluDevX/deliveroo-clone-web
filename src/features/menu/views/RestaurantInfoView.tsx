@@ -80,7 +80,7 @@ const RestaurantInfoView = ({
                 },
                 boxShadow: `0px 1px 1px 0.5px  ${Colors.border.subtle}`,
                 backgroundImage: imageError
-                  ? "url(/svgs/placeholder-menu.svg)"
+                  ? "url(https://assets.dilum.me/deliveroo-clone/svgs/placeholder-menu.svg)"
                   : "none",
                 backgroundPosition: "center",
                 backgroundSize: "contain",
@@ -94,7 +94,8 @@ const RestaurantInfoView = ({
                   width: "100%",
                   height: "100%",
                   objectFit: "cover",
-                  backgroundImage: "url(/svgs/placeholder-menu.svg)",
+                  backgroundImage:
+                    "url(https://assets.dilum.me/deliveroo-clone/svgs/placeholder-menu.svg)",
                   backgroundPosition: "center",
                   backgroundSize: "contain",
                 }}

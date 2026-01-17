@@ -72,7 +72,11 @@ const Header = () => {
           }}
         >
           <Link to="/">
-            <Svgs.DeliverooLogo height={32} />
+            <img
+              src={Svgs.DeliverooLogo}
+              alt="Deliveroo Logo"
+              style={{ height: 32 }}
+            />
           </Link>
         </Box>
 

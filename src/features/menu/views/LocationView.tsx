@@ -110,7 +110,7 @@ const LocationView = () => {
           >
             <img
               alt="notification-img"
-              src="/notification.png"
+              src="https://assets.dilum.me/deliveroo-clone/images/notification.png"
               style={{
                 width: "100%",
                 height: "auto",
