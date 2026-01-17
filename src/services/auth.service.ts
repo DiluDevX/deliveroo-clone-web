@@ -20,12 +20,10 @@ export const checkEmail = async (
   body: CheckEmailRequestBodyDTO,
 ): Promise<ICheckEmailResponse> => {
   try {
-    console.log("checkEmail request:", body);
     const response = await axios.post<CheckEmailResponseBodyDTO>(
       "/api/auth/check-email",
       body,
     );
-    console.log("checkEmail response:", response.data);
 
     return {
       type: "EXISTING",
@@ -59,7 +57,6 @@ export const checkEmailOrPhone = async (
   body: EmailOrPhoneRequestBodyDTO,
 ): Promise<IEmailOrPhoneResponse> => {
   try {
-    console.log(body);
     const response = await axios.post<
       CommonResponseDTO<EmailOrPhoneResponseBodyDTO>
     >("/api/auth/check-email-or-password", body);
@@ -106,12 +103,10 @@ export const login = async (
   body: LoginRequestBodyDTO,
 ): Promise<ILoginResponse> => {
   try {
-    console.log("login request:", body);
     const response = await axios.post<LoginApiResponse>(
       "/api/auth/login",
       body,
     );
-    console.log("login response:", response.data);
 
     if (response.data.accessToken) {
       const { user, accessToken } = response.data;
@@ -163,12 +158,10 @@ export const signup = async (
   body: SignupRequestBodyDTO,
 ): Promise<ISignupResponse> => {
   try {
-    console.log("Signup request body:", body);
     const response = await axios.post<SignupResponseBodyDTO>(
       "/api/auth/signup",
       body,
     );
-    console.log("Signup response:", response.data);
 
     // The refresh token is now set by the server in an HttpOnly, Secure, SameSite cookie.
     return {
