@@ -109,14 +109,13 @@ export const login = async (
     );
 
     if (response.data.accessToken) {
-      const { user, accessToken } = response.data;
+      const { user } = response.data;
 
       // The refresh token is now set by the server in an HttpOnly, Secure, SameSite cookie.
 
       return {
         type: "SUCCESS",
         successResponse: {
-          token: accessToken,
           user: {
             email: user.email,
             firstName: user.firstName,
@@ -192,6 +191,32 @@ export const validateToken = async ({ token }: { token: string }) => {
     return response.data.data;
   } catch (error) {
     console.error("Error validating token", error);
+    return false;
+  }
+};
+
+export const checkAuthStatus = async () => {
+  try {
+    const response = await axios.get("/api/auth/me", { withCredentials: true });
+    if (response.data?.valid === true && response.data?.user !== null) {
+      return response.data;
+    }
+    return false;
+  } catch (error) {
+    console.error("Error checking auth status", error);
+    return false;
+  }
+};
+
+export const refreshToken = async () => {
+  try {
+    const response = await fetch("/api/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+    });
+    return response.ok;
+  } catch (error) {
+    console.error("Error refreshing token", error);
     return false;
   }
 };

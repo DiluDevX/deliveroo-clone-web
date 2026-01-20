@@ -91,7 +91,6 @@ export default function Login() {
               phone: loginResponse.successResponse.user.phone,
               role: loginResponse.successResponse.user.role,
             },
-            token: loginResponse.successResponse.token,
           }),
         );
 
