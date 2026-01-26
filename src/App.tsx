@@ -3,7 +3,6 @@ import {
   RouterProvider,
   createRoutesFromElements,
   createBrowserRouter,
-  useNavigate,
 } from "react-router-dom";
 import AuthPage from "./pages/AuthPage";
 import MainLayout from "./layout/MainLayout";
@@ -22,40 +21,8 @@ import MenuPage from "./pages/MenuPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import DataDeletionPage from "./pages/DataDeletionPage";
 import CheckoutPage from "./pages/CheckoutPage";
-import { useEffect } from "react";
-import { useAppDispatch } from "./store/hooks/cartHooks";
-import { setCredentials } from "./store/authSlice";
-import { checkAuthStatus, refreshToken } from "./services/auth.service";
 
 const App = () => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  useEffect(() => {
-    let result = null;
-    async function checkAuth() {
-      result = await checkAuthStatus();
-      if (result) {
-        dispatch(setCredentials({ user: result.user }));
-        return; // User is authenticated
-      }
-      // Try refresh token if checkAuthStatus failed
-      try {
-        await refreshToken();
-        result = await checkAuthStatus();
-        if (result) {
-          dispatch(setCredentials({ user: result.user }));
-          return;
-        }
-      } catch (error) {
-        // Error refreshing token
-        console.error("Error refreshing token", error);
-      }
-      // Not authenticated
-      dispatch(setCredentials({}));
-      navigate("/");
-    }
-    checkAuth();
-  }, []);
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route element={<MainLayout />}>

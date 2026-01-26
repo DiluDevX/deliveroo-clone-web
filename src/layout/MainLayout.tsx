@@ -1,12 +1,46 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Footer from "../features/menu/components/Footer";
 import Header from "../features/menu/components/Header";
 import ScrollToTop from "../features/menu/components/ScrollToTop";
 import { useCartSync } from "../store/hooks/useCartSync";
+import { useEffect } from "react";
+import { useAppDispatch } from "../store/hooks/cartHooks";
+import { setCredentials } from "../store/authSlice";
+import { checkAuthStatus, refreshToken } from "../services/auth.service";
 
 const MainLayout = () => {
   // Sync cart with server when user logs in
   useCartSync();
+
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      let result = await checkAuthStatus();
+      if (result) {
+        dispatch(setCredentials({ user: result.user }));
+        return; // User is authenticated
+      }
+      // Try refresh token if checkAuthStatus failed
+      try {
+        await refreshToken();
+        result = await checkAuthStatus();
+        if (result) {
+          dispatch(setCredentials({ user: result.user }));
+          return;
+        }
+      } catch (error) {
+        // Error refreshing token
+        console.error("Error refreshing token", error);
+      }
+      // Not authenticated
+      dispatch(setCredentials({}));
+      navigate("/");
+    };
+
+    void checkAuth();
+  }, [dispatch, navigate]);
 
   return (
     <div
