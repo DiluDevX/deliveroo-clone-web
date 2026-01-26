@@ -19,9 +19,8 @@ import {
 } from "../features/menu/validations/password.validation";
 import { useEffect, useState } from "react";
 import LoadingIndicator from "../features/menu/components/LoadingIndicator";
-import { validateToken } from "../services/auth.service";
+import { resetUserPassword } from "../services/auth.service";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { UpdateUserPassword } from "../services/user.service";
 import { enqueueSnackbar } from "notistack";
 
 interface ResetPasswordForm {
@@ -64,48 +63,28 @@ const ResetPasswordPage = () => {
     const timeout = setTimeout(() => {
       if (!token) {
         setIsLoading(false);
-      } else {
-        checkToken();
-      }
+      } else setIsValidToken(true);
     }, 1500);
-
     return () => clearTimeout(timeout);
-    async function checkToken() {
-      try {
-        const response = await validateToken({ token: token ?? "" });
-
-        if (response?.email) {
-          setIsValidToken(true);
-          form.setValue("email", response.email, { shouldValidate: false });
-        }
-      } catch {
-        setIsValidToken(false);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  }, [token, form]);
+  }, [form, token]);
 
   const handleSubmit = form.handleSubmit(async (values) => {
     setIsSubmitting(true);
     try {
-      const response = await validateToken({ token: token ?? "" });
+      if (!token) return;
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      if (response.email === values.email) {
-        const UpdatedPasswordResponse = await UpdateUserPassword({
-          password: values.confirmPassword,
-          user_id: response.user_id,
+      const UpdatedPasswordResponse = await resetUserPassword({
+        token: token,
+        email: values.email,
+        password: values.confirmPassword,
+      });
+      if (UpdatedPasswordResponse.status === 200) {
+        enqueueSnackbar("Password updated successfully", {
+          variant: "success",
+          preventDuplicate: true,
+          autoHideDuration: 1000,
         });
-        if (
-          UpdatedPasswordResponse.message === "Password updated successfully"
-        ) {
-          enqueueSnackbar("Password updated successfully", {
-            variant: "success",
-            preventDuplicate: true,
-            autoHideDuration: 1500,
-          });
-          navigate("/account/login");
-        }
+        navigate("/account/login");
       }
     } catch (error) {
       enqueueSnackbar("Something went wrong", {

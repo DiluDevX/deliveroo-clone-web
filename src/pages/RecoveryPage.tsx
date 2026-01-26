@@ -44,7 +44,14 @@ const RecoveryPage = () => {
       const inputType = isEmail ? "email" : "phone";
 
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      const response = await sendEmail(values.emailOrPhone);
+      if (isEmail) {
+        values.email = values.emailOrPhone;
+      } else {
+        values.phone = values.emailOrPhone;
+      }
+      const response = await sendEmail(
+        (values.email ?? values.phone) as string,
+      );
 
       if (!response.message) {
         enqueueSnackbar("An error occurred. Please try again.", {

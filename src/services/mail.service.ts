@@ -1,9 +1,9 @@
 import axios from "axios";
 
-export const sendEmail = async (userName: string) => {
+export const sendEmail = async (email: string) => {
   try {
     const response = await axios.post("/api/auth/forgot-password", {
-      userName,
+      email,
     });
     if (!response) {
       return new Error("Failed to send email");

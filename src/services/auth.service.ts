@@ -182,13 +182,25 @@ export const signup = async (
   }
 };
 
-export const validateToken = async ({ token }: { token: string }) => {
+export const resetUserPassword = async ({
+  token,
+  email,
+  password,
+}: {
+  token: string;
+  email: string;
+  password: string;
+}) => {
   try {
-    const response = await axios.post("/api/auth/validate-token", { token });
+    const response = await axios.post("/api/auth/reset-password", {
+      token,
+      email,
+      password,
+    });
     if (!response.data?.data) {
       return false;
     }
-    return response.data.data;
+    return response.data.message;
   } catch (error) {
     console.error("Error validating token", error);
     return false;

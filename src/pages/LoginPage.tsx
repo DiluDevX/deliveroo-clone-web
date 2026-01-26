@@ -238,20 +238,14 @@ export default function Login() {
 
           <Button
             type="button"
-            onClick={() =>
-              existingUser
-                ? navigate("/account/recovery")
-                : navigate("/account/recovery", {
-                    state: { type: "forgotEmail" },
-                  })
-            }
+            onClick={() => navigate("/account/recovery")}
             variant="border"
             sx={{
               width: "100%",
               color: Colors.background.brand,
             }}
           >
-            {existingUser ? "Forgot Password?" : "Forgot Email?"}
+            Forgot Email?
           </Button>
         </form>
       </Box>
