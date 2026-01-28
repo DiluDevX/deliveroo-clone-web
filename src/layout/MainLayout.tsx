@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import Footer from "../features/menu/components/Footer";
 import Header from "../features/menu/components/Header";
 import ScrollToTop from "../features/menu/components/ScrollToTop";
@@ -13,34 +13,39 @@ const MainLayout = () => {
   useCartSync();
 
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-
   useEffect(() => {
+    const isMounted = true;
     const checkAuth = async () => {
       let result = await checkAuthStatus();
       if (result) {
-        dispatch(setCredentials({ user: result.user }));
-        return; // User is authenticated
+        if (isMounted){
+          dispatch(setCredentials({ user: result.user }));
+          return;
+        }
+        // User is authenticated
       }
       // Try refresh token if checkAuthStatus failed
       try {
         await refreshToken();
         result = await checkAuthStatus();
         if (result) {
-          dispatch(setCredentials({ user: result.user }));
-          return;
+          if (isMounted){
+            dispatch(setCredentials({ user: result.user }));
+            return;
+          }
         }
       } catch (error) {
         // Error refreshing token
         console.error("Error refreshing token", error);
       }
       // Not authenticated
-      dispatch(setCredentials({}));
-      navigate("/");
+      if (isMounted){
+        dispatch(setCredentials({}));
+      }
     };
 
     void checkAuth();
-  }, [dispatch, navigate]);
+  }, [dispatch]);
 
   return (
     <div

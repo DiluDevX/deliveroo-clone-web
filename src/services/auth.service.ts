@@ -197,10 +197,10 @@ export const resetUserPassword = async ({
       email,
       password,
     });
-    if (!response.data?.data) {
+    if (response.status !== 200) {
       return false;
     }
-    return response.data.message;
+    return;
   } catch (error) {
     console.error("Error validating token", error);
     return false;

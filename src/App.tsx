@@ -21,6 +21,7 @@ import MenuPage from "./pages/MenuPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import DataDeletionPage from "./pages/DataDeletionPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -43,14 +44,16 @@ const App = () => {
             </WithPageTitle>
           }
         ></Route>
-        <Route
-          path="/checkout"
-          element={
-            <WithPageTitle title="Checkout">
-              <CheckoutPage />
-            </WithPageTitle>
-          }
-        ></Route>
+        <Route element={<ProtectedRoute />}>
+          <Route
+            path="/checkout"
+            element={
+              <WithPageTitle title="Checkout">
+                <CheckoutPage />
+              </WithPageTitle>
+            }
+          ></Route>
+        </Route>
         <Route path="/account" element={<SignPageLayout />}>
           <Route
             index

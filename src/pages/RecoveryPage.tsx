@@ -46,31 +46,22 @@ const RecoveryPage = () => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       if (isEmail) {
         values.email = values.emailOrPhone;
+          await sendEmail(
+          (values.email ?? values.phone) as string,
+        )
       } else {
-        values.phone = values.emailOrPhone;
-      }
-      const response = await sendEmail(
-        (values.email ?? values.phone) as string,
-      );
-
-      if (!response.message) {
-        enqueueSnackbar("An error occurred. Please try again.", {
-          variant: "error",
+        enqueueSnackbar("Phone recovery not yet available. Please use email.", {
+          variant: "warning",
           autoHideDuration: 1500,
         });
-      } else {
-        enqueueSnackbar("Request submitted successfully", {
-          variant: "success",
-          autoHideDuration: 1500,
-        });
-        localStorage.setItem("emailOrPhone", values.emailOrPhone);
-        navigate("/account/recovery-confirmation", {
-          state: {
-            type: isForgotEmail ? "forgotEmail" : "forgotPassword",
-            inputType,
-          },
-        });
       }
+      localStorage.setItem("emailOrPhone", values.emailOrPhone);
+      navigate("/account/recovery-confirmation", {
+        state: {
+          type: isForgotEmail ? "forgotEmail" : "forgotPassword",
+          inputType,
+        },
+      });
     } catch (error) {
       enqueueSnackbar("An error occurred. Please try again.", {
         variant: "error",

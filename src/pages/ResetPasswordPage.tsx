@@ -78,7 +78,7 @@ const ResetPasswordPage = () => {
         email: values.email,
         password: values.confirmPassword,
       });
-      if (UpdatedPasswordResponse.status === 200) {
+      if (UpdatedPasswordResponse) {
         enqueueSnackbar("Password updated successfully", {
           variant: "success",
           preventDuplicate: true,

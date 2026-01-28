@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Box, IconButton, InputAdornment, Typography } from "@mui/material";
-import { Colors } from "../theme/colors";
+import { Colors } from "../theme";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Button from "../features/menu/components/Button";
@@ -238,7 +238,9 @@ export default function Login() {
 
           <Button
             type="button"
-            onClick={() => navigate("/account/recovery")}
+            onClick={() =>
+              navigate("/account/recovery", { state: { type: "forgotEmail" } })
+            }
             variant="border"
             sx={{
               width: "100%",
