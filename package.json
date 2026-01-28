@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "doppler run -- vite",
     "api-docs": "open http://localhost:4000/api/api-docs/",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "doppler run -- vite preview",
     "format:fix": "prettier . --write",
     "lint:fix": "eslint --fix ."
   },
