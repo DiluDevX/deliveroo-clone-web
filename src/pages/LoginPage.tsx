@@ -67,6 +67,7 @@ export default function Login() {
 
     if (!password) {
       const checkEmailResponse = await checkEmail({ email });
+      console.log("Check email response:", checkEmailResponse);
 
       if (checkEmailResponse.type === "EXISTING") {
         localStorage.setItem("existingUser", true.toString());
@@ -95,7 +96,6 @@ export default function Login() {
         );
 
         // The server should set the session via HttpOnly cookie. Do not persist tokens in client JS.
-        // If you must fallback to client storage, ensure comprehensive XSS mitigations and document why.
         localStorage.removeItem("existingUser");
 
         // Check for redirect after login

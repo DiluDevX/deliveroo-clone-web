@@ -105,13 +105,13 @@ export const login = async (
   try {
     const response = await axios.post<LoginApiResponse>(
       "/api/auth/login",
-      body,
-    );
+      body);
+    console.log("login response", response.data);
 
-    if (response.data.accessToken) {
+    if (response.data) {
       const { user } = response.data;
 
-      // The refresh token is now set by the server in an HttpOnly, Secure, SameSite cookie.
+      // The refresh token and access tokens are now set by the server in an HttpOnly, Secure, SameSite cookie.
 
       return {
         type: "SUCCESS",
@@ -209,7 +209,7 @@ export const resetUserPassword = async ({
 
 export const checkAuthStatus = async () => {
   try {
-    const response = await axios.get("/api/auth/me", { withCredentials: true });
+    const response = await axios.get("/api/auth/me");
     if (response.data?.valid === true && response.data?.user !== null) {
       return response.data;
     }
