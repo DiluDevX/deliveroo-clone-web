@@ -14,43 +14,30 @@ const MainLayout = () => {
 
   const dispatch = useAppDispatch();
   useEffect(() => {
-    const isMounted = true;
     const checkAuth = async () => {
-      let isAuthenticated = false;
+      let result = null;
       try {
-        let result = await checkAuthStatus();
-        if (result) {
-          if (isMounted) {
-            dispatch(setCredentials({ user: result.user }));
-          }
-          isAuthenticated = true;
-          return;
-        }
-
-        // Try refresh token if checkAuthStatus failed
-        await refreshToken();
         result = await checkAuthStatus();
-        if (result) {
-          if (isMounted) {
-            dispatch(setCredentials({ user: result.user }));
-          }
-          isAuthenticated = true;
-          return;
+        if (!result) {
+          // Try refresh token if checkAuthStatus failed
+          await refreshToken();
+          result = await checkAuthStatus();
         }
       } catch (error) {
         // Error refreshing token
         console.error("Error refreshing token", error);
       } finally {
-        if (isMounted) {
-          if (!isAuthenticated) {
-            dispatch(setCredentials({}));
-          }
-          dispatch(setAuthInitialized(true));
+        if (result) {
+          dispatch(setCredentials({ user: result.user }));
+        } else {
+          dispatch(setCredentials({}));
         }
+        dispatch(setAuthInitialized(true));
       }
     };
 
     void checkAuth();
+    return () => {};
   }, [dispatch]);
 
   return (
