@@ -10,15 +10,7 @@ import {
   SignupResponseBodyDTO,
 } from "../types/auth.types";
 import { CommonResponseDTO } from "../types/common";
-import { jwtDecode } from "jwt-decode";
 
-interface DecodedToken {
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  role?: string;
-  email: string;
-}
 type ICheckEmailResponse = {
   token?: string;
   type: "NEW" | "EXISTING" | "UNKNOWN";
@@ -28,16 +20,22 @@ export const checkEmail = async (
   body: CheckEmailRequestBodyDTO,
 ): Promise<ICheckEmailResponse> => {
   try {
-    const response = await axios.post<
-      CommonResponseDTO<CheckEmailResponseBodyDTO>
-    >("/api/auth/check-email", body);
+    const response = await axios.post<CheckEmailResponseBodyDTO>(
+      "/api/auth/check-email",
+      body,
+    );
 
     return {
       type: "EXISTING",
-      existingUser: response.data.data,
-      token: response.data.data.token,
+      existingUser: response.data,
+      token: response.data.token,
     };
   } catch (error) {
+    console.error("checkEmail error:", error);
+    if (isAxiosError(error)) {
+      console.error("checkEmail error response:", error.response?.data);
+      console.error("checkEmail error status:", error.response?.status);
+    }
     if (isAxiosError(error) && error.response?.status === 404) {
       return {
         type: "NEW",
@@ -59,7 +57,6 @@ export const checkEmailOrPhone = async (
   body: EmailOrPhoneRequestBodyDTO,
 ): Promise<IEmailOrPhoneResponse> => {
   try {
-    console.log(body);
     const response = await axios.post<
       CommonResponseDTO<EmailOrPhoneResponseBodyDTO>
     >("/api/auth/check-email-or-password", body);
@@ -86,29 +83,45 @@ type ILoginResponse = {
   type: "SUCCESS" | "INVALID" | "UNKNOWN";
   successResponse?: LoginResponseBodyDTO;
 };
+
+interface LoginApiResponse {
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string | null;
+    role: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  accessToken: string;
+  // refreshToken is now handled via HttpOnly cookie, not returned to client
+}
+
 export const login = async (
   body: LoginRequestBodyDTO,
 ): Promise<ILoginResponse> => {
   try {
-    const response = await axios.post<CommonResponseDTO<{ token: string }>>(
+    const response = await axios.post<LoginApiResponse>(
       "/api/auth/login",
       body,
     );
 
-    if (response.status === 200 && response.data.data.token) {
-      // Decode JWT to extract user info
-      const decodedToken: DecodedToken = jwtDecode(response.data.data.token);
+    if (response.data.accessToken) {
+      const { user } = response.data;
+
+      // The refresh token is now set by the server in an HttpOnly, Secure, SameSite cookie.
 
       return {
         type: "SUCCESS",
         successResponse: {
-          token: response.data.data.token,
           user: {
-            email: decodedToken.email,
-            firstName: decodedToken.firstName,
-            lastName: decodedToken.lastName,
-            phone: decodedToken.phone,
-            role: decodedToken.role,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phone: user.phone ?? undefined,
+            role: user.role,
           },
         },
       };
@@ -118,10 +131,15 @@ export const login = async (
       type: "UNKNOWN",
     };
   } catch (error) {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      return {
-        type: "INVALID",
-      };
+    console.error("login error:", error);
+    if (isAxiosError(error)) {
+      console.error("login error response:", error.response?.data);
+      console.error("login error status:", error.response?.status);
+      if (error.response?.status === 401) {
+        return {
+          type: "INVALID",
+        };
+      }
     }
 
     console.error("login", error);
@@ -139,38 +157,78 @@ export const signup = async (
   body: SignupRequestBodyDTO,
 ): Promise<ISignupResponse> => {
   try {
-    const response = await axios.post<CommonResponseDTO<SignupResponseBodyDTO>>(
+    const response = await axios.post<SignupResponseBodyDTO>(
       "/api/auth/signup",
       body,
     );
 
+    // The refresh token is now set by the server in an HttpOnly, Secure, SameSite cookie.
     return {
       type: "SUCCESS",
-      successResponse: response.data.data,
+      successResponse: response.data,
     };
   } catch (error) {
-    if (isAxiosError(error) && error.response?.status === 403) {
-      return {
-        type: "CONFLICT",
-      };
+    if (isAxiosError(error)) {
+      if (error.response?.status === 403 || error.response?.status === 409) {
+        return {
+          type: "CONFLICT",
+        };
+      }
     }
 
-    console.error("login", error);
     return {
       type: "UNKNOWN",
     };
   }
 };
 
-export const validateToken = async ({ token }: { token: string }) => {
+export const resetUserPassword = async ({
+  token,
+  email,
+  password,
+}: {
+  token: string;
+  email: string;
+  password: string;
+}) => {
   try {
-    const response = await axios.post("/api/auth/validate-token", { token });
-    if (!response.data?.data) {
+    const response = await axios.post("/api/auth/reset-password", {
+      token,
+      email,
+      password,
+    });
+    if (response.status !== 200) {
       return false;
     }
-    return response.data.data;
+    return;
   } catch (error) {
     console.error("Error validating token", error);
+    return false;
+  }
+};
+
+export const checkAuthStatus = async () => {
+  try {
+    const response = await axios.get("/api/auth/me", { withCredentials: true });
+    if (response.data?.valid === true && response.data?.user !== null) {
+      return response.data;
+    }
+    return false;
+  } catch (error) {
+    console.error("Error checking auth status", error);
+    return false;
+  }
+};
+
+export const refreshToken = async () => {
+  try {
+    const response = await fetch("/api/auth/refresh", {
+      method: "POST",
+      credentials: "include",
+    });
+    return response.ok;
+  } catch (error) {
+    console.error("Error refreshing token", error);
     return false;
   }
 };

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Box, IconButton, InputAdornment, Typography } from "@mui/material";
-import { Colors } from "../theme/colors";
+import { Colors } from "../theme";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Button from "../features/menu/components/Button";
@@ -91,11 +91,11 @@ export default function Login() {
               phone: loginResponse.successResponse.user.phone,
               role: loginResponse.successResponse.user.role,
             },
-            token: loginResponse.successResponse.token,
           }),
         );
 
-        localStorage.setItem("token", loginResponse.successResponse.token);
+        // The server should set the session via HttpOnly cookie. Do not persist tokens in client JS.
+        // If you must fallback to client storage, ensure comprehensive XSS mitigations and document why.
         localStorage.removeItem("existingUser");
 
         // Check for redirect after login
@@ -239,11 +239,7 @@ export default function Login() {
           <Button
             type="button"
             onClick={() =>
-              existingUser
-                ? navigate("/account/recovery")
-                : navigate("/account/recovery", {
-                    state: { type: "forgotEmail" },
-                  })
+              navigate("/account/recovery", { state: { type: "forgotEmail" } })
             }
             variant="border"
             sx={{
@@ -251,7 +247,7 @@ export default function Login() {
               color: Colors.background.brand,
             }}
           >
-            {existingUser ? "Forgot Password?" : "Forgot Email?"}
+            Forgot Email?
           </Button>
         </form>
       </Box>

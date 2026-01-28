@@ -21,6 +21,7 @@ import MenuPage from "./pages/MenuPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import DataDeletionPage from "./pages/DataDeletionPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -34,7 +35,7 @@ const App = () => {
               <LandingPage />
             </WithPageTitle>
           }
-        ></Route>
+        />
         <Route
           path="/restaurants/:orgId/menu"
           element={
@@ -42,15 +43,17 @@ const App = () => {
               <MenuPage />
             </WithPageTitle>
           }
-        ></Route>
-        <Route
-          path="/checkout"
-          element={
-            <WithPageTitle title="Checkout">
-              <CheckoutPage />
-            </WithPageTitle>
-          }
-        ></Route>
+        />
+        <Route element={<ProtectedRoute />}>
+          <Route
+            path="/checkout"
+            element={
+              <WithPageTitle title="Checkout">
+                <CheckoutPage />
+              </WithPageTitle>
+            }
+          />
+        </Route>
         <Route path="/account" element={<SignPageLayout />}>
           <Route
             index
@@ -59,8 +62,7 @@ const App = () => {
                 <AuthPage />
               </WithPageTitle>
             }
-          ></Route>
-
+          />
           <Route
             path="complete-signup"
             element={
@@ -68,7 +70,7 @@ const App = () => {
                 <AccountCompletionPage />
               </WithPageTitle>
             }
-          ></Route>
+          />
           <Route
             path="reset-password"
             element={
@@ -76,7 +78,7 @@ const App = () => {
                 <ResetPasswordPage />
               </WithPageTitle>
             }
-          ></Route>
+          />
           <Route
             path="signup"
             element={
@@ -84,7 +86,7 @@ const App = () => {
                 <SignUpPage />
               </WithPageTitle>
             }
-          ></Route>
+          />
           <Route
             path="login"
             element={
@@ -92,8 +94,7 @@ const App = () => {
                 <LoginPage />
               </WithPageTitle>
             }
-          ></Route>
-
+          />
           <Route
             path="recovery"
             element={
@@ -101,7 +102,7 @@ const App = () => {
                 <RecoveryPage />
               </WithPageTitle>
             }
-          ></Route>
+          />
           <Route
             path="recovery-confirmation"
             element={
@@ -109,7 +110,7 @@ const App = () => {
                 <RecoveryConfirmationPage />
               </WithPageTitle>
             }
-          ></Route>
+          />
         </Route>
         <Route
           path="/restaurants"
@@ -118,7 +119,7 @@ const App = () => {
               <AllRestaurantsPage />
             </WithPageTitle>
           }
-        ></Route>
+        />
         <Route
           path="/filtered-restaurants"
           element={
@@ -126,7 +127,7 @@ const App = () => {
               <FilteredRestaurantsPage />
             </WithPageTitle>
           }
-        ></Route>
+        />
         <Route
           path="/privacy-policy"
           element={
@@ -134,7 +135,7 @@ const App = () => {
               <PrivacyPolicyPage />
             </WithPageTitle>
           }
-        ></Route>
+        />
         <Route
           path="/data-deletion"
           element={
@@ -142,7 +143,7 @@ const App = () => {
               <DataDeletionPage />
             </WithPageTitle>
           }
-        ></Route>
+        />
       </Route>,
     ),
   );

@@ -44,26 +44,37 @@ const RecoveryPage = () => {
       const inputType = isEmail ? "email" : "phone";
 
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      const response = await sendEmail(values.emailOrPhone);
-
-      if (!response.message) {
-        enqueueSnackbar("An error occurred. Please try again.", {
-          variant: "error",
-          autoHideDuration: 1500,
-        });
+      if (isEmail) {
+        values.email = values.emailOrPhone;
+        const result = await sendEmail(
+          (values.email ?? values.phone) as string,
+        );
+        if (result) {
+          enqueueSnackbar("Email sent successfully", {
+            variant: "success",
+            autoHideDuration: 1500,
+          });
+        } else {
+          enqueueSnackbar("Email not sent. Please try again.", {
+            variant: "error",
+            autoHideDuration: 1500,
+          });
+        }
+        setIsSubmitting(false);
+        return;
       } else {
-        enqueueSnackbar("Request submitted successfully", {
-          variant: "success",
+        enqueueSnackbar("Phone recovery not yet available. Please use email.", {
+          variant: "warning",
           autoHideDuration: 1500,
-        });
-        localStorage.setItem("emailOrPhone", values.emailOrPhone);
-        navigate("/account/recovery-confirmation", {
-          state: {
-            type: isForgotEmail ? "forgotEmail" : "forgotPassword",
-            inputType,
-          },
         });
       }
+      localStorage.setItem("emailOrPhone", values.emailOrPhone);
+      navigate("/account/recovery-confirmation", {
+        state: {
+          type: isForgotEmail ? "forgotEmail" : "forgotPassword",
+          inputType,
+        },
+      });
     } catch (error) {
       enqueueSnackbar("An error occurred. Please try again.", {
         variant: "error",

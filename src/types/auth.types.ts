@@ -18,7 +18,6 @@ export type LoginRequestBodyDTO = {
 
 export type LoginResponseBodyDTO = {
   user: IUser;
-  token: string;
 };
 
 export type SignupRequestBodyDTO = {
@@ -30,7 +29,6 @@ export type SignupRequestBodyDTO = {
 };
 
 export type SignupResponseBodyDTO = {
-  token: string;
   user: IUser;
 };
 

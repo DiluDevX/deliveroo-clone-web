@@ -7,9 +7,10 @@ import SearchBar from "./SearchBar";
 import { Colors, Paddings, Svgs } from "../../../theme";
 import AnchorTemporaryDrawer from "./AccountSideBar";
 import React from "react";
-import { getNameFromToken } from "../../../utils/common";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PartnerWithUs from "./PartnerWithUs";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../store/store";
 
 const Header = () => {
   const location = useLocation();
@@ -25,10 +26,9 @@ const Header = () => {
     setDrawerOpen(open);
   };
 
-  const token = localStorage.getItem("token");
+  const user = useSelector((state: RootState) => state.auth.user);
 
-  const title = getNameFromToken() || "Guest";
-
+  const title = user?.firstName || "Guest";
   return (
     <Box
       sx={{
@@ -123,7 +123,7 @@ const Header = () => {
             ></Button>
           )}
 
-          {!token && !notShowing && (
+          {!user && !notShowing && (
             <Button
               PrefixIcon={HomeOutlinedIcon}
               onClick={() => sessionStorage.removeItem("redirectAfterLogin")}
@@ -140,7 +140,7 @@ const Header = () => {
               }}
             />
           )}
-          {location.pathname !== "/account" && (
+          {location.pathname !== "/account" && user && (
             <Button
               PrefixIcon={Person2OutlinedIcon}
               variant="border"

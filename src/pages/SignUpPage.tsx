@@ -65,7 +65,8 @@ const SignUpPage = () => {
   }, [form, searchParams]);
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    const response = await signup(values);
+    const { email, password, firstName, lastName } = values;
+    const response = await signup({ email, password, firstName, lastName });
 
     if (response.type === "CONFLICT") {
       enqueueSnackbar({
@@ -74,7 +75,8 @@ const SignUpPage = () => {
         autoHideDuration: 5000,
       });
     } else if (response.type === "SUCCESS" && response.successResponse) {
-      localStorage.setItem("token", response.successResponse.token);
+      // The server should set the session via HttpOnly cookie. Do not persist tokens in client JS.
+      // If you must fallback to client storage, ensure comprehensive XSS mitigations and document why.
       enqueueSnackbar({
         variant: "success",
         message: "Account created successfully!",
