@@ -46,9 +46,22 @@ const RecoveryPage = () => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       if (isEmail) {
         values.email = values.emailOrPhone;
-          await sendEmail(
+          const result = await sendEmail(
           (values.email ?? values.phone) as string,
         )
+        if (result) {
+          enqueueSnackbar("Email sent successfully", {
+            variant: "success",
+            autoHideDuration: 1500,
+          });
+        }else{
+          enqueueSnackbar("Email not sent. Please try again.", {
+            variant: "error",
+            autoHideDuration: 1500,
+          });
+        }
+        setIsSubmitting(false);
+        return
       } else {
         enqueueSnackbar("Phone recovery not yet available. Please use email.", {
           variant: "warning",

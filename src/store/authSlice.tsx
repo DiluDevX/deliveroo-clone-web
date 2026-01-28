@@ -3,12 +3,14 @@ import { IUser } from "../types/user.types";
 
 export interface AuthState {
   isAuthenticated: boolean;
+  isAuthInitialized: boolean;
   user: IUser | null;
   token: string | null;
 }
 
 const initialState: AuthState = {
   isAuthenticated: false,
+  isAuthInitialized: false,
   user: null,
   token: null,
 };
@@ -26,13 +28,18 @@ const authSlice = createSlice({
         state.user = null;
       }
     },
+    setAuthInitialized: (state, action: PayloadAction<boolean>) => {
+      state.isAuthInitialized = action.payload;
+    },
     logout: (state) => {
       state.isAuthenticated = false;
+      state.isAuthInitialized = false;
       state.user = null;
       state.token = null;
     },
   },
 });
 
-export const { setCredentials, logout } = authSlice.actions;
+export const { setCredentials, setAuthInitialized, logout } =
+  authSlice.actions;
 export default authSlice.reducer;

@@ -5,7 +5,7 @@ import ScrollToTop from "../features/menu/components/ScrollToTop";
 import { useCartSync } from "../store/hooks/useCartSync";
 import { useEffect } from "react";
 import { useAppDispatch } from "../store/hooks/cartHooks";
-import { setCredentials } from "../store/authSlice";
+import { setAuthInitialized, setCredentials } from "../store/authSlice";
 import { checkAuthStatus, refreshToken } from "../services/auth.service";
 
 const MainLayout = () => {
@@ -16,31 +16,37 @@ const MainLayout = () => {
   useEffect(() => {
     const isMounted = true;
     const checkAuth = async () => {
-      let result = await checkAuthStatus();
-      if (result) {
-        if (isMounted){
-          dispatch(setCredentials({ user: result.user }));
+      let isAuthenticated = false;
+      try {
+        let result = await checkAuthStatus();
+        if (result) {
+          if (isMounted) {
+            dispatch(setCredentials({ user: result.user }));
+          }
+          isAuthenticated = true;
           return;
         }
-        // User is authenticated
-      }
-      // Try refresh token if checkAuthStatus failed
-      try {
+
+        // Try refresh token if checkAuthStatus failed
         await refreshToken();
         result = await checkAuthStatus();
         if (result) {
-          if (isMounted){
+          if (isMounted) {
             dispatch(setCredentials({ user: result.user }));
-            return;
           }
+          isAuthenticated = true;
+          return;
         }
       } catch (error) {
         // Error refreshing token
         console.error("Error refreshing token", error);
-      }
-      // Not authenticated
-      if (isMounted){
-        dispatch(setCredentials({}));
+      } finally {
+        if (isMounted) {
+          if (!isAuthenticated) {
+            dispatch(setCredentials({}));
+          }
+          dispatch(setAuthInitialized(true));
+        }
       }
     };
 
