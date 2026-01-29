@@ -4,6 +4,8 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -12,7 +14,6 @@ import { Colors, Svgs } from "../theme";
 import Button from "../features/menu/components/Button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { emailSchema } from "../features/menu/validations/email.validation";
 import {
   createPasswordSchema,
   checkPasswordSchema,
@@ -22,16 +23,16 @@ import LoadingIndicator from "../features/menu/components/LoadingIndicator";
 import { resetUserPassword } from "../services/auth.service";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { enqueueSnackbar } from "notistack";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 interface ResetPasswordForm {
-  email: string;
   password: string;
   confirmPassword: string;
 }
 
 const resetPasswordSchema = z
   .object({
-    email: emailSchema,
     password: createPasswordSchema,
     confirmPassword: checkPasswordSchema,
   })
@@ -50,6 +51,13 @@ const ResetPasswordPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isValidToken, setIsValidToken] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleClickShowConfirmPassword = () =>
+    setShowConfirmPassword((show) => !show);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
@@ -61,12 +69,13 @@ const ResetPasswordPage = () => {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (!token) {
+      if (token) {
+        setIsValidToken(true);
         setIsLoading(false);
-      } else setIsValidToken(true);
-    }, 1500);
+      } else setIsLoading(false);
+    }, 1000);
     return () => clearTimeout(timeout);
-  }, [form, token]);
+  }, [token]);
 
   const handleSubmit = form.handleSubmit(async (values) => {
     setIsSubmitting(true);
@@ -75,7 +84,6 @@ const ResetPasswordPage = () => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       const UpdatedPasswordResponse = await resetUserPassword({
         token: token,
-        email: values.email,
         password: values.confirmPassword,
       });
       if (UpdatedPasswordResponse) {
@@ -98,7 +106,7 @@ const ResetPasswordPage = () => {
     }
   });
   if (isLoading) {
-    return <LoadingIndicator text="Please wait..." />;
+    return <LoadingIndicator />;
   }
 
   if (!isValidToken) {
@@ -171,24 +179,6 @@ const ResetPasswordPage = () => {
           >
             Reset Password
           </Typography>
-          <Controller
-            control={form.control}
-            name="email"
-            shouldUnregister={true}
-            render={({ fieldState }) => (
-              <TextInput
-                {...form.register("email")}
-                aria-readonly
-                fullWidth
-                label="Email address"
-                error={fieldState.error?.message}
-                placeholder="e.g. name@example.com"
-                type="email"
-                autoComplete="email"
-                disabled
-              />
-            )}
-          />
 
           <Controller
             control={form.control}
@@ -200,9 +190,28 @@ const ResetPasswordPage = () => {
                 label="Password"
                 error={fieldState.error?.message}
                 placeholder="Please enter a password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
                 required
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end" sx={{ mr: 2 }}>
+                        <IconButton
+                          aria-label={
+                            showPassword
+                              ? "hide the password"
+                              : "display the password"
+                          }
+                          onClick={handleClickShowPassword}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
               />
             )}
           />
@@ -217,9 +226,32 @@ const ResetPasswordPage = () => {
                 label="Confirm Password"
                 error={fieldState.error?.message}
                 placeholder="Confirm password"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 autoComplete="new-password"
                 required
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end" sx={{ mr: 2 }}>
+                        <IconButton
+                          aria-label={
+                            showConfirmPassword
+                              ? "hide the password"
+                              : "display the password"
+                          }
+                          onClick={handleClickShowConfirmPassword}
+                          edge="end"
+                        >
+                          {showConfirmPassword ? (
+                            <VisibilityOff />
+                          ) : (
+                            <Visibility />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
               />
             )}
           />
@@ -260,10 +292,7 @@ const ResetPasswordPage = () => {
             {isSubmitting && form.formState.isValid ? (
               <LoadingIndicator variant="button" text="Please wait" />
             ) : (
-              "Done"
-            )}
-            {!isSubmitting && (
-              <ArrowForwardIcon sx={{ height: "1.3rem", width: "auto" }} />
+              "Submit"
             )}
           </Button>
         </form>

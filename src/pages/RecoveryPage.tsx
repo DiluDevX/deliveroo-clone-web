@@ -46,9 +46,7 @@ const RecoveryPage = () => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       if (isEmail) {
         values.email = values.emailOrPhone;
-        const result = await sendEmail(
-          (values.email ?? values.phone) as string,
-        );
+        const result = await sendEmail(values.email);
         if (result) {
           enqueueSnackbar("Email sent successfully", {
             variant: "success",
@@ -61,7 +59,6 @@ const RecoveryPage = () => {
           });
         }
         setIsSubmitting(false);
-        return;
       } else {
         enqueueSnackbar("Phone recovery not yet available. Please use email.", {
           variant: "warning",
@@ -140,12 +137,12 @@ const RecoveryPage = () => {
                 label={
                   isForgotEmail
                     ? "Provide your recovery email or registered phone number"
-                    : "Please enter your registered phone number or email address"
+                    : "Please enter your registered email address"
                 }
                 value={field.value ?? ""}
                 onChange={field.onChange}
                 error={fieldState.error?.message}
-                placeholder="e.g. johndoe@example.com or +9476123456"
+                placeholder="e.g. johndoe@example.com"
                 type="text"
                 autoComplete="email"
                 required

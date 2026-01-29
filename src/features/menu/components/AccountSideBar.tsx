@@ -8,6 +8,9 @@ import Button from "./Button";
 
 import ShowBarWithProgress from "./ShowBarWithProgress";
 import { store } from "../../../store/store";
+import { useAppDispatch } from "../../../store/hooks/cartHooks";
+import { logOut } from "../../../store/authSlice";
+import { logout } from "../../../services/auth.service";
 
 type AnchorTemporaryDrawerProps = {
   open: boolean;
@@ -18,13 +21,9 @@ export default function AnchorTemporaryDrawer({
   open,
   toggleDrawer,
 }: Readonly<AnchorTemporaryDrawerProps>) {
-  const token = localStorage.getItem("token");
   const firstName = store.getState().auth.user?.firstName;
 
-  function LogOut() {
-    localStorage.clear();
-    window.location.reload();
-  }
+  const dispatch = useAppDispatch();
 
   const navigate = useNavigate();
 
@@ -60,7 +59,7 @@ export default function AnchorTemporaryDrawer({
         </IconButton>
       </Box>
 
-      {!token && (
+      {!store.getState().auth.user && (
         <Box>
           <Link to={"/Account"} style={{ textDecoration: "none" }}>
             <Button
@@ -80,7 +79,7 @@ export default function AnchorTemporaryDrawer({
           </Link>
         </Box>
       )}
-      {token && (
+      {store.getState().auth.user && (
         <Box
           sx={{
             display: "flex",
@@ -99,16 +98,17 @@ export default function AnchorTemporaryDrawer({
           >
             {`Hello! ${firstName || "Guest"}`}
           </Typography>
-          {token && (firstName === "" || firstName === undefined) && (
-            <Box
-              onClick={() => {
-                navigate("/Account/CompleteSignUp");
-                toggleDrawer(false);
-              }}
-            >
-              <ShowBarWithProgress />
-            </Box>
-          )}
+          {!store.getState().auth.user &&
+            (firstName === "" || firstName === undefined) && (
+              <Box
+                onClick={() => {
+                  navigate("/Account/CompleteSignUp");
+                  toggleDrawer(false);
+                }}
+              >
+                <ShowBarWithProgress />
+              </Box>
+            )}
           <Button
             sx={{
               mt: 5,
@@ -153,7 +153,10 @@ export default function AnchorTemporaryDrawer({
             Checkout
           </Button>
           <Button
-            onClick={LogOut}
+            onClick={async () => {
+              await logout();
+              dispatch(logOut());
+            }}
             sx={{
               mt: 2,
               width: "100%",

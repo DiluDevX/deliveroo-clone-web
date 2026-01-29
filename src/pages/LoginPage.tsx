@@ -63,11 +63,9 @@ export default function Login() {
 
   const handleSubmit = form.handleSubmit(async (values) => {
     const { email, password } = values;
-    console.log("Form submitted with:", { email, password }); // Debug log
 
     if (!password) {
       const checkEmailResponse = await checkEmail({ email });
-      console.log("Check email response:", checkEmailResponse);
 
       if (checkEmailResponse.type === "EXISTING") {
         localStorage.setItem("existingUser", true.toString());
@@ -239,7 +237,11 @@ export default function Login() {
           <Button
             type="button"
             onClick={() =>
-              navigate("/account/recovery", { state: { type: "forgotEmail" } })
+              navigate("/account/recovery", {
+                state: {
+                  type: existingUser ? "forgotPassword" : "forgotEmail",
+                },
+              })
             }
             variant="border"
             sx={{
@@ -247,7 +249,7 @@ export default function Login() {
               color: Colors.background.brand,
             }}
           >
-            Forgot Email?
+            {existingUser ? "Forgot Password?" : "Forgot Email?"}
           </Button>
         </form>
       </Box>

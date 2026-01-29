@@ -105,7 +105,8 @@ export const login = async (
   try {
     const response = await axios.post<LoginApiResponse>(
       "/api/auth/login",
-      body);
+      body,
+    );
     console.log("login response", response.data);
 
     if (response.data) {
@@ -184,23 +185,20 @@ export const signup = async (
 
 export const resetUserPassword = async ({
   token,
-  email,
   password,
 }: {
   token: string;
-  email: string;
   password: string;
 }) => {
   try {
     const response = await axios.post("/api/auth/reset-password", {
       token,
-      email,
       password,
     });
     if (response.status !== 200) {
       return false;
     }
-    return;
+    return true;
   } catch (error) {
     console.error("Error validating token", error);
     return false;
@@ -209,7 +207,12 @@ export const resetUserPassword = async ({
 
 export const checkAuthStatus = async () => {
   try {
-    const response = await axios.get("/api/auth/me");
+    const response = await axios.post(
+      "/api/auth/me",
+      {},
+      { withCredentials: true },
+    );
+    console.log("checkAuthStatus response", response.data);
     if (response.data?.valid === true && response.data?.user !== null) {
       return response.data;
     }
@@ -222,13 +225,28 @@ export const checkAuthStatus = async () => {
 
 export const refreshToken = async () => {
   try {
-    const response = await fetch("/api/auth/refresh", {
-      method: "POST",
-      credentials: "include",
-    });
-    return response.ok;
+    const response = await axios.post(
+      "/api/auth/refresh",
+      {},
+      { withCredentials: true },
+    );
+    return response.status === 200;
   } catch (error) {
     console.error("Error refreshing token", error);
+    return false;
+  }
+};
+
+export const logout = async () => {
+  try {
+    const response = await axios.post(
+      "/api/auth/logout",
+      {},
+      { withCredentials: true },
+    );
+    return response.status === 200;
+  } catch (error) {
+    console.error("Error logging out", error);
     return false;
   }
 };

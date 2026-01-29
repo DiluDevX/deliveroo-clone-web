@@ -123,23 +123,26 @@ const Header = () => {
             ></Button>
           )}
 
-          {!user && !notShowing && (
-            <Button
-              PrefixIcon={HomeOutlinedIcon}
-              onClick={() => sessionStorage.removeItem("redirectAfterLogin")}
-              title="Sign up or login"
-              linkTo="/account"
-              sx={{
-                backgroundColor: Colors.background.light,
-                display: {
-                  xs: "none",
-                  sm: "none",
-                  md: "flex",
-                  lg: "flex",
-                },
-              }}
-            />
-          )}
+          {!user &&
+            !notShowing &&
+            location.pathname !== "/account/login" &&
+            location.pathname !== "/account/signup" && (
+              <Button
+                PrefixIcon={HomeOutlinedIcon}
+                onClick={() => sessionStorage.removeItem("redirectAfterLogin")}
+                title="Sign up or login"
+                linkTo="/account"
+                sx={{
+                  backgroundColor: Colors.background.light,
+                  display: {
+                    xs: "none",
+                    sm: "none",
+                    md: "flex",
+                    lg: "flex",
+                  },
+                }}
+              />
+            )}
           {location.pathname !== "/account" && user && (
             <Button
               PrefixIcon={Person2OutlinedIcon}
