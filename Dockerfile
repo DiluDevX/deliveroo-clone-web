@@ -25,9 +25,9 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine as final
 
-# Install Doppler CLI as root
-RUN apk add --no-cache curl gnupg \
-    && curl -Ls https://cli.doppler.com/install.sh | sh
+COPY --from=build /app/dist /usr/share/nginx/html
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
