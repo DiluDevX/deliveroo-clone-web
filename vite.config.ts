@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), svgr()],
 
@@ -21,7 +20,7 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       "/api": {
-        target: "https://deliveroo.api.test.dilum.me",
+        target: "https://localhost:4000",
         changeOrigin: true,
         secure: false,
       },

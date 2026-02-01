@@ -96,7 +96,6 @@ interface LoginApiResponse {
     updatedAt: string;
   };
   accessToken: string;
-  // refreshToken is now handled via HttpOnly cookie, not returned to client
 }
 
 export const login = async (
@@ -107,12 +106,9 @@ export const login = async (
       "/api/auth/login",
       body,
     );
-    console.log("login response", response.data);
 
     if (response.data) {
       const { user } = response.data;
-
-      // The refresh token and access tokens are now set by the server in an HttpOnly, Secure, SameSite cookie.
 
       return {
         type: "SUCCESS",

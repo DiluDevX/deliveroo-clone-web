@@ -12,7 +12,6 @@ import TextInput from "../features/menu/components/TextInput";
 import { emailSchema } from "../features/menu/validations/email.validation";
 import { checkPasswordSchema } from "../features/menu/validations/password.validation";
 import { checkEmail, login } from "../services/auth.service";
-import { CheckEmailResponseBodyDTO } from "../types/auth.types";
 import { useSnackbar } from "notistack";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -29,7 +28,7 @@ export default function Login() {
   const dispatch = useAppDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
-  const [existingUser, setExistingUser] = useState<CheckEmailResponseBodyDTO>();
+  const [existingUser, setExistingUser] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -64,23 +63,20 @@ export default function Login() {
   const handleSubmit = form.handleSubmit(async (values) => {
     const { email, password } = values;
 
-    if (!password) {
-      const checkEmailResponse = await checkEmail({ email });
+    const checkEmailResponse = await checkEmail({ email });
 
-      if (checkEmailResponse.type === "EXISTING") {
-        localStorage.setItem("existingUser", true.toString());
-        setExistingUser(checkEmailResponse.existingUser);
-      } else if (checkEmailResponse.type === "NEW") {
-        navigate(`/Account/SignUp?email=${encodeURIComponent(email)}`);
-      } else {
-        enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
-      }
+    if (checkEmailResponse.type === "EXISTING") {
+      setExistingUser(true);
+    } else if (checkEmailResponse.type === "NEW") {
+      return navigate(`/Account/SignUp?email=${encodeURIComponent(email)}`);
     } else {
+      enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
+      return;
+    }
+    if (email && password) {
       const loginResponse = await login({ email, password });
-      console.log("Login response:", loginResponse); // Debug log
 
       if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
-        console.log("Login successful, dispatching credentials..."); // Debug log
         dispatch(
           setCredentials({
             user: {
@@ -93,12 +89,8 @@ export default function Login() {
           }),
         );
 
-        // The server should set the session via HttpOnly cookie. Do not persist tokens in client JS.
-        localStorage.removeItem("existingUser");
-
         // Check for redirect after login
         const redirectPath = sessionStorage.getItem("redirectAfterLogin");
-        console.log("Navigating to:", redirectPath || "/"); // Debug log
         if (redirectPath) {
           sessionStorage.removeItem("redirectAfterLogin");
           navigate(redirectPath);
@@ -158,7 +150,7 @@ export default function Login() {
               fontSmoothing: "antialiased",
             }}
           >
-            {existingUser ? "Log In" : "Log In or Sign Up"}
+            Log In
           </Typography>
           <Controller
             control={form.control}
@@ -174,7 +166,7 @@ export default function Login() {
                 type="email"
                 autoComplete="email"
                 required
-                disabled={!!existingUser}
+                disabled={existingUser}
               />
             )}
           />

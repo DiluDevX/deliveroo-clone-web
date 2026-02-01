@@ -11,6 +11,7 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PartnerWithUs from "./PartnerWithUs";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store/store";
+import { Notifications, NotificationsOffRounded } from "@mui/icons-material";
 
 const Header = () => {
   const location = useLocation();
@@ -21,6 +22,7 @@ const Header = () => {
     location.pathname === "/account";
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [notificationsClicked, isNotificationClicked] = React.useState(false);
 
   const toggleDrawer = (open: boolean) => {
     setDrawerOpen(open);
@@ -143,6 +145,24 @@ const Header = () => {
                 }}
               />
             )}
+          {location.pathname === "/admin/dashboard" && (
+            <Button
+              PrefixIcon={
+                notificationsClicked ? Notifications : NotificationsOffRounded
+              }
+              borderOff={true}
+              sx={{
+                backgroundColor: Colors.background.light,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "6px",
+                mr: "-0.4rem",
+                border: "none",
+              }}
+              onClick={() => isNotificationClicked(!notificationsClicked)}
+            />
+          )}
           {location.pathname !== "/account" && user && (
             <Button
               PrefixIcon={Person2OutlinedIcon}
