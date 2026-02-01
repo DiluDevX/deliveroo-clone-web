@@ -1,4 +1,4 @@
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import {
   CheckEmailRequestBodyDTO,
   CheckEmailResponseBodyDTO,
@@ -10,6 +10,7 @@ import {
   SignupResponseBodyDTO,
 } from "../types/auth.types";
 import { CommonResponseDTO } from "../types/common";
+import apiClient from "./api.client";
 
 type ICheckEmailResponse = {
   token?: string;
@@ -20,8 +21,8 @@ export const checkEmail = async (
   body: CheckEmailRequestBodyDTO,
 ): Promise<ICheckEmailResponse> => {
   try {
-    const response = await axios.post<CheckEmailResponseBodyDTO>(
-      "/api/auth/check-email",
+    const response = await apiClient.post<CheckEmailResponseBodyDTO>(
+      "/auth/check-email",
       body,
     );
 
@@ -31,18 +32,12 @@ export const checkEmail = async (
       token: response.data.token,
     };
   } catch (error) {
-    console.error("checkEmail error:", error);
-    if (isAxiosError(error)) {
-      console.error("checkEmail error response:", error.response?.data);
-      console.error("checkEmail error status:", error.response?.status);
-    }
     if (isAxiosError(error) && error.response?.status === 404) {
       return {
         type: "NEW",
       };
     }
 
-    console.error("checkEmail", error);
     return {
       type: "UNKNOWN",
     };
@@ -57,9 +52,9 @@ export const checkEmailOrPhone = async (
   body: EmailOrPhoneRequestBodyDTO,
 ): Promise<IEmailOrPhoneResponse> => {
   try {
-    const response = await axios.post<
+    const response = await apiClient.post<
       CommonResponseDTO<EmailOrPhoneResponseBodyDTO>
-    >("/api/auth/check-email-or-password", body);
+    >("/auth/check-email-or-password", body);
 
     return {
       type: "EXISTING",
@@ -72,7 +67,6 @@ export const checkEmailOrPhone = async (
       };
     }
 
-    console.error("checkEmail", error);
     return {
       type: "UNKNOWN",
     };
@@ -96,23 +90,19 @@ interface LoginApiResponse {
     updatedAt: string;
   };
   accessToken: string;
-  // refreshToken is now handled via HttpOnly cookie, not returned to client
 }
 
 export const login = async (
   body: LoginRequestBodyDTO,
 ): Promise<ILoginResponse> => {
   try {
-    const response = await axios.post<LoginApiResponse>(
-      "/api/auth/login",
+    const response = await apiClient.post<LoginApiResponse>(
+      "/auth/login",
       body,
     );
-    console.log("login response", response.data);
 
     if (response.data) {
       const { user } = response.data;
-
-      // The refresh token and access tokens are now set by the server in an HttpOnly, Secure, SameSite cookie.
 
       return {
         type: "SUCCESS",
@@ -132,18 +122,12 @@ export const login = async (
       type: "UNKNOWN",
     };
   } catch (error) {
-    console.error("login error:", error);
-    if (isAxiosError(error)) {
-      console.error("login error response:", error.response?.data);
-      console.error("login error status:", error.response?.status);
-      if (error.response?.status === 401) {
-        return {
-          type: "INVALID",
-        };
-      }
+    if (isAxiosError(error) && error.response?.status === 401) {
+      return {
+        type: "INVALID",
+      };
     }
 
-    console.error("login", error);
     return {
       type: "UNKNOWN",
     };
@@ -158,12 +142,11 @@ export const signup = async (
   body: SignupRequestBodyDTO,
 ): Promise<ISignupResponse> => {
   try {
-    const response = await axios.post<SignupResponseBodyDTO>(
-      "/api/auth/signup",
+    const response = await apiClient.post<SignupResponseBodyDTO>(
+      "/auth/signup",
       body,
     );
 
-    // The refresh token is now set by the server in an HttpOnly, Secure, SameSite cookie.
     return {
       type: "SUCCESS",
       successResponse: response.data,
@@ -191,7 +174,7 @@ export const resetUserPassword = async ({
   password: string;
 }) => {
   try {
-    const response = await axios.post("/api/auth/reset-password", {
+    const response = await apiClient.post("/auth/reset-password", {
       token,
       password,
     });
@@ -199,54 +182,45 @@ export const resetUserPassword = async ({
       return false;
     }
     return true;
-  } catch (error) {
-    console.error("Error validating token", error);
+  } catch {
     return false;
   }
 };
 
 export const checkAuthStatus = async () => {
   try {
-    const response = await axios.post(
-      "/api/auth/me",
-      {},
-      { withCredentials: true },
-    );
-    console.log("checkAuthStatus response", response.data);
+    const response = await apiClient.post("/me", {}, { withCredentials: true });
     if (response.data?.valid === true && response.data?.user !== null) {
       return response.data;
     }
     return false;
-  } catch (error) {
-    console.error("Error checking auth status", error);
+  } catch {
     return false;
   }
 };
 
 export const refreshToken = async () => {
   try {
-    const response = await axios.post(
-      "/api/auth/refresh",
+    const response = await apiClient.post(
+      "/refresh",
       {},
       { withCredentials: true },
     );
     return response.status === 200;
-  } catch (error) {
-    console.error("Error refreshing token", error);
+  } catch {
     return false;
   }
 };
 
 export const logout = async () => {
   try {
-    const response = await axios.post(
-      "/api/auth/logout",
+    const response = await apiClient.post(
+      "/logout",
       {},
       { withCredentials: true },
     );
     return response.status === 200;
-  } catch (error) {
-    console.error("Error logging out", error);
+  } catch {
     return false;
   }
 };

@@ -7,9 +7,6 @@ import { SnackbarProvider } from "notistack";
 import { Provider } from "react-redux";
 import { persistor, store } from "./store/store.tsx";
 import { PersistGate } from "redux-persist/integration/react";
-import axios from "axios";
-
-axios.defaults.withCredentials = true;
 
 const theme = createTheme({
   typography: {
