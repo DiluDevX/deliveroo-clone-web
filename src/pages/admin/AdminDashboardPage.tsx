@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -14,38 +14,94 @@ import {
   Chip,
   ButtonGroup,
 } from "@mui/material";
-import { GifBox, Money, Restaurant, TrendingUp } from "@mui/icons-material";
+import {
+  AttachMoneyTwoTone,
+  DeliveryDining,
+  FoodBank,
+  Person,
+  TrendingUp,
+} from "@mui/icons-material";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { Colors } from "../../theme";
 import { dashboardStats } from "../../data/adminMockData";
+import { getAllRestaurants } from "../../services/restaurant.service";
+import { Restaurant } from "../../types/restaurants";
+import { Orders } from "../../types/orders";
+import { getAllOrders, getTotalRevenue } from "../../services/order.service";
+import { getAllUsers } from "../../services/user.service";
+import { IUser } from "../../types/user.types";
+
+// Dummy revenue data
+const dummyRevenueData = [
+  { date: "Mon", revenue: 4000 },
+  { date: "Tue", revenue: 3000 },
+  { date: "Wed", revenue: 2000 },
+  { date: "Thu", revenue: 2780 },
+  { date: "Fri", revenue: 1890 },
+  { date: "Sat", revenue: 2390 },
+  { date: "Sun", revenue: 3490 },
+];
 
 const AdminDashboardPage = () => {
   const [timePeriod, setTimePeriod] = useState("7days");
+  const [fetchedRestaurants, setFetchedRestaurants] = useState<Restaurant[]>();
+  const [fetchedOrders, setFetchedOrders] = useState<Orders[]>([]);
+  const [fetchedUsers, setFetchedUsers] = useState<IUser[]>([]);
+  const [fetchedTotalRevenue, setFetchedTotalRevenue] = useState<number>(0);
+
+  useEffect(() => {
+    async function fetchEverything() {
+      const restaurants = await getAllRestaurants();
+      setFetchedRestaurants(restaurants);
+      const orders = await getAllOrders();
+      setFetchedOrders(orders);
+      const users = await getAllUsers();
+      setFetchedUsers(users);
+      const revenue = await getTotalRevenue();
+      setFetchedTotalRevenue(revenue);
+    }
+    fetchEverything();
+  }, []);
 
   const stats = [
     {
       title: "Total Restaurants",
-      value: dashboardStats.totalRestaurants,
+      value: fetchedRestaurants?.length,
       icon: (
-        <Restaurant sx={{ color: Colors.background.brand, fontSize: "3rem" }} />
+        <FoodBank sx={{ color: Colors.background.brand, fontSize: "3rem" }} />
       ),
     },
     {
       title: "Total Orders",
-      value: dashboardStats.totalOrders,
+      value: fetchedOrders?.length,
       icon: (
-        <GifBox sx={{ color: Colors.background.brand, fontSize: "3rem" }} />
+        <DeliveryDining
+          sx={{ color: Colors.background.brand, fontSize: "3rem" }}
+        />
       ),
     },
     {
       title: "Total Revenue",
-      value: `$${dashboardStats.totalRevenue.toFixed(2)}`,
-      icon: <Money sx={{ color: Colors.background.brand, fontSize: "3rem" }} />,
+      value: `$${fetchedTotalRevenue.toFixed(2)}`,
+      icon: (
+        <AttachMoneyTwoTone
+          sx={{ color: Colors.background.brand, fontSize: "3rem" }}
+        />
+      ),
     },
     {
       title: "Total Users",
-      value: dashboardStats.totalUsers,
+      value: fetchedUsers?.length,
       icon: (
-        <TrendingUp sx={{ color: Colors.background.brand, fontSize: "3rem" }} />
+        <Person sx={{ color: Colors.background.brand, fontSize: "3rem" }} />
       ),
     },
   ];
@@ -161,7 +217,6 @@ const AdminDashboardPage = () => {
           </Box>
         </Box>
 
-        {/* Filter Tabs */}
         <Box sx={{ display: "flex", gap: 1.5, mb: 3, flexWrap: "wrap" }}>
           {["Total Revenue", "Commission Earned", "Payouts Made"].map(
             (filter) => (
@@ -183,26 +238,45 @@ const AdminDashboardPage = () => {
           )}
         </Box>
 
-        {/* Chart Placeholder */}
-        <Box
-          sx={{
-            height: 300,
-            bgcolor: "rgba(0, 0, 0, 0.02)",
-            borderRadius: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 2,
-          }}
-        >
-          <Typography
-            sx={{
-              color: Colors.text.default,
-              textAlign: "center",
-            }}
+        <Box sx={{ mb: 2, outline: "none", "&:focus": { outline: "none" } }}>
+          <ResponsiveContainer
+            width="100%"
+            height={300}
+            style={{ outline: "none" }}
           >
-            📊 Revenue Chart (recharts, chart.js, etc)
-          </Typography>
+            <LineChart data={dummyRevenueData} style={{ outline: "none" }}>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke={Colors.border.default}
+              />
+              <XAxis
+                dataKey="date"
+                stroke={Colors.text.default}
+                tick={{ fontSize: 12, fill: Colors.text.default }}
+              />
+              <YAxis
+                stroke={Colors.text.default}
+                tick={{ fontSize: 12, fill: Colors.text.default }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: Colors.background.light,
+                  border: `1px solid ${Colors.border.default}`,
+                  fontFamily: "IBM Plex Sans, serif",
+                  fontSize: 12,
+                }}
+                labelStyle={{ color: Colors.text.default }}
+              />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke={Colors.background.brand}
+                strokeWidth={2}
+                dot={{ fill: Colors.background.brand }}
+                style={{ outline: "none" }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </Box>
 
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -211,7 +285,7 @@ const AdminDashboardPage = () => {
               Total Platform Revenue
             </Typography>
             <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-              ${dashboardStats.totalRevenue.toFixed(2)}
+              ${fetchedTotalRevenue.toFixed(2)}
             </Typography>
             <Typography
               variant="caption"
@@ -223,7 +297,7 @@ const AdminDashboardPage = () => {
               }}
             >
               <TrendingUp sx={{ fontSize: "1rem" }} />
-              +31% Up last 7 days
+              +0% Up last 7 days
             </Typography>
           </Box>
           <Button
@@ -235,7 +309,6 @@ const AdminDashboardPage = () => {
         </Box>
       </Card>
 
-      {/* Recent Orders Section */}
       <Card
         sx={{
           mt: 3,

@@ -107,7 +107,6 @@ function Button({
         <Typography
           sx={{
             display: { xs: "none", sm: "flex" },
-            marginLeft: { md: "1rem", lg: "0.5rem" },
           }}
         >
           <Link
@@ -124,7 +123,6 @@ function Button({
         <Typography
           sx={{
             display: { xs: "none", sm: "flex" },
-            marginLeft: { md: "1rem", lg: "0.5rem" },
           }}
         >
           {title}

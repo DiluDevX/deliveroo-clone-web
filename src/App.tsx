@@ -26,8 +26,10 @@ import AdminLayout from "./layout/AdminLayout";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminRestaurantsPage from "./pages/admin/AdminRestaurantsPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
-import AdminDishesPage from "./pages/admin/AdminDishesPage";
 import AdminRoute from "./routes/AdminRoute";
+import AdminFinancePage from "./pages/admin/AdminFinancePage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -173,10 +175,10 @@ const App = () => {
               }
             />
             <Route
-              path="/admin/dishes"
+              path="/admin/finance"
               element={
-                <WithPageTitle title="Admin Dishes">
-                  <AdminDishesPage />
+                <WithPageTitle title="Admin Finance">
+                  <AdminFinancePage />
                 </WithPageTitle>
               }
             />
@@ -185,6 +187,22 @@ const App = () => {
               element={
                 <WithPageTitle title="Admin Orders">
                   <AdminOrdersPage />
+                </WithPageTitle>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <WithPageTitle title="Admin Settings">
+                  <AdminSettingsPage />
+                </WithPageTitle>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <WithPageTitle title="Admin Users">
+                  <AdminUsersPage />
                 </WithPageTitle>
               }
             />

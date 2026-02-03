@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import { Colors } from "../../../theme";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export interface AdminSidebarProps {
   isMobile: boolean;
@@ -25,7 +26,12 @@ const AdminSidebar = ({
   setDrawerOpen,
   menuItems,
 }: AdminSidebarProps) => {
+  const [selectedItem, setSelectedItem] = useState<number>(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate(menuItems[selectedItem].path);
+  }, [selectedItem, menuItems, navigate]);
   return (
     <Drawer
       variant={isMobile ? "temporary" : "permanent"}
@@ -39,30 +45,63 @@ const AdminSidebar = ({
           color: Colors.text.default,
           pt: 2,
           position: "fixed",
-          pl: 6,
           zIndex: 98,
+          alignItems: "center",
         },
       }}
     >
-      <List sx={{ mt: 2, top: "60px" }}>
-        {menuItems.map((item) => (
+      <List
+        sx={{
+          mt: 2,
+          top: "60px",
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          alignItems: "flex-start",
+          justifyContent: "center",
+        }}
+      >
+        {menuItems.map((item, index) => (
           <ListItemButton
             key={item.label}
+            disableRipple={true}
             onClick={() => {
+              setSelectedItem(index);
               navigate(item.path);
               if (isMobile) setDrawerOpen(false);
             }}
             sx={{
               mb: 1,
-              "&:hover": {
-                bgcolor: "rgba(255, 255, 255, 0.1)",
-              },
+              backgroundColor: "transparent",
+              "&:hover": { backgroundColor: "transparent" },
+              "&:focus": { backgroundColor: "transparent" },
             }}
           >
-            <ListItemIcon sx={{ color: Colors.text.default, mr: -2, ml: 1 }}>
+            <ListItemIcon
+              sx={{
+                color:
+                  selectedItem === index
+                    ? Colors.background.brand
+                    : Colors.text.placeholder,
+                mr: -3,
+                ml: 2,
+              }}
+            >
               <item.icon />
             </ListItemIcon>
-            <ListItemText primary={item.label} />
+            <ListItemText
+              primaryTypographyProps={{
+                sx: {
+                  fontWeight: selectedItem === index ? 800 : 400,
+                  fontSize: 14,
+                  color:
+                    selectedItem === index
+                      ? Colors.text.default
+                      : Colors.text.placeholder,
+                },
+              }}
+              primary={item.label}
+            />
           </ListItemButton>
         ))}
       </List>

@@ -2,15 +2,16 @@ import { useState } from "react";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { Outlet } from "react-router-dom";
 import {
-  Dashboard,
-  Restaurant,
-  ShoppingCart,
   Settings,
-  Fastfood,
+  Home,
+  Person,
+  FoodBank,
+  DeliveryDining,
+  AttachMoneyTwoTone,
 } from "@mui/icons-material";
 import { Colors } from "../theme";
-import Header from "../features/menu/components/Header";
 import AdminSidebar from "../features/menu/components/AdminSidebar";
+import AdminHeader from "../features/menu/components/AdminHeader";
 
 const AdminLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(true);
@@ -18,11 +19,11 @@ const AdminLayout = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const menuItems = [
-    { label: "Dashboard", icon: Dashboard, path: "/admin/dashboard" },
-    { label: "Restaurants", icon: Restaurant, path: "/admin/restaurants" },
-    { label: "Orders", icon: ShoppingCart, path: "/admin/orders" },
-    { label: "Users", icon: Fastfood, path: "/admin/users" },
-    { label: "Finance", icon: Fastfood, path: "/admin/finance" },
+    { label: "Dashboard", icon: Home, path: "/admin/dashboard" },
+    { label: "Restaurants", icon: FoodBank, path: "/admin/restaurants" },
+    { label: "Orders", icon: DeliveryDining, path: "/admin/orders" },
+    { label: "Users", icon: Person, path: "/admin/users" },
+    { label: "Finance", icon: AttachMoneyTwoTone, path: "/admin/finance" },
     { label: "Settings", icon: Settings, path: "/admin/settings" },
   ];
 
@@ -31,6 +32,7 @@ const AdminLayout = () => {
       sx={{
         display: "flex",
         flexDirection: "column",
+        minHeight: "100vh",
         bgcolor: Colors.background.default,
       }}
     >
@@ -42,24 +44,37 @@ const AdminLayout = () => {
           zIndex: 100,
         }}
       >
-        <Header />
+        <AdminHeader />
       </Box>
+
       <Box
         sx={{
           display: "flex",
-          mt: 12,
-          p: 2,
-          ml: isMobile ? 0 : drawerOpen ? 6 : 0,
-          mr: isMobile ? 0 : drawerOpen ? 6 : 6,
+          mt: 8,
+          flex: 1,
         }}
       >
-        <AdminSidebar
-          drawerOpen={drawerOpen}
-          setDrawerOpen={setDrawerOpen}
-          isMobile={isMobile}
-          menuItems={menuItems}
-        />
-        <Box sx={{ flex: 1 }}>
+        {!isMobile && (
+          <Box sx={{ width: 280, flexShrink: 0, pl: 2 }}>
+            <AdminSidebar
+              drawerOpen={drawerOpen}
+              setDrawerOpen={setDrawerOpen}
+              isMobile={isMobile}
+              menuItems={menuItems}
+            />
+          </Box>
+        )}
+
+        {isMobile && (
+          <AdminSidebar
+            drawerOpen={drawerOpen}
+            setDrawerOpen={setDrawerOpen}
+            isMobile={isMobile}
+            menuItems={menuItems}
+          />
+        )}
+
+        <Box sx={{ flex: 1, pl: 10, pr: 10, overflow: "auto", pt: 4, pb: 6 }}>
           <Outlet />
         </Box>
       </Box>

@@ -17,6 +17,9 @@ export const Colors = {
     inverse: "#ffffff",
     dark: "#444",
     placeholder: "#76777FFF",
+    error: "#ff0000",
+    disabled: "#1c39be",
+    success: "#4d7c1b",
   },
   border: {
     default: "#e8ebeb",
