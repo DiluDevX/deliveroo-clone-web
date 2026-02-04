@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -20,6 +20,22 @@ import {
 } from "recharts";
 import { Colors } from "../../theme";
 import Button from "../../features/menu/components/Button";
+import axios from "axios";
+
+interface FinanceStats {
+  stats: {
+    totalPlatformRevenue: number;
+    totalCommission: number;
+    restaurantPayoutMade: number;
+    pendingPayoutAmount: number;
+  };
+  pendingPayouts?: {
+    restaurantId: string;
+    restaurantName: string;
+    amountDue: number;
+    status: string;
+  }[];
+}
 
 const dummyRevenueData = [
   { date: "Mon", revenue: 4000, commission: 400 },
@@ -31,23 +47,73 @@ const dummyRevenueData = [
   { date: "Sun", revenue: 3490, commission: 349 },
 ];
 
-const mockPayouts = [
-  { id: "1", restaurant: "Pizza Palace", amount: 2540.0, status: "pending" },
-  { id: "2", restaurant: "Sushi Station", amount: 1876.5, status: "pending" },
-  { id: "3", restaurant: "Burger Barn", amount: 3234.75, status: "pending" },
-  { id: "4", restaurant: "Dragon Wok", amount: 2567.25, status: "pending" },
-  { id: "5", restaurant: "Curry House", amount: 1845.0, status: "pending" },
-];
+const adminFinanceStats = async (): Promise<FinanceStats> => {
+  // Fetch finance stats from the server
+  try {
+    const response = await axios.get("/api/finance/admin-dashboard-stats");
+    console.log("Finance stats response:", response);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching admin dashboard stats:", error);
+    return {
+      stats: {
+        totalPlatformRevenue: 0,
+        totalCommission: 0,
+        restaurantPayoutMade: 0,
+        pendingPayoutAmount: 0,
+      },
+    };
+  }
+};
 
 const AdminFinancePage = () => {
   const [timePeriod, setTimePeriod] = useState("7days");
   const [payoutSearch, setPayoutSearch] = useState("");
+  const [financeStats, setFinanceStats] = useState<FinanceStats["stats"]>({
+    totalPlatformRevenue: 0,
+    totalCommission: 0,
+    restaurantPayoutMade: 0,
+    pendingPayoutAmount: 0,
+  });
+  const [pendingPayouts, setPendingPayouts] = useState<
+    FinanceStats["pendingPayouts"]
+  >([]);
+
+  // Fetch finance stats on mount
+  useEffect(() => {
+    const fetchFinanceStats = async () => {
+      await adminFinanceStats().then((data) => {
+        setFinanceStats(data.stats);
+        setPendingPayouts(data.pendingPayouts || []);
+      });
+    };
+    fetchFinanceStats();
+  }, []);
 
   const stats = [
-    { title: "Total Revenue", value: "$234,567", change: "+12%" },
-    { title: "Total Commission", value: "$23,456", change: "+15%" },
-    { title: "Restaurant Payouts", value: "$211,111", change: "+10%" },
-    { title: "Pending Payouts", value: "$15,234", change: "0%" },
+    {
+      title: "Total Revenue",
+      value: `$${financeStats.totalPlatformRevenue.toFixed(2)}`,
+      change: "0%",
+    },
+    {
+      title: "Total Commission",
+      value: `$${financeStats.totalCommission.toFixed(2)}`,
+      change: "0%",
+    },
+    {
+      title: "Restaurant Payouts",
+      value:
+        financeStats.restaurantPayoutMade === undefined
+          ? "0.00"
+          : `$${financeStats.restaurantPayoutMade.toFixed(2)}`,
+      change: "0%",
+    },
+    {
+      title: "Pending Payouts",
+      value: `$${financeStats.pendingPayoutAmount.toFixed(2)}`,
+      change: "0%",
+    },
   ];
 
   return (
@@ -90,7 +156,7 @@ const AdminFinancePage = () => {
           </Grid>
         ))}
       </Grid>
-      \{" "}
+
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} md={6}>
           <Card
@@ -108,7 +174,11 @@ const AdminFinancePage = () => {
               </Typography>
               <ButtonGroup>
                 <Button
-                  sx={{ padding: "5px" }}
+                  sx={{
+                    padding: "5px",
+                    borderTopRightRadius: 0,
+                    borderBottomRightRadius: 0,
+                  }}
                   onClick={() => {
                     setTimePeriod("7days");
                   }}
@@ -117,7 +187,11 @@ const AdminFinancePage = () => {
                   7D
                 </Button>
                 <Button
-                  sx={{ padding: "5px" }}
+                  sx={{
+                    padding: "5px",
+                    borderTopLeftRadius: 0,
+                    borderBottomLeftRadius: 0,
+                  }}
                   onClick={() => {
                     setTimePeriod("30days");
                   }}
@@ -197,18 +271,17 @@ const AdminFinancePage = () => {
           size="small"
           sx={{ mb: 2 }}
         />
-        {/* Payouts List */}
-        {mockPayouts.filter((p) =>
-          p.restaurant.toLowerCase().includes(payoutSearch.toLowerCase()),
-        ).length > 0 ? (
+        {pendingPayouts && pendingPayouts.length > 0 ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {mockPayouts
+            {pendingPayouts
               .filter((p) =>
-                p.restaurant.toLowerCase().includes(payoutSearch.toLowerCase()),
+                p.restaurantName
+                  .toLowerCase()
+                  .includes(payoutSearch.toLowerCase()),
               )
               .map((payout) => (
                 <Box
-                  key={payout.id}
+                  key={payout.restaurantId}
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -221,18 +294,18 @@ const AdminFinancePage = () => {
                 >
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                      {payout.restaurant}
+                      {payout.restaurantName}
                     </Typography>
                     <Typography
                       variant="caption"
                       sx={{ color: Colors.text.placeholder }}
                     >
-                      ID: {payout.id}
+                      ID: {payout.restaurantId}
                     </Typography>
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                      ${payout.amount.toFixed(2)}
+                      ${payout.amountDue.toFixed(2)}
                     </Typography>
                     <Button variant="filled" sx={{ p: "10px" }}>
                       Process

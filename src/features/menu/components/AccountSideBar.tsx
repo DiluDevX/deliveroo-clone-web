@@ -25,6 +25,7 @@ export default function AnchorTemporaryDrawer({
 
   const dispatch = useAppDispatch();
   const user = store.getState().auth.user;
+  const isPlatformAdmin = user?.role === "platform_admin";
 
   const navigate = useNavigate();
 
@@ -112,9 +113,7 @@ export default function AnchorTemporaryDrawer({
             )}
           <Button
             onClick={() =>
-              navigate(
-                user?.role === "ADMIN" ? "/admin/dashboard" : "/my-account",
-              )
+              navigate(isPlatformAdmin ? "/admin/dashboard" : "/my-account")
             }
             sx={{
               mt: 5,
@@ -127,7 +126,7 @@ export default function AnchorTemporaryDrawer({
               borderRadius: "8px",
             }}
           >
-            {user?.role === "ADMIN" ? "Admin Dashboard" : "My Account"}
+            {isPlatformAdmin ? "Admin Dashboard" : "My Account"}
           </Button>
           <Button
             sx={{

@@ -16,7 +16,7 @@ export const getAllRestaurants = async (): Promise<Restaurant[]> => {
 
 export const getFilteredRestaurants = async (): Promise<Restaurant[]> => {
   try {
-    const response = await axios.get("/api/restaurants/");
+    const response = await axios.get("/api/restaurants");
     if (!response.data) {
       throw new Error("Failed to fetch filtered Restaurants.");
     }
@@ -40,5 +40,21 @@ export const getSingleRestaurant = async (orgId: string) => {
   } catch (error) {
     console.error("Error fetching Restaurant", error);
     return null;
+  }
+};
+
+export const createRestaurant = async (
+  restaurantData: Partial<Restaurant>,
+): Promise<Restaurant> => {
+  try {
+    const response = await axios.post("/api/restaurants", restaurantData);
+    if (!response.data) {
+      throw new Error("Failed to create restaurant.");
+    }
+    const data: Restaurant = await response.data.data;
+    return data;
+  } catch (error) {
+    console.error("Error creating restaurant.", error);
+    throw error;
   }
 };

@@ -1,9 +1,9 @@
 import axios from "axios";
-import { Orders } from "../types/orders";
+import { FetchedAllOrders } from "../types/orders";
 
-export const getAllOrders = async (): Promise<Orders[]> => {
+export const getAllOrders = async (): Promise<FetchedAllOrders[]> => {
   try {
-    const response = await axios.get("/api/admin/orders");
+    const response = await axios.get("/api/orders");
     if (!response.data) {
       throw new Error("Failed to fetch all Orders.");
     }

@@ -3,7 +3,10 @@ export type IUser = {
   firstName: string;
   lastName: string;
   email: string;
-  phone?: string;
-  createdAt?: string;
-  role?: string;
+  phone: string;
+  role: "user" | "platform_admin" | "restaurant_admin";
+  status: "Active" | "Suspended";
+  orderCount: number;
+  createdAt: string;
+  updatedAt: string;
 };

@@ -34,10 +34,12 @@ import { Colors } from "../../theme";
 import { dashboardStats } from "../../data/adminMockData";
 import { getAllRestaurants } from "../../services/restaurant.service";
 import { Restaurant } from "../../types/restaurants";
-import { Orders } from "../../types/orders";
-import { getAllOrders, getTotalRevenue } from "../../services/order.service";
+import { FetchedAllOrders } from "../../types/orders";
+import { getAllOrders } from "../../services/order.service";
 import { getAllUsers } from "../../services/user.service";
 import { IUser } from "../../types/user.types";
+import { getAdminDashboardStats } from "../../services/finance.service";
+import { useNavigate } from "react-router";
 
 // Dummy revenue data
 const dummyRevenueData = [
@@ -53,7 +55,7 @@ const dummyRevenueData = [
 const AdminDashboardPage = () => {
   const [timePeriod, setTimePeriod] = useState("7days");
   const [fetchedRestaurants, setFetchedRestaurants] = useState<Restaurant[]>();
-  const [fetchedOrders, setFetchedOrders] = useState<Orders[]>([]);
+  const [fetchedOrders, setFetchedOrders] = useState<FetchedAllOrders[]>([]);
   const [fetchedUsers, setFetchedUsers] = useState<IUser[]>([]);
   const [fetchedTotalRevenue, setFetchedTotalRevenue] = useState<number>(0);
 
@@ -65,8 +67,8 @@ const AdminDashboardPage = () => {
       setFetchedOrders(orders);
       const users = await getAllUsers();
       setFetchedUsers(users);
-      const revenue = await getTotalRevenue();
-      setFetchedTotalRevenue(revenue);
+      const result = await getAdminDashboardStats();
+      setFetchedTotalRevenue(result.data.stats.totalPlatformRevenue);
     }
     fetchEverything();
   }, []);
@@ -108,16 +110,20 @@ const AdminDashboardPage = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
+      case "Done":
         return "success";
       case "pending":
         return "warning";
       case "failed":
         return "error";
+      case "cancelled":
+        return "error";
       default:
         return "default";
     }
   };
+
+  const navigate = useNavigate();
 
   return (
     <Box>
@@ -290,17 +296,22 @@ const AdminDashboardPage = () => {
             <Typography
               variant="caption"
               sx={{
-                color: "success.main",
+                color: Colors.background.brand,
                 display: "flex",
                 alignItems: "center",
                 gap: 0.5,
               }}
             >
-              <TrendingUp sx={{ fontSize: "1rem" }} />
+              <TrendingUp
+                sx={{ fontSize: "1rem", color: Colors.background.brand }}
+              />
               +0% Up last 7 days
             </Typography>
           </Box>
           <Button
+            onClick={() => {
+              navigate("/admin/finance");
+            }}
             variant="contained"
             sx={{ bgcolor: Colors.background.brand, alignSelf: "flex-end" }}
           >
@@ -345,8 +356,12 @@ const AdminDashboardPage = () => {
                       <Chip
                         label={order.status}
                         color={getStatusColor(order.status)}
-                        variant="outlined"
                         size="small"
+                        sx={{
+                          maxWidth: "60px",
+                          minWidth: "60px",
+                          fontSize: "0.6rem",
+                        }}
                       />
                     </TableCell>
                     <TableCell sx={{ color: Colors.text.default }}>

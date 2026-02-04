@@ -16,6 +16,8 @@ import {
   InputLabel,
 } from "@mui/material";
 import { Colors } from "../../../theme";
+import { Restaurant } from "../../../types/restaurants";
+import { createRestaurant } from "../../../services/restaurant.service";
 
 interface AddRestaurantModalProps {
   open: boolean;
@@ -26,6 +28,13 @@ interface AddRestaurantModalProps {
 interface FormData {
   name: string;
   cuisine: string;
+  image: string;
+  description: string;
+  tags: string;
+  openingAt: string;
+  closingAt: string;
+  minimumValue: string;
+  deliveryCharge: string;
   rating: string;
   totalOrders: string;
   totalRevenue: string;
@@ -40,6 +49,13 @@ const AddRestaurantModal = ({
   const [formData, setFormData] = useState<FormData>({
     name: "",
     cuisine: "",
+    image: "",
+    description: "",
+    tags: "",
+    openingAt: "09:00",
+    closingAt: "21:00",
+    minimumValue: "0",
+    deliveryCharge: "2.99",
     rating: "",
     totalOrders: "",
     totalRevenue: "",
@@ -68,8 +84,30 @@ const AddRestaurantModal = ({
   };
 
   const handleSubmit = async () => {
+    const newRestaurant: Partial<Restaurant> = {
+      name: formData.name,
+      image: formData.image,
+      description: formData.description,
+      tags: formData.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag),
+      openingAt: formData.openingAt,
+      closingAt: formData.closingAt,
+      minimumValue: formData.minimumValue,
+      deliveryCharge: formData.deliveryCharge,
+      cuisine: formData.cuisine,
+      rating: formData.rating ? parseFloat(formData.rating) : 0,
+      totalOrders: formData.totalOrders ? parseInt(formData.totalOrders) : 0,
+      totalRevenue: formData.totalRevenue
+        ? parseFloat(formData.totalRevenue)
+        : 0,
+      status: formData.status === "active" ? "active" : "disabled",
+    };
+
     setError("");
 
+    // Validation
     if (!formData.name.trim()) {
       setError("Restaurant name is required");
       return;
@@ -92,16 +130,45 @@ const AddRestaurantModal = ({
       return;
     }
 
+    if (!formData.image.trim()) {
+      setError("Image URL is required");
+      return;
+    }
+
+    const urlRegex = /^https?:\/\/.+/;
+    if (!urlRegex.test(formData.image)) {
+      setError("Image must be a valid URL (http:// or https://)");
+      return;
+    }
+
+    if (!formData.openingAt) {
+      setError("Opening time is required");
+      return;
+    }
+
+    if (!formData.closingAt) {
+      setError("Closing time is required");
+      return;
+    }
+
+    const minValue = parseFloat(formData.minimumValue);
+    if (isNaN(minValue) || minValue < 0) {
+      setError("Minimum value must be a positive number");
+      return;
+    }
+
+    const deliveryCharge = parseFloat(formData.deliveryCharge);
+    if (isNaN(deliveryCharge) || deliveryCharge < 0) {
+      setError("Delivery charge must be a positive number");
+      return;
+    }
+
     setLoading(true);
     try {
-      // TODO: Replace with actual API call
-      // const response = await createRestaurant({
-      //   name: formData.name,
-      //   cuisine: formData.cuisine,
-      //   rating: parseFloat(formData.rating) || 0,
-      //   totalOrders: parseInt(formData.totalOrders) || 0,
-      //   totalRevenue: parseFloat(formData.totalRevenue) || 0,
-      // });
+      const result = await createRestaurant(newRestaurant);
+      if (!result) {
+        throw new Error("Failed to create restaurant.");
+      }
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 800));
@@ -110,6 +177,13 @@ const AddRestaurantModal = ({
       setFormData({
         name: "",
         cuisine: "",
+        image: "",
+        description: "",
+        tags: "",
+        openingAt: "09:00",
+        closingAt: "21:00",
+        minimumValue: "0",
+        deliveryCharge: "2.99",
         rating: "",
         totalOrders: "",
         totalRevenue: "",
@@ -128,17 +202,24 @@ const AddRestaurantModal = ({
   };
 
   const handleClose = () => {
+    setError("");
+    onClose();
     if (!loading) {
       setFormData({
         name: "",
         cuisine: "",
+        image: "",
+        description: "",
+        tags: "",
+        openingAt: "09:00",
+        closingAt: "21:00",
+        minimumValue: "0",
+        deliveryCharge: "2.99",
         rating: "",
         totalOrders: "",
         totalRevenue: "",
         status: "active",
       });
-      setError("");
-      onClose();
     }
   };
 
@@ -174,6 +255,88 @@ const AddRestaurantModal = ({
             placeholder="e.g., Italian"
             disabled={loading}
           />
+          <TextField
+            label="Image URL"
+            name="image"
+            value={formData.image}
+            onChange={handleInputChange}
+            fullWidth
+            size="small"
+            placeholder="e.g., https://example.com/image.jpg"
+            disabled={loading}
+          />
+          <TextField
+            label="Description"
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            fullWidth
+            size="small"
+            placeholder="Brief description of the restaurant"
+            disabled={loading}
+            multiline
+            rows={2}
+          />
+          <TextField
+            label="Tags (comma-separated)"
+            name="tags"
+            value={formData.tags}
+            onChange={handleInputChange}
+            fullWidth
+            size="small"
+            placeholder="e.g., fast-food, delivery, budget-friendly"
+            disabled={loading}
+          />
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <TextField
+              label="Opening Time"
+              name="openingAt"
+              type="time"
+              value={formData.openingAt}
+              onChange={handleInputChange}
+              size="small"
+              disabled={loading}
+              InputLabelProps={{ shrink: true }}
+              sx={{ flex: 1 }}
+            />
+            <TextField
+              label="Closing Time"
+              name="closingAt"
+              type="time"
+              value={formData.closingAt}
+              onChange={handleInputChange}
+              size="small"
+              disabled={loading}
+              InputLabelProps={{ shrink: true }}
+              sx={{ flex: 1 }}
+            />
+          </Box>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <TextField
+              label="Minimum Order Value"
+              name="minimumValue"
+              type="number"
+              value={formData.minimumValue}
+              onChange={handleInputChange}
+              fullWidth
+              size="small"
+              placeholder="e.g., 50"
+              disabled={loading}
+              inputProps={{ step: "0.01", min: "0" }}
+            />
+            <TextField
+              label="Delivery Charge"
+              name="deliveryCharge"
+              type="number"
+              value={formData.deliveryCharge}
+              onChange={handleInputChange}
+              fullWidth
+              size="small"
+              placeholder="e.g., 2.99"
+              disabled={loading}
+              inputProps={{ step: "0.01", min: "0" }}
+            />
+          </Box>
           <FormControl fullWidth size="small" disabled={loading}>
             <InputLabel>Status</InputLabel>
             <Select

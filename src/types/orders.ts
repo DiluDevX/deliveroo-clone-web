@@ -9,6 +9,7 @@ export interface Order {
   totalAmount: string;
   status: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface GetAllOrders {
@@ -31,4 +32,24 @@ export interface Orders {
   totalAmount: number;
   status: string;
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface FetchedAllOrders {
+  _id: string;
+  id: string;
+  restaurantId: {
+    _id: string;
+    name: string;
+  };
+  userId: string;
+  items: Array<{
+    _id: string;
+    dish: string;
+    quantity: number;
+  }>;
+  totalAmount: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }

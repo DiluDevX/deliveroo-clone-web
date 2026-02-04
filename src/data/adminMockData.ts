@@ -18,7 +18,7 @@ export const dashboardStats = {
       restaurant: "Tossed",
       user: "John Doe",
       amount: 45.99,
-      status: "completed",
+      status: "Done",
       time: "2 hours ago",
     },
     {
@@ -34,7 +34,7 @@ export const dashboardStats = {
       restaurant: "Burger House",
       user: "Mike Johnson",
       amount: 28.75,
-      status: "completed",
+      status: "Done",
       time: "1 hour ago",
     },
     {
@@ -42,7 +42,7 @@ export const dashboardStats = {
       restaurant: "Sushi Bar",
       user: "Sarah Williams",
       amount: 55.0,
-      status: "completed",
+      status: "Done",
       time: "3 hours ago",
     },
     {
@@ -52,6 +52,14 @@ export const dashboardStats = {
       amount: 39.99,
       status: "failed",
       time: "4 hours ago",
+    },
+    {
+      id: "ORD-006",
+      restaurant: "Pasta dfeqjnf",
+      user: "Davsdnpief",
+      amount: 312.99,
+      status: "cancelled",
+      time: "1 hours ago",
     },
   ],
 };

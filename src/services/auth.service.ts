@@ -91,9 +91,11 @@ interface LoginApiResponse {
     lastName: string;
     email: string;
     phone: string | null;
-    role: string;
+    role: "user" | "platform_admin" | "restaurant_admin";
     createdAt: string;
     updatedAt: string;
+    orderCount: number;
+    status: "Active" | "Suspended";
   };
   accessToken: string;
 }
@@ -114,11 +116,16 @@ export const login = async (
         type: "SUCCESS",
         successResponse: {
           user: {
+            id: user.id,
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
-            phone: user.phone ?? undefined,
+            phone: user.phone ?? "",
             role: user.role,
+            orderCount: user.orderCount ?? 0,
+            status: user.status,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
           },
         },
       };

@@ -16,85 +16,11 @@ import { Add, SearchOutlined } from "@mui/icons-material";
 import { Colors } from "../../theme";
 import Button from "../../features/menu/components/Button";
 import AddRestaurantModal from "../../features/menu/components/AddRestaurantModal";
-
-// Mock data for development
-const mockRestaurants = [
-  {
-    id: "1",
-    name: "Pizza Palace",
-    cuisine: "Italian",
-    rating: 4.8,
-    totalOrders: 324,
-    totalRevenue: 8540,
-    status: "active",
-  },
-  {
-    id: "2",
-    name: "Burger Barn",
-    cuisine: "American",
-    rating: 4.5,
-    totalOrders: 512,
-    totalRevenue: 9876,
-    status: "active",
-  },
-  {
-    id: "3",
-    name: "Sushi Station",
-    cuisine: "Japanese",
-    rating: 4.9,
-    totalOrders: 287,
-    totalRevenue: 7652,
-    status: "active",
-  },
-  {
-    id: "4",
-    name: "Taco Fiesta",
-    cuisine: "Mexican",
-    rating: 4.6,
-    totalOrders: 445,
-    totalRevenue: 6234,
-    status: "active",
-  },
-  {
-    id: "5",
-    name: "Pasta Paradise",
-    cuisine: "Italian",
-    rating: 4.7,
-    totalOrders: 198,
-    totalRevenue: 5432,
-    status: "disabled",
-  },
-  {
-    id: "6",
-    name: "Dragon Wok",
-    cuisine: "Chinese",
-    rating: 4.4,
-    totalOrders: 623,
-    totalRevenue: 10234,
-    status: "active",
-  },
-  {
-    id: "7",
-    name: "Curry House",
-    cuisine: "Indian",
-    rating: 4.6,
-    totalOrders: 412,
-    totalRevenue: 7845,
-    status: "disabled",
-  },
-  {
-    id: "8",
-    name: "Greek Taverna",
-    cuisine: "Greek",
-    rating: 4.5,
-    totalOrders: 267,
-    totalRevenue: 5234,
-    status: "active",
-  },
-];
+import { getAllRestaurants } from "../../services/restaurant.service";
+import { Restaurant } from "../../types/restaurants";
 
 const AdminRestaurantsPage = () => {
-  const [restaurants] = useState(mockRestaurants);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -102,33 +28,30 @@ const AdminRestaurantsPage = () => {
     setModalOpen(true);
   };
 
-  const handleModalClose = () => {
+  const handleModalClose = async () => {
+    const data = await getAllRestaurants();
+    setRestaurants(data || []);
     setModalOpen(false);
-  };
-
-  const handleRestaurantAdded = () => {
-    // TODO: Refresh restaurant list from API
-    console.log("Restaurant added successfully");
   };
 
   useEffect(() => {
     async function fetchRestaurants() {
-      // TODO: Replace with real API call
-      // const data = await getAllRestaurants();
-      // setRestaurants(data || []);
-      // For now, using mock data
+      const data = await getAllRestaurants();
+      console.log("Fetched restaurants:", data);
+
+      setRestaurants(data || []);
     }
     fetchRestaurants();
   }, []);
 
   const filteredRestaurants = restaurants.filter(
     (r) =>
-      r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.cuisine.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.rating.toString().includes(searchTerm.toLowerCase()) ||
-      r.totalOrders.toString().includes(searchTerm.toLowerCase()) ||
-      r.totalRevenue.toString().includes(searchTerm.toLowerCase()) ||
-      r.status.toString().includes(searchTerm.toLowerCase()),
+      r.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.cuisine?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.rating?.toString().includes(searchTerm.toLowerCase()) ||
+      r.totalOrders?.toString().includes(searchTerm.toLowerCase()) ||
+      r.totalRevenue?.toString().includes(searchTerm.toLowerCase()) ||
+      r.status?.toString().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -202,15 +125,15 @@ const AdminRestaurantsPage = () => {
               {filteredRestaurants.map((restaurant) => (
                 <TableRow key={restaurant.id}>
                   <TableCell sx={{ fontWeight: "bold" }}>
-                    {restaurant.name}
+                    {restaurant.name || "N/A"}
                   </TableCell>
-                  <TableCell>{restaurant.totalOrders}</TableCell>
+                  <TableCell>{restaurant.totalOrders ?? 0}</TableCell>
                   <TableCell>
-                    $ {restaurant.totalRevenue.toLocaleString()}
+                    $ {(restaurant.totalRevenue ?? 0).toFixed(2)}
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={restaurant.status}
+                      label={restaurant.status || "inactive"}
                       color={
                         restaurant.status === "active" ? "success" : "error"
                       }
@@ -264,7 +187,9 @@ const AdminRestaurantsPage = () => {
       <AddRestaurantModal
         open={modalOpen}
         onClose={handleModalClose}
-        onSuccess={handleRestaurantAdded}
+        onSuccess={() => {
+          handleModalClose();
+        }}
       />
     </Box>
   );

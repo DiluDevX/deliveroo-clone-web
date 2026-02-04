@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -11,98 +11,26 @@ import {
   TableRow,
   Chip,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import { SearchOutlined } from "@mui/icons-material";
 import { Colors } from "../../theme";
 import Button from "../../features/menu/components/Button";
-
-// Mock data for development
-const mockOrders = [
-  {
-    id: "ORD-001",
-    userId: "John Doe",
-    restaurantId: "Pizza Palace",
-    totalAmount: 45.99,
-    status: "Done",
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-  },
-  {
-    id: "ORD-002",
-    userId: "Jane Smith",
-    restaurantId: "Sushi Station",
-    totalAmount: 62.5,
-    status: "Done",
-    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
-  },
-  {
-    id: "ORD-003",
-    userId: "Mike Johnson",
-    restaurantId: "Burger Barn",
-    totalAmount: 38.75,
-    status: "pending",
-    createdAt: new Date(Date.now() - 30 * 60 * 1000),
-  },
-  {
-    id: "ORD-004",
-    userId: "Sarah Williams",
-    restaurantId: "Taco Fiesta",
-    totalAmount: 28.99,
-    status: "Done",
-    createdAt: new Date(Date.now() - 45 * 60 * 1000),
-  },
-  {
-    id: "ORD-005",
-    userId: "Robert Brown",
-    restaurantId: "Dragon Wok",
-    totalAmount: 55.0,
-    status: "pending",
-    createdAt: new Date(Date.now() - 15 * 60 * 1000),
-  },
-  {
-    id: "ORD-006",
-    userId: "Emily Davis",
-    restaurantId: "Curry House",
-    totalAmount: 42.3,
-    status: "Done",
-    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
-  },
-  {
-    id: "ORD-007",
-    userId: "David Miller",
-    restaurantId: "Pasta Paradise",
-    totalAmount: 51.75,
-    status: "cancelled",
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-  },
-  {
-    id: "ORD-008",
-    userId: "Lisa Anderson",
-    restaurantId: "Greek Taverna",
-    totalAmount: 39.99,
-    status: "Done",
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-  },
-  {
-    id: "ORD-009",
-    userId: "Chris Taylor",
-    restaurantId: "Pizza Palace",
-    totalAmount: 47.5,
-    status: "pending",
-    createdAt: new Date(Date.now() - 20 * 60 * 1000),
-  },
-  {
-    id: "ORD-010",
-    userId: "Amanda White",
-    restaurantId: "Sushi Station",
-    totalAmount: 68.99,
-    status: "Done",
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-  },
-];
+import { getAllOrders } from "../../services/order.service";
+import { FetchedAllOrders } from "../../types/orders";
 
 const AdminOrdersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [orders] = useState(mockOrders);
+  const [orders, setOrders] = useState<FetchedAllOrders[]>([]);
+
+  useEffect(() => {
+    const fetchAllOrders = async () => {
+      const allOrders = await getAllOrders();
+      console.log("Fetched Orders:", allOrders);
+      setOrders(allOrders);
+    };
+    fetchAllOrders();
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -121,12 +49,10 @@ const AdminOrdersPage = () => {
     (o) =>
       o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       o.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      o.restaurantId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      o.restaurantId._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       o.totalAmount.toString().includes(searchTerm.toLowerCase()) ||
       o.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      new Date(o.createdAt)
-        .toLocaleDateString()
-        .includes(searchTerm.toLowerCase()),
+      o.restaurantId.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -189,11 +115,53 @@ const AdminOrdersPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredOrders.slice(0, 10).map((order) => (
+              {filteredOrders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell sx={{ fontWeight: "bold" }}>{order.id}</TableCell>
-                  <TableCell>{order.userId}</TableCell>
-                  <TableCell>{order.restaurantId}</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    <Tooltip title={order.id} arrow>
+                      <span
+                        style={{
+                          maxWidth: "100px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          display: "block",
+                        }}
+                      >
+                        {order.id}
+                      </span>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell>
+                    <Tooltip title={order.userId} arrow>
+                      <span
+                        style={{
+                          maxWidth: "100px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          display: "block",
+                        }}
+                      >
+                        {order.userId}
+                      </span>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell>
+                    <Tooltip title={order.restaurantId.name} arrow>
+                      <span
+                        style={{
+                          maxWidth: "100px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          display: "block",
+                        }}
+                      >
+                        {order.restaurantId.name}
+                      </span>
+                    </Tooltip>
+                  </TableCell>
                   <TableCell>${order.totalAmount?.toFixed(2)}</TableCell>
                   <TableCell>
                     <Chip
@@ -208,7 +176,7 @@ const AdminOrdersPage = () => {
                     />
                   </TableCell>
                   <TableCell>
-                    {new Date(order.createdAt).toLocaleDateString()}
+                    {new Date(order.createdAt).toISOString().split("T")[0]}
                   </TableCell>
                   <TableCell
                     sx={{

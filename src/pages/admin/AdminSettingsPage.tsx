@@ -224,7 +224,7 @@ const AdminSettingsPage = () => {
           label="API Key"
           defaultValue={apiKey}
           size="small"
-          disabled={store.getState().auth.user?.role !== "platform-admin"}
+          disabled={store.getState().auth.user?.role !== "platform_admin"}
           sx={{ mb: 2 }}
           InputProps={{
             endAdornment: (
