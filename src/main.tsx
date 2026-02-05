@@ -3,11 +3,12 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import { createTheme, ThemeProvider } from "@mui/material";
 import { HelmetProvider } from "react-helmet-async";
-import { SnackbarProvider } from "notistack";
+import { Toaster } from "sonner";
 import { Provider } from "react-redux";
 import { persistor, store } from "./store/store.tsx";
 import { PersistGate } from "redux-persist/integration/react";
 import axios from "axios";
+import { Colors } from "./theme/colors.ts";
 
 axios.defaults.withCredentials = true;
 
@@ -24,17 +25,22 @@ createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
     <ThemeProvider theme={theme}>
       <StrictMode>
-        <SnackbarProvider
-          maxSnack={2}
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          style={{ marginTop: "4rem", fontFamily: "IBM Plex Sans, serif" }}
-        >
-          <Provider store={store}>
-            <PersistGate loading={null} persistor={persistor}>
-              <App />
-            </PersistGate>
-          </Provider>
-        </SnackbarProvider>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              backgroundColor: Colors.background.brand,
+              color: Colors.text.inverse,
+              marginTop: "4rem",
+              fontFamily: "IBM Plex Sans, serif",
+            },
+          }}
+        />
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            <App />
+          </PersistGate>
+        </Provider>
       </StrictMode>
     </ThemeProvider>
   </HelmetProvider>,

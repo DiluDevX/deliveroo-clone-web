@@ -12,11 +12,25 @@ import {
   Chip,
   TextField,
 } from "@mui/material";
-import { SearchOutlined } from "@mui/icons-material";
+import { SearchOutlined, Visibility, Block } from "@mui/icons-material";
 import { Colors } from "../../theme";
 import Button from "../../features/menu/components/Button";
 import { IUser } from "../../types/user.types";
 import { getAllUsers } from "../../services/user.service";
+import { toast } from "sonner";
+
+const textFieldStyles = {
+  "& .MuiOutlinedInput-root": {
+    "&.Mui-focused fieldset": {
+      borderColor: Colors.background.brand,
+    },
+  },
+  "& .MuiInputLabel-root": {
+    "&.Mui-focused": {
+      color: Colors.background.brand,
+    },
+  },
+};
 
 const AdminUsersPage = () => {
   const [users, setUsers] = useState<IUser[]>([]);
@@ -24,8 +38,14 @@ const AdminUsersPage = () => {
 
   useEffect(() => {
     async function fetchUsers() {
-      const data = await getAllUsers();
-      setUsers(data);
+      try {
+        const data = await getAllUsers();
+        setUsers(data);
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to fetch users",
+        );
+      }
     }
     fetchUsers();
   }, []);
@@ -79,6 +99,7 @@ const AdminUsersPage = () => {
             ),
           }}
           size="small"
+          sx={textFieldStyles}
         />
       </Card>
 
@@ -147,12 +168,14 @@ const AdminUsersPage = () => {
                         fontSize: "0.9rem",
                       }}
                     >
+                      <Visibility sx={{ fontSize: "1rem", mr: 0.5 }} />
                       view
                     </Button>
                     <Button
                       borderOff={true}
                       sx={{ color: Colors.text.error, fontSize: "0.9rem" }}
                     >
+                      <Block sx={{ fontSize: "1rem", mr: 0.5 }} />
                       suspend
                     </Button>
                   </TableCell>

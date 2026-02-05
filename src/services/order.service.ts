@@ -8,6 +8,7 @@ export const getAllOrders = async (): Promise<FetchedAllOrders[]> => {
       throw new Error("Failed to fetch all Orders.");
     }
     const data = await response.data;
+    console.log("Fetched Orders:", data.data);
     return data.data;
   } catch {
     return [];

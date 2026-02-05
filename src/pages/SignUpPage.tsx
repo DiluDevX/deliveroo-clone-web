@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import { Colors } from "../theme/colors";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useSnackbar } from "notistack";
+import { toast } from "sonner";
 import Checkbox from "@mui/material/Checkbox";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -29,7 +29,6 @@ type SignUpForm = {
 };
 
 const SignUpPage = () => {
-  const { enqueueSnackbar } = useSnackbar();
   const [checked, setChecked] = useState(false);
 
   const navigate = useNavigate();
@@ -69,26 +68,14 @@ const SignUpPage = () => {
     const response = await signup({ email, password, firstName, lastName });
 
     if (response.type === "CONFLICT") {
-      enqueueSnackbar({
-        variant: "error",
-        message: "User Already Exists. Please Login.",
-        autoHideDuration: 5000,
-      });
+      toast.error("User Already Exists. Please Login.");
     } else if (response.type === "SUCCESS" && response.successResponse) {
       // The server should set the session via HttpOnly cookie. Do not persist tokens in client JS.
       // If you must fallback to client storage, ensure comprehensive XSS mitigations and document why.
-      enqueueSnackbar({
-        variant: "success",
-        message: "Account created successfully!",
-        autoHideDuration: 3000,
-      });
+      toast.success("Account created successfully!");
       navigate("/");
     } else {
-      enqueueSnackbar({
-        variant: "error",
-        message: "Something Went Wrong",
-        autoHideDuration: 5000,
-      });
+      toast.error("Something Went Wrong");
     }
   });
 

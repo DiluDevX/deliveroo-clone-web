@@ -10,6 +10,7 @@ import {
   SignupResponseBodyDTO,
 } from "../types/auth.types";
 import { CommonResponseDTO } from "../types/common";
+import { showErrorSnackbar } from "../utils/notifications";
 
 type ICheckEmailResponse = {
   token?: string;
@@ -42,7 +43,7 @@ export const checkEmail = async (
       };
     }
 
-    console.error("checkEmail", error);
+    showErrorSnackbar("Something went wrong");
     return {
       type: "UNKNOWN",
     };
@@ -72,7 +73,7 @@ export const checkEmailOrPhone = async (
       };
     }
 
-    console.error("checkEmail", error);
+    showErrorSnackbar("Something went wrong");
     return {
       type: "UNKNOWN",
     };
@@ -135,10 +136,7 @@ export const login = async (
       type: "UNKNOWN",
     };
   } catch (error) {
-    console.error("login error:", error);
     if (isAxiosError(error)) {
-      console.error("login error response:", error.response?.data);
-      console.error("login error status:", error.response?.status);
       if (error.response?.status === 401) {
         return {
           type: "INVALID",
@@ -146,7 +144,7 @@ export const login = async (
       }
     }
 
-    console.error("login", error);
+    showErrorSnackbar("Something went wrong");
     return {
       type: "UNKNOWN",
     };
@@ -202,8 +200,8 @@ export const resetUserPassword = async ({
       return false;
     }
     return true;
-  } catch (error) {
-    console.error("Error validating token", error);
+  } catch {
+    showErrorSnackbar("Something went wrong");
     return false;
   }
 };
@@ -215,16 +213,17 @@ export const checkAuthStatus = async () => {
       {},
       { withCredentials: true },
     );
-    console.log("checkAuthStatus response", response.data);
     if (response.data?.valid === true && response.data?.user !== null) {
       return response.data;
     }
     return false;
-  } catch (error) {
-    console.error("Error checking auth status", error);
+  } catch {
     return false;
   }
 };
+
+// Prevent multiple simultaneous refresh requests
+let refreshPromise: Promise<boolean> | null = null;
 
 export const refreshToken = async () => {
   try {
@@ -234,10 +233,25 @@ export const refreshToken = async () => {
       { withCredentials: true },
     );
     return response.status === 200;
-  } catch (error) {
-    console.error("Error refreshing token", error);
+  } catch {
     return false;
   }
+};
+
+// Get valid auth with automatic refresh on race condition
+export const getValidAuth = async () => {
+  let result = await checkAuthStatus();
+  if (!result) {
+    // If a refresh is already in progress, wait for it
+    if (!refreshPromise) {
+      refreshPromise = refreshToken().finally(() => {
+        refreshPromise = null;
+      });
+    }
+    await refreshPromise;
+    result = await checkAuthStatus();
+  }
+  return result;
 };
 
 export const logout = async () => {

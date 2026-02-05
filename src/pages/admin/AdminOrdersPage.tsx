@@ -13,7 +13,7 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
-import { SearchOutlined } from "@mui/icons-material";
+import { SearchOutlined, Visibility } from "@mui/icons-material";
 import { Colors } from "../../theme";
 import Button from "../../features/menu/components/Button";
 import { getAllOrders } from "../../services/order.service";
@@ -192,6 +192,7 @@ const AdminOrdersPage = () => {
                         fontSize: "0.9rem",
                       }}
                     >
+                      <Visibility sx={{ fontSize: "1rem", mr: 0.5 }} />
                       view
                     </Button>
                   </TableCell>

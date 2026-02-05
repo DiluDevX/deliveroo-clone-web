@@ -6,7 +6,7 @@ import { useCartSync } from "../store/hooks/useCartSync";
 import { useEffect } from "react";
 import { useAppDispatch } from "../store/hooks/cartHooks";
 import { setAuthInitialized, setCredentials } from "../store/authSlice";
-import { checkAuthStatus, refreshToken } from "../services/auth.service";
+import { getValidAuth } from "../services/auth.service";
 
 const MainLayout = () => {
   // Sync cart with server when user logs in
@@ -17,15 +17,9 @@ const MainLayout = () => {
     const checkAuth = async () => {
       let result = null;
       try {
-        result = await checkAuthStatus();
-        if (!result) {
-          // Try refresh token if checkAuthStatus failed
-          await refreshToken();
-          result = await checkAuthStatus();
-        }
-      } catch (error) {
-        // Error refreshing token
-        console.error("Error refreshing token", error);
+        result = await getValidAuth();
+      } catch {
+        // Auth check failed
       } finally {
         if (result) {
           dispatch(setCredentials({ user: result.user }));

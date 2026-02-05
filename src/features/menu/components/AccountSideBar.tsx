@@ -159,6 +159,7 @@ export default function AnchorTemporaryDrawer({
           </Button>
           <Button
             onClick={async () => {
+              toggleDrawer(false);
               await logout();
               dispatch(logOut());
             }}

@@ -20,51 +20,14 @@ import {
 } from "recharts";
 import { Colors } from "../../theme";
 import Button from "../../features/menu/components/Button";
+import LoadingIndicator from "../../features/menu/components/LoadingIndicator";
 import axios from "axios";
-
-interface FinanceStats {
-  stats: {
-    totalPlatformRevenue: number;
-    totalCommission: number;
-    restaurantPayoutMade: number;
-    pendingPayoutAmount: number;
-  };
-  pendingPayouts?: {
-    restaurantId: string;
-    restaurantName: string;
-    amountDue: number;
-    status: string;
-  }[];
-}
-
-const dummyRevenueData = [
-  { date: "Mon", revenue: 4000, commission: 400 },
-  { date: "Tue", revenue: 3000, commission: 300 },
-  { date: "Wed", revenue: 2000, commission: 200 },
-  { date: "Thu", revenue: 2780, commission: 278 },
-  { date: "Fri", revenue: 1890, commission: 189 },
-  { date: "Sat", revenue: 2390, commission: 239 },
-  { date: "Sun", revenue: 3490, commission: 349 },
-];
-
-const adminFinanceStats = async (): Promise<FinanceStats> => {
-  // Fetch finance stats from the server
-  try {
-    const response = await axios.get("/api/finance/admin-dashboard-stats");
-    console.log("Finance stats response:", response);
-    return response.data.data;
-  } catch (error) {
-    console.error("Error fetching admin dashboard stats:", error);
-    return {
-      stats: {
-        totalPlatformRevenue: 0,
-        totalCommission: 0,
-        restaurantPayoutMade: 0,
-        pendingPayoutAmount: 0,
-      },
-    };
-  }
-};
+import {
+  transformFinanceToRevenueChart,
+  formatChartDate,
+  RevenueChartData,
+} from "../../utils/chartDataTransformers";
+import { getFinanceRecords } from "../../services/finance.service";
 
 const AdminFinancePage = () => {
   const [timePeriod, setTimePeriod] = useState("7days");
@@ -78,17 +41,53 @@ const AdminFinancePage = () => {
   const [pendingPayouts, setPendingPayouts] = useState<
     FinanceStats["pendingPayouts"]
   >([]);
+  const [revenueChartData, setRevenueChartData] = useState<RevenueChartData[]>(
+    [],
+  );
+  const [finishedFetchingChartData, setFinishedFetchingChartData] =
+    useState(false);
+
+  interface FinanceStats {
+    stats: {
+      totalPlatformRevenue: number;
+      totalCommission: number;
+      restaurantPayoutMade: number;
+      pendingPayoutAmount: number;
+    };
+    pendingPayouts?: {
+      restaurantId: string;
+      restaurantName: string;
+      amountDue: number;
+      status: string;
+    }[];
+  }
 
   // Fetch finance stats on mount
   useEffect(() => {
+    setFinishedFetchingChartData(false);
     const fetchFinanceStats = async () => {
-      await adminFinanceStats().then((data) => {
+      try {
+        const response = await axios.get("/api/finance/admin-dashboard-stats");
+        const data = response.data.data;
         setFinanceStats(data.stats);
         setPendingPayouts(data.pendingPayouts || []);
-      });
+
+        // Fetch finance records and transform to chart data
+        const financeRecords = await getFinanceRecords();
+        const daysToShow = timePeriod === "7days" ? 7 : 30;
+        const chartData = transformFinanceToRevenueChart(
+          financeRecords,
+          daysToShow,
+        );
+        setRevenueChartData(chartData);
+        setFinishedFetchingChartData(true);
+      } catch (error) {
+        console.error("Error fetching finance data:", error);
+        setFinishedFetchingChartData(true);
+      }
     };
     fetchFinanceStats();
-  }, []);
+  }, [timePeriod]);
 
   const stats = [
     {
@@ -158,7 +157,7 @@ const AdminFinancePage = () => {
       </Grid>
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} lg={12}>
           <Card
             sx={{
               p: 3,
@@ -201,24 +200,59 @@ const AdminFinancePage = () => {
                 </Button>
               </ButtonGroup>
             </Box>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={dummyRevenueData}>
-                <CartesianGrid stroke={Colors.border.default} />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke={Colors.background.brand}
+            {finishedFetchingChartData ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={revenueChartData}>
+                  <CartesianGrid stroke={Colors.border.default} />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={formatChartDate}
+                    tick={{
+                      fontSize: 12,
+                      fill: Colors.text.default,
+                      fontFamily: "IBM Plex Sans, serif",
+                    }}
+                  />
+                  <YAxis
+                    tick={{
+                      fontSize: 12,
+                      fill: Colors.text.default,
+                      fontFamily: "IBM Plex Sans, serif",
+                    }}
+                  />
+                  <Tooltip
+                    labelFormatter={(label) => formatChartDate(label as string)}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke={Colors.background.brand}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <Box
+                sx={{
+                  width: "100%",
+                  height: 250,
+                  borderRadius: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  pb: 3,
+                }}
+              >
+                <LoadingIndicator
+                  variant="bar"
+                  text="Fetching revenue data..."
                 />
-              </LineChart>
-            </ResponsiveContainer>
+              </Box>
+            )}
           </Card>
         </Grid>
 
         {/* Commission Chart */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} lg={12}>
           <Card
             sx={{
               p: 3,
@@ -226,18 +260,86 @@ const AdminFinancePage = () => {
               border: `1px solid ${Colors.border.default}`,
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-              Commission Breakdown
-            </Typography>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={dummyRevenueData}>
-                <CartesianGrid stroke={Colors.border.default} />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="commission" fill={Colors.background.brand} />
-              </BarChart>
-            </ResponsiveContainer>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
+                Commission Breakdown
+              </Typography>
+              <ButtonGroup>
+                <Button
+                  sx={{
+                    padding: "5px",
+                    borderTopRightRadius: 0,
+                    borderBottomRightRadius: 0,
+                  }}
+                  onClick={() => {
+                    setTimePeriod("7days");
+                  }}
+                  variant={timePeriod === "7days" ? "filled" : "border"}
+                >
+                  7D
+                </Button>
+                <Button
+                  sx={{
+                    padding: "5px",
+                    borderTopLeftRadius: 0,
+                    borderBottomLeftRadius: 0,
+                  }}
+                  onClick={() => {
+                    setTimePeriod("30days");
+                  }}
+                  variant={timePeriod === "30days" ? "filled" : "border"}
+                >
+                  30D
+                </Button>
+              </ButtonGroup>
+            </Box>
+
+            {finishedFetchingChartData ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={revenueChartData}>
+                  <CartesianGrid stroke={Colors.border.default} />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={formatChartDate}
+                    tick={{
+                      fontSize: 12,
+                      fill: Colors.text.default,
+                      fontFamily: "IBM Plex Sans, serif",
+                    }}
+                  />
+                  <YAxis
+                    tick={{
+                      fontSize: 12,
+                      fill: Colors.text.default,
+                      fontFamily: "IBM Plex Sans, serif",
+                    }}
+                  />
+                  <Tooltip
+                    labelFormatter={(label) => formatChartDate(label as string)}
+                  />
+                  <Bar dataKey="commission" fill={Colors.background.brand} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <Box
+                sx={{
+                  width: "100%",
+                  height: 250,
+                  borderRadius: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  pb: 3,
+                }}
+              >
+                <LoadingIndicator
+                  variant="bar"
+                  text="Fetching commission data..."
+                />
+              </Box>
+            )}
           </Card>
         </Grid>
       </Grid>

@@ -12,13 +12,14 @@ import TextInput from "../features/menu/components/TextInput";
 import { emailSchema } from "../features/menu/validations/email.validation";
 import { checkPasswordSchema } from "../features/menu/validations/password.validation";
 import { checkEmail, login } from "../services/auth.service";
-import { useSnackbar } from "notistack";
+import { toast } from "sonner";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { setCredentials } from "../store/authSlice";
 import { useAppDispatch } from "../store/hooks/cartHooks";
 import { verifyApiKey } from "../services/admin.service";
 import { setAdminStatus } from "../store/adminSlice";
+import { showErrorSnackbar, showSuccessSnackbar } from "../utils/notifications";
 
 type LoginForm = {
   email: string;
@@ -29,11 +30,13 @@ type LoginForm = {
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { enqueueSnackbar } = useSnackbar();
 
   const [existingUser, setExistingUser] = useState(false);
   const [showApiKeyField, setShowApiKeyField] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
+
+  const handleClickShowApiKey = () => setShowApiKey((show) => !show);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -78,7 +81,7 @@ export default function Login() {
     } else if (checkEmailResponse.type === "NEW") {
       return navigate(`/Account/SignUp?email=${encodeURIComponent(email)}`);
     } else {
-      enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
+      toast.error("Something Went Wrong");
       return;
     }
     if (email && password && !showApiKeyField) {
@@ -116,18 +119,17 @@ export default function Login() {
           sessionStorage.removeItem("redirectAfterLogin");
           navigate(redirectPath);
         } else {
+          showSuccessSnackbar("Logged In!");
           navigate("/");
         }
       } else if (loginResponse.type === "INVALID") {
-        enqueueSnackbar({ variant: "error", message: "Invalid Credentials" });
+        toast.error("Invalid Credentials");
       } else {
-        enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
+        toast.error("Something Went Wrong");
       }
     } else if (showApiKeyField && apiKey && password && email) {
       try {
-        console.log(email, password, apiKey);
         const loginResponse = await verifyApiKey(apiKey, email, password);
-        console.log("loginResponse", loginResponse);
         if (!loginResponse || !loginResponse.user) {
           throw new Error("Invalid API Key");
         }
@@ -148,14 +150,10 @@ export default function Login() {
             },
           }),
         );
-
+        showSuccessSnackbar("Logged In!");
         navigate("/");
-      } catch (error) {
-        console.error("Error verifying API key", error);
-        enqueueSnackbar({
-          variant: "error",
-          message: "Invalid API Key",
-        });
+      } catch {
+        showErrorSnackbar("Invalid API Key");
       }
     }
   });
@@ -279,10 +277,27 @@ export default function Login() {
                   onChange={field.onChange}
                   error={fieldState.error?.message}
                   placeholder="e.g. api-key-here"
-                  type="text"
+                  type={showApiKey ? "text" : "password"}
                   autoComplete="off"
                   required
                   disabled={!existingUser || !showApiKeyField}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end" sx={{ mr: 2 }}>
+                          <IconButton
+                            aria-label={
+                              showApiKey ? "hide api-key" : "show api-key"
+                            }
+                            onClick={handleClickShowApiKey}
+                            edge="end"
+                          >
+                            {showApiKey ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
                 />
               )}
             />

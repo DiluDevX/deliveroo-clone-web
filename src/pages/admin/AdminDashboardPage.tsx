@@ -38,19 +38,17 @@ import { FetchedAllOrders } from "../../types/orders";
 import { getAllOrders } from "../../services/order.service";
 import { getAllUsers } from "../../services/user.service";
 import { IUser } from "../../types/user.types";
-import { getAdminDashboardStats } from "../../services/finance.service";
+import {
+  getAdminDashboardStats,
+  getFinanceRecords,
+} from "../../services/finance.service";
 import { useNavigate } from "react-router";
-
-// Dummy revenue data
-const dummyRevenueData = [
-  { date: "Mon", revenue: 4000 },
-  { date: "Tue", revenue: 3000 },
-  { date: "Wed", revenue: 2000 },
-  { date: "Thu", revenue: 2780 },
-  { date: "Fri", revenue: 1890 },
-  { date: "Sat", revenue: 2390 },
-  { date: "Sun", revenue: 3490 },
-];
+import {
+  transformFinanceToRevenueChart,
+  formatChartDate,
+  RevenueChartData,
+} from "../../utils/chartDataTransformers";
+import LoadingIndicator from "../../features/menu/components/LoadingIndicator";
 
 const AdminDashboardPage = () => {
   const [timePeriod, setTimePeriod] = useState("7days");
@@ -58,8 +56,14 @@ const AdminDashboardPage = () => {
   const [fetchedOrders, setFetchedOrders] = useState<FetchedAllOrders[]>([]);
   const [fetchedUsers, setFetchedUsers] = useState<IUser[]>([]);
   const [fetchedTotalRevenue, setFetchedTotalRevenue] = useState<number>(0);
+  const [revenueChartData, setRevenueChartData] = useState<RevenueChartData[]>(
+    [],
+  );
+  const [finishedFetchingChartData, setFinishedFetchingChartData] =
+    useState(false);
 
   useEffect(() => {
+    setFinishedFetchingChartData(false);
     async function fetchEverything() {
       const restaurants = await getAllRestaurants();
       setFetchedRestaurants(restaurants);
@@ -69,9 +73,19 @@ const AdminDashboardPage = () => {
       setFetchedUsers(users);
       const result = await getAdminDashboardStats();
       setFetchedTotalRevenue(result.data.stats.totalPlatformRevenue);
+
+      // Transform Finance records into chart data (using actual commission)
+      const financeRecords = await getFinanceRecords();
+      const daysToShow = timePeriod === "7days" ? 7 : 30;
+      const chartData = transformFinanceToRevenueChart(
+        financeRecords,
+        daysToShow,
+      );
+      setRevenueChartData(chartData);
+      setFinishedFetchingChartData(true);
     }
     fetchEverything();
-  }, []);
+  }, [timePeriod]);
 
   const stats = [
     {
@@ -244,46 +258,71 @@ const AdminDashboardPage = () => {
           )}
         </Box>
 
-        <Box sx={{ mb: 2, outline: "none", "&:focus": { outline: "none" } }}>
-          <ResponsiveContainer
-            width="100%"
-            height={300}
-            style={{ outline: "none" }}
+        {finishedFetchingChartData ? (
+          <Box sx={{ mb: 2, outline: "none", "&:focus": { outline: "none" } }}>
+            <ResponsiveContainer
+              width="100%"
+              height={300}
+              style={{ outline: "none" }}
+            >
+              <LineChart data={revenueChartData} style={{ outline: "none" }}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke={Colors.border.default}
+                />
+                <XAxis
+                  dataKey="date"
+                  stroke={Colors.text.default}
+                  tick={{
+                    fontSize: 12,
+                    fill: Colors.text.default,
+                    fontFamily: "IBM Plex Sans, serif",
+                  }}
+                  tickFormatter={formatChartDate}
+                />
+                <YAxis
+                  stroke={Colors.text.default}
+                  tick={{
+                    fontSize: 12,
+                    fill: Colors.text.default,
+                    fontFamily: "IBM Plex Sans, serif",
+                  }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: Colors.background.light,
+                    border: `1px solid ${Colors.border.default}`,
+                    fontFamily: "IBM Plex Sans, serif",
+                    fontSize: 12,
+                  }}
+                  labelStyle={{ color: Colors.text.default }}
+                  labelFormatter={(label) => formatChartDate(label as string)}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke={Colors.background.brand}
+                  strokeWidth={2}
+                  dot={{ fill: Colors.background.brand }}
+                  style={{ outline: "none" }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              width: "100%",
+              height: 300,
+              borderRadius: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
-            <LineChart data={dummyRevenueData} style={{ outline: "none" }}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke={Colors.border.default}
-              />
-              <XAxis
-                dataKey="date"
-                stroke={Colors.text.default}
-                tick={{ fontSize: 12, fill: Colors.text.default }}
-              />
-              <YAxis
-                stroke={Colors.text.default}
-                tick={{ fontSize: 12, fill: Colors.text.default }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: Colors.background.light,
-                  border: `1px solid ${Colors.border.default}`,
-                  fontFamily: "IBM Plex Sans, serif",
-                  fontSize: 12,
-                }}
-                labelStyle={{ color: Colors.text.default }}
-              />
-              <Line
-                type="monotone"
-                dataKey="revenue"
-                stroke={Colors.background.brand}
-                strokeWidth={2}
-                dot={{ fill: Colors.background.brand }}
-                style={{ outline: "none" }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
+            <LoadingIndicator variant="bar" text="Fetching data..." />
+          </Box>
+        )}
 
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           <Box>

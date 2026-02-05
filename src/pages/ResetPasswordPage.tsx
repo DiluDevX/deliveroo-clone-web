@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 import LoadingIndicator from "../features/menu/components/LoadingIndicator";
 import { resetUserPassword } from "../services/auth.service";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { enqueueSnackbar } from "notistack";
+import { toast } from "sonner";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
@@ -87,19 +87,11 @@ const ResetPasswordPage = () => {
         password: values.confirmPassword,
       });
       if (UpdatedPasswordResponse) {
-        enqueueSnackbar("Password updated successfully", {
-          variant: "success",
-          preventDuplicate: true,
-          autoHideDuration: 1000,
-        });
+        toast.success("Password updated successfully");
         navigate("/account/login");
       }
     } catch (error) {
-      enqueueSnackbar("Something went wrong", {
-        variant: "error",
-        preventDuplicate: true,
-        autoHideDuration: 1500,
-      });
+      toast.error("Something went wrong");
       console.error(error);
     } finally {
       setIsSubmitting(false);

@@ -12,12 +12,25 @@ import {
   Chip,
   TextField,
 } from "@mui/material";
-import { Add, SearchOutlined } from "@mui/icons-material";
+import { Add, SearchOutlined, Edit, Delete, Power } from "@mui/icons-material";
 import { Colors } from "../../theme";
 import Button from "../../features/menu/components/Button";
 import AddRestaurantModal from "../../features/menu/components/AddRestaurantModal";
 import { getAllRestaurants } from "../../services/restaurant.service";
 import { Restaurant } from "../../types/restaurants";
+
+const textFieldStyles = {
+  "& .MuiOutlinedInput-root": {
+    "&.Mui-focused fieldset": {
+      borderColor: Colors.background.brand,
+    },
+  },
+  "& .MuiInputLabel-root": {
+    "&.Mui-focused": {
+      color: Colors.background.brand,
+    },
+  },
+};
 
 const AdminRestaurantsPage = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -74,7 +87,19 @@ const AdminRestaurantsPage = () => {
           </Typography>
         </Box>
         <Button
-          sx={{ bgcolor: Colors.background.brand }}
+          sx={{
+            bgcolor: Colors.background.brand,
+            color: "white",
+            textTransform: "none",
+            fontWeight: 600,
+            px: 3,
+            py: 1,
+            borderRadius: 1,
+            "&:hover": {
+              bgcolor: Colors.background.brand,
+              opacity: 0.9,
+            },
+          }}
           onClick={handleAddRestaurant}
         >
           <Add sx={{ mr: 1 }} />
@@ -101,6 +126,7 @@ const AdminRestaurantsPage = () => {
             ),
           }}
           size="small"
+          sx={textFieldStyles}
         />
       </Card>
 
@@ -162,19 +188,22 @@ const AdminRestaurantsPage = () => {
                         fontSize: "0.9rem",
                       }}
                     >
-                      edit
+                      <Edit sx={{ fontSize: "1rem", mr: 0.5 }} />
+                      Edit
                     </Button>
                     <Button
                       borderOff={true}
-                      sx={{ color: Colors.text.disabled, fontSize: "0.9rem" }}
+                      sx={{ color: Colors.text.dark, fontSize: "0.9rem" }}
                     >
-                      disable
+                      <Power sx={{ fontSize: "1rem", mr: 0.5 }} />
+                      Disable
                     </Button>
                     <Button
                       borderOff={true}
                       sx={{ color: Colors.text.error, fontSize: "0.9rem" }}
                     >
-                      delete
+                      <Delete sx={{ fontSize: "1rem", mr: 0.5 }} />
+                      Delete
                     </Button>
                   </TableCell>
                 </TableRow>
