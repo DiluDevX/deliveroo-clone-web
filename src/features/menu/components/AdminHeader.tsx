@@ -4,9 +4,18 @@ import Button from "./Button";
 import { Colors } from "../../../theme";
 import { useState } from "react";
 import { Notifications, NotificationsOffRounded } from "@mui/icons-material";
+import { showSuccessSnackbar } from "../../../utils/notifications";
 
 const AdminHeader = () => {
   const [isNotificationsClicked, setIsNotificationsClicked] = useState(false);
+
+  function handleNotificationsClick() {
+    if (!isNotificationsClicked) {
+      showSuccessSnackbar("Notifications Enabled");
+    } else {
+      showSuccessSnackbar("Notifications Disabled");
+    }
+  }
 
   return (
     <Box
@@ -44,7 +53,7 @@ const AdminHeader = () => {
           }}
         >
           <Link
-            to="/admin/dashboard"
+            to="/"
             style={{
               display: "flex",
               flexDirection: "row",
@@ -83,7 +92,10 @@ const AdminHeader = () => {
               alignItems: "center",
               justifyContent: "center",
             }}
-            onClick={() => setIsNotificationsClicked(!isNotificationsClicked)}
+            onClick={() => {
+              setIsNotificationsClicked(!isNotificationsClicked);
+              handleNotificationsClick();
+            }}
           />
         </Box>
       </Box>

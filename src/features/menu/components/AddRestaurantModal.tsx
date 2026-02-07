@@ -4,7 +4,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   TextField,
   Box,
   Alert,
@@ -12,10 +11,18 @@ import {
 } from "@mui/material";
 import { Restaurant } from "../../../types/restaurants";
 import { createRestaurant } from "../../../services/restaurant.service";
-import { showErrorSnackbar } from "../../../utils/notifications";
+import {
+  showErrorSnackbar,
+  showSuccessSnackbar,
+} from "../../../utils/notifications";
 import { textFieldStyles } from "../../../utils/MuiTextFieldCustom";
 import Button from "./Button";
 import { Colors } from "../../../theme/colors";
+import {
+  createNewRestaurantAdmin,
+  updateRestaurantAdmin,
+} from "../../../services/admin.service";
+import { useAppSelector } from "../../../store/hooks/cartHooks";
 
 const restaurantFormSchema = z.object({
   name: z
@@ -83,30 +90,37 @@ export interface CreateRestaurantFormData {
   adminPassword: string;
 }
 
+const resetFormData = () => (): CreateRestaurantFormData => ({
+  name: "",
+  cuisine: "",
+  image: "",
+  description: "",
+  tags: "",
+  openingAt: "09:00",
+  closingAt: "21:00",
+  minimumValue: "0",
+  deliveryCharge: "2.99",
+  rating: "",
+  totalOrders: "",
+  totalRevenue: "",
+  status: "active",
+  adminEmail: "",
+  adminPassword: "",
+});
+
 const AddRestaurantModal = ({
   open,
   onClose,
   onSuccess,
 }: AddRestaurantModalProps) => {
-  const [formData, setFormData] = useState<CreateRestaurantFormData>({
-    name: "",
-    cuisine: "",
-    image: "",
-    description: "",
-    tags: "",
-    openingAt: "09:00",
-    closingAt: "21:00",
-    minimumValue: "0",
-    deliveryCharge: "2.99",
-    rating: "",
-    totalOrders: "",
-    totalRevenue: "",
-    status: "active",
-    adminEmail: "",
-    adminPassword: "",
-  });
+  const [formData, setFormData] =
+    useState<CreateRestaurantFormData>(resetFormData());
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const isPlatformAdmin = useAppSelector(
+    (state) => state.auth.user?.role === "platform_admin",
+  );
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>,
@@ -160,25 +174,36 @@ const AddRestaurantModal = ({
 
     setLoading(true);
     try {
-      await createRestaurant(newRestaurant);
+      const user = await createNewRestaurantAdmin(
+        validatedData.adminEmail,
+        validatedData.adminPassword,
+        validatedData.name,
+        isPlatformAdmin,
+      );
+      if (!user) {
+        showErrorSnackbar("Failed to create restaurant admin user");
+        return;
+      }
+      const restaurant = await createRestaurant({
+        ...newRestaurant,
+        adminId: user.id,
+      } as Restaurant);
 
-      setFormData({
-        name: "",
-        cuisine: "",
-        image: "",
-        description: "",
-        tags: "",
-        openingAt: "09:00",
-        closingAt: "21:00",
-        minimumValue: "0",
-        deliveryCharge: "2.99",
-        rating: "",
-        totalOrders: "",
-        totalRevenue: "",
-        status: "active",
-        adminEmail: "",
-        adminPassword: "",
+      if (!restaurant) {
+        showErrorSnackbar("Failed to create restaurant");
+        return;
+      }
+      const res = await updateRestaurantAdmin(user.id, {
+        restaurantId: restaurant.id,
       });
+
+      if (!res.restaurantId) {
+        showErrorSnackbar("Failed to link restaurant admin to restaurant");
+        return;
+      }
+      showSuccessSnackbar("Restaurant created successfully");
+
+      setFormData(resetFormData());
 
       onClose();
       onSuccess();
@@ -196,23 +221,7 @@ const AddRestaurantModal = ({
     setError("");
     onClose();
     if (!loading) {
-      setFormData({
-        name: "",
-        cuisine: "",
-        image: "",
-        description: "",
-        tags: "",
-        openingAt: "09:00",
-        closingAt: "21:00",
-        minimumValue: "0",
-        deliveryCharge: "2.99",
-        rating: "",
-        totalOrders: "",
-        totalRevenue: "",
-        status: "active",
-        adminEmail: "",
-        adminPassword: "",
-      });
+      setFormData(resetFormData());
     }
   };
 
@@ -270,7 +279,6 @@ const AddRestaurantModal = ({
             size="small"
             placeholder="(restaurantName)-admin@gmail.com"
             disabled={loading}
-            InputLabelProps={{ shrink: true }}
           />
           <TextField
             sx={{ ...textFieldStyles, flex: 1 }}
@@ -282,7 +290,6 @@ const AddRestaurantModal = ({
             size="small"
             disabled={loading}
             placeholder="Example@1234"
-            InputLabelProps={{ shrink: true }}
           />
           <TextField
             sx={{ ...textFieldStyles }}
@@ -373,7 +380,16 @@ const AddRestaurantModal = ({
             />
           </Box>
         </Box>
-        <DialogActions>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "right",
+            pt: "15px",
+            gap: "1rem",
+          }}
+        >
           <Button
             variant="border"
             onClick={handleClose}
@@ -388,10 +404,10 @@ const AddRestaurantModal = ({
             disabled={loading}
             sx={{ color: Colors.text.inverse }}
           >
-            {loading ? <CircularProgress size={20} sx={{}} /> : null}
+            {loading ? <CircularProgress size={20} /> : null}
             {loading ? "Creating..." : "Create Restaurant"}
           </Button>
-        </DialogActions>
+        </Box>
       </DialogContent>
     </Dialog>
   );

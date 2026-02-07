@@ -157,6 +157,7 @@ const AdminDashboardPage = () => {
           <Grid item xs={12} sm={6} md={3} key={stat.title}>
             <Card
               sx={{
+                height: "100%",
                 p: 2.5,
                 bgcolor: Colors.background.light,
                 border: `1px solid ${Colors.border.default}`,
@@ -175,7 +176,11 @@ const AdminDashboardPage = () => {
                 variant="h5"
                 sx={{ fontWeight: "bold", color: Colors.text.default }}
               >
-                {stat.value}
+                {stat.value === 0 ? (
+                  <LoadingIndicator variant="bar" />
+                ) : (
+                  stat.value
+                )}
               </Typography>
             </Card>
           </Grid>

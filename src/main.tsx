@@ -26,6 +26,8 @@ createRoot(document.getElementById("root")!).render(
     <ThemeProvider theme={theme}>
       <StrictMode>
         <Toaster
+          duration={1000}
+          visibleToasts={1}
           position="top-right"
           toastOptions={{
             style: {

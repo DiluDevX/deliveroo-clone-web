@@ -50,7 +50,6 @@ const AdminRestaurantsPage = () => {
   useEffect(() => {
     async function fetchRestaurants() {
       const data = await getAllRestaurants();
-      console.log("Fetched restaurants:", data);
 
       setRestaurants(data || []);
     }

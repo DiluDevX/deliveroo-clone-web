@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { Outlet } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Settings,
   Home,
@@ -12,20 +13,54 @@ import {
 import { Colors } from "../theme";
 import AdminSidebar from "../features/menu/components/AdminSidebar";
 import AdminHeader from "../features/menu/components/AdminHeader";
+import { setAuthInitialized, setCredentials } from "../store/authSlice";
+import { getValidAdminAuth } from "../services/auth.service";
+import { useAppDispatch } from "../store/hooks/cartHooks";
+import { showErrorSnackbar } from "../utils/notifications";
 
 const AdminLayout = () => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  useEffect(() => {
+    const checkAuthAdmin = async () => {
+      let result = null;
+      try {
+        result = await getValidAdminAuth();
+        if (!result) {
+          navigate("/account/login");
+        }
+      } catch {
+        showErrorSnackbar("Authentication check failed. Please log in again.");
+        navigate("/account/login");
+      } finally {
+        if (result) {
+          dispatch(setCredentials({ user: result.user }));
+        } else {
+          dispatch(setCredentials({}));
+        }
+        dispatch(setAuthInitialized(true));
+      }
+    };
+
+    void checkAuthAdmin();
+    return () => {};
+  }, [dispatch, navigate]);
+
   const [drawerOpen, setDrawerOpen] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const menuItems = [
-    { label: "Dashboard", icon: Home, path: "/admin/dashboard" },
-    { label: "Restaurants", icon: FoodBank, path: "/admin/restaurants" },
-    { label: "Orders", icon: DeliveryDining, path: "/admin/orders" },
-    { label: "Users", icon: Person, path: "/admin/users" },
-    { label: "Finance", icon: AttachMoneyTwoTone, path: "/admin/finance" },
-    { label: "Settings", icon: Settings, path: "/admin/settings" },
-  ];
+  const menuItems = useMemo(
+    () => [
+      { label: "Dashboard", icon: Home, path: "/admin/dashboard" },
+      { label: "Restaurants", icon: FoodBank, path: "/admin/restaurants" },
+      { label: "Orders", icon: DeliveryDining, path: "/admin/orders" },
+      { label: "Users", icon: Person, path: "/admin/users" },
+      { label: "Finance", icon: AttachMoneyTwoTone, path: "/admin/finance" },
+      { label: "Settings", icon: Settings, path: "/admin/settings" },
+    ],
+    [],
+  );
 
   return (
     <Box

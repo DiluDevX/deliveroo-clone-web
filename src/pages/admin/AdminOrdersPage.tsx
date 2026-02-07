@@ -26,7 +26,6 @@ const AdminOrdersPage = () => {
   useEffect(() => {
     const fetchAllOrders = async () => {
       const allOrders = await getAllOrders();
-      console.log("Fetched Orders:", allOrders);
       setOrders(allOrders);
     };
     fetchAllOrders();

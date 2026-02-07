@@ -10,7 +10,7 @@ type ButtonProps = ButtonBaseProps & {
   PrefixComponent?: React.ReactNode;
   SuffixComponent?: React.ReactNode;
   linkTo?: To;
-  variant?: "border" | "filled" | undefined;
+  variant?: "border" | "filled";
   borderOff?: boolean;
 };
 

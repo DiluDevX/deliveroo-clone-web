@@ -27,7 +27,6 @@ const facebookProvider = new FacebookAuthProvider();
 export const handleFacebookSignIn = async () => {
   try {
     const result = await signInWithPopup(auth, facebookProvider);
-    console.log("User signed in:", result.user);
     return result.user;
   } catch (error) {
     console.error("Facebook Sign-In Error:", error);
@@ -40,7 +39,6 @@ export const handleFacebookSignIn = async () => {
 export const handleGoogleSignIn = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    console.log("User Signed In:", result.user);
     return result.user;
   } catch (error) {
     console.error("Google Sign-In Error:", error);

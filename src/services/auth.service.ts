@@ -96,6 +96,7 @@ interface LoginApiResponse {
     createdAt: string;
     updatedAt: string;
     orderCount: number;
+    restaurantId?: string | null;
     status: "Active" | "Suspended";
   };
   accessToken: string;
@@ -124,6 +125,7 @@ export const login = async (
             phone: user.phone ?? "",
             role: user.role,
             orderCount: user.orderCount ?? 0,
+            restaurantId: user.restaurantId ?? undefined,
             status: user.status,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
@@ -250,6 +252,24 @@ export const getValidAuth = async () => {
     }
     await refreshPromise;
     result = await checkAuthStatus();
+  }
+  return result;
+};
+
+export const getValidAdminAuth = async () => {
+  let result = await checkAuthStatus();
+  if (!result) {
+    // If a refresh is already in progress, wait for it
+    if (!refreshPromise) {
+      refreshPromise = refreshToken().finally(() => {
+        refreshPromise = null;
+      });
+    }
+    await refreshPromise;
+    result = await checkAuthStatus();
+  }
+  if (result.user.role !== "platform_admin") {
+    return null;
   }
   return result;
 };

@@ -26,10 +26,10 @@ import AdminLayout from "./layout/AdminLayout";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminRestaurantsPage from "./pages/admin/AdminRestaurantsPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
-import AdminRoute from "./routes/AdminRoute";
 import AdminFinancePage from "./pages/admin/AdminFinancePage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminProtectedRoute from "./routes/AdminProtectedRoute";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -156,7 +156,7 @@ const App = () => {
         </Route>
         ,
         <Route element={<AdminLayout />}>
-          <Route element={<AdminRoute />}>
+          <Route element={<AdminProtectedRoute />}>
             <Route
               index
               path="/admin/dashboard"

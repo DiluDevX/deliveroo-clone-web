@@ -41,9 +41,5 @@ export const createRestaurant = async (
   restaurantData: Partial<Restaurant>,
 ): Promise<Restaurant> => {
   const response = await axios.post("/api/restaurants", restaurantData);
-  if (!response.data) {
-    throw new Error("Failed to create restaurant.");
-  }
-  const data: Restaurant = await response.data.data;
-  return data;
+  return response.data.data;
 };
