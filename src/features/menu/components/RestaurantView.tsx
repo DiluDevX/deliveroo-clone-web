@@ -1,9 +1,10 @@
 import { Box, Container, Grid2 as Grid, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { Colors } from "../../../theme";
 import { useState } from "react";
 
 interface Restaurant {
+  id: string;
   name: string;
   image: string;
   description: string;
@@ -20,6 +21,7 @@ interface RestaurantViewProps {
 
 const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
   const [imageError, setImageError] = useState(false);
+  console.log(restaurant.id);
 
   return (
     <Grid
@@ -32,7 +34,12 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
       }}
     >
       <Link
-        to={`/restaurants/${restaurant.name}/menu`}
+        onClick={() => {
+          localStorage.removeItem("selected-restaurant-id");
+          localStorage.setItem("selected-restaurant-id", restaurant.id);
+        }}
+        params={{ restaurantId: restaurant.id }}
+        to={"/restaurants/$restaurantId/menu"}
         style={{
           textDecoration: "none",
           color: "inherit",

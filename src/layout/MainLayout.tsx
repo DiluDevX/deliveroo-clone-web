@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet } from "@tanstack/react-router";
 import Footer from "../features/menu/components/Footer";
 import Header from "../features/menu/components/Header";
 import ScrollToTop from "../features/menu/components/ScrollToTop";

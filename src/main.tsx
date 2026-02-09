@@ -1,6 +1,5 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
 import { createTheme, ThemeProvider } from "@mui/material";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "sonner";
@@ -9,6 +8,8 @@ import { persistor, store } from "./store/store.tsx";
 import { PersistGate } from "redux-persist/integration/react";
 import axios from "axios";
 import { Colors } from "./theme/colors.ts";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { routeTree } from "./routes/routeTree.tsx";
 
 axios.defaults.withCredentials = true;
 
@@ -20,6 +21,8 @@ const theme = createTheme({
     },
   },
 });
+
+const router = createRouter({ routeTree });
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
@@ -40,7 +43,7 @@ createRoot(document.getElementById("root")!).render(
         />
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-            <App />
+            <RouterProvider router={router} />
           </PersistGate>
         </Provider>
       </StrictMode>

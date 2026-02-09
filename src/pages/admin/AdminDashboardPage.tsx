@@ -42,7 +42,7 @@ import {
   getAdminDashboardStats,
   getFinanceRecords,
 } from "../../services/finance.service";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 import {
   transformFinanceToRevenueChart,
   formatChartDate,
@@ -354,7 +354,7 @@ const AdminDashboardPage = () => {
           </Box>
           <Button
             onClick={() => {
-              navigate("/admin/finance");
+              navigate({ to: "/admin/finance" });
             }}
             variant="contained"
             sx={{ bgcolor: Colors.background.brand, alignSelf: "flex-end" }}

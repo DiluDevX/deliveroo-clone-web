@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 import Button from "../features/menu/components/Button";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Colors } from "../theme";
@@ -8,9 +8,13 @@ const RecoveryConfirmationPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isForgotPassword = location.state?.type === "forgotPassword";
-  const inputType = location.state?.inputType === "email" ? "email" : "phone";
+  // Extract search params from location
+  const searchParams = new URLSearchParams(location.search);
+  const recoveryType = searchParams.get("type") || "recovery";
+  const inputType = searchParams.get("inputType") || "email";
 
+  const isForgotPassword = recoveryType === "forgotPassword";
+  const isEmail = inputType === "email";
   return (
     <Box
       sx={{
@@ -34,7 +38,7 @@ const RecoveryConfirmationPage = () => {
         }}
       >
         {isForgotPassword
-          ? inputType === "email"
+          ? isEmail
             ? "Check Your Email"
             : "Check Your Phone"
           : "Recovery Link Sent!"}
@@ -43,14 +47,14 @@ const RecoveryConfirmationPage = () => {
         sx={{ fontSize: "1rem", color: Colors.text.placeholder, mb: 4 }}
       >
         {isForgotPassword
-          ? inputType === "email"
+          ? isEmail
             ? "A password reset link has been sent to your email. Please check your inbox and spam folder."
             : "A recovery link has been sent to your phone. Follow the instructions to regain access to your account."
           : "A recovery link has been sent to your email or phone. Follow the instructions to recover your account."}
       </Typography>
 
       <Button
-        onClick={() => navigate("/account/login")}
+        onClick={() => navigate({ to: "/account/login" })}
         PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
         sx={{
           border: "none",

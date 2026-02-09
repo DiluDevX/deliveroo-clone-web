@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Box, Container } from "@mui/material";
 import Button from "./Button";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";

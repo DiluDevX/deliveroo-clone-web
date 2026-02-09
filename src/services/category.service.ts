@@ -3,7 +3,7 @@ import { ICategory } from "../data/Sides";
 
 export const getCategories = async (): Promise<ICategory[]> => {
   try {
-    const restaurantId = localStorage.getItem("id");
+    const restaurantId = localStorage.getItem("selected-restaurant-id");
 
     const response = await axios.get(
       `/api/categories?restaurant=${restaurantId}`,

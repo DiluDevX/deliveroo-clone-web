@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
-import { Outlet } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "@tanstack/react-router";
 import {
   Settings,
   Home,
@@ -27,11 +26,11 @@ const AdminLayout = () => {
       try {
         result = await getValidAdminAuth();
         if (!result) {
-          navigate("/account/login");
+          navigate({ to: "/account/login" });
         }
       } catch {
         showErrorSnackbar("Authentication check failed. Please log in again.");
-        navigate("/account/login");
+        navigate({ to: "/account/login" });
       } finally {
         if (result) {
           dispatch(setCredentials({ user: result.user }));

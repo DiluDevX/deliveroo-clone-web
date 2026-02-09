@@ -6,7 +6,7 @@ import {
   ListItemText,
 } from "@mui/material";
 import { Colors } from "../../../theme";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 export interface AdminSidebarProps {
@@ -30,7 +30,7 @@ const AdminSidebar = ({
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate(menuItems[selectedItem].path);
+    navigate({ to: menuItems[selectedItem].path });
   }, [selectedItem, menuItems, navigate]);
   return (
     <Drawer
@@ -67,7 +67,7 @@ const AdminSidebar = ({
             disableRipple={true}
             onClick={() => {
               setSelectedItem(index);
-              navigate(item.path);
+              navigate({ to: item.path });
               if (isMobile) setDrawerOpen(false);
             }}
             sx={{

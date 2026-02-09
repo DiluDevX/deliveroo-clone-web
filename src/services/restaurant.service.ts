@@ -21,10 +21,10 @@ export const getFilteredRestaurants = async (): Promise<Restaurant[]> => {
     return [];
   }
 };
-export const getSingleRestaurant = async (orgId: string) => {
+export const getSingleRestaurant = async (restaurantId: string) => {
   try {
     const response = await axios.get(
-      `/api/restaurants/${encodeURIComponent(orgId)}`,
+      `/api/restaurants/${encodeURIComponent(restaurantId)}`,
     );
 
     if (!response.data) {

@@ -3,7 +3,7 @@ import { Box, Typography, Divider } from "@mui/material";
 import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
 import AppleIcon from "@mui/icons-material/Apple";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Colors, Svgs } from "../theme";
 import { toast } from "sonner";
 import {
@@ -34,11 +34,11 @@ const AuthPage = () => {
       if (isThereAnUser.type === "EXISTING") {
         localStorage.setItem("token", isThereAnUser.token ?? "");
         toast.success("Signed in successfully");
-        navigate("/");
+        navigate({ to: "/" });
       } else if (isThereAnUser.type === "NEW") {
-        navigate(
-          `/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
-        );
+        navigate({
+          to: `/account/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
+        });
       } else {
         toast.error("Something went wrong");
       }
@@ -67,11 +67,11 @@ const AuthPage = () => {
       if (isThereAnUser.type === "EXISTING") {
         localStorage.setItem("token", isThereAnUser.token ?? "");
         toast.success("Signed in successfully");
-        navigate("/");
+        navigate({ to: "/" });
       } else if (isThereAnUser.type === "NEW") {
-        navigate(
-          `/account/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
-        );
+        navigate({
+          to: `/account/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
+        });
       } else {
         toast.error("Something went wrong");
       }
@@ -195,7 +195,7 @@ const AuthPage = () => {
           />
         </Box>
 
-        <Link to={"/Account/login"} style={{ textDecoration: "none" }}>
+        <Link to="/account/login" style={{ textDecoration: "none" }}>
           <Button
             PrefixComponent={<EmailOutlinedIcon />}
             sx={{
@@ -225,26 +225,23 @@ const AuthPage = () => {
           }}
         >
           By continuing you agree to our{" "}
-          <Link
-            to={"https://deliveroo.co.uk/legal"}
+          <a
+            href="https://deliveroo.co.uk/legal"
             style={{ color: Colors.background.brand }}
           >
             T&Cs.
-          </Link>{" "}
+          </a>{" "}
           Please also check out our
           <br />
-          <Link
-            to={"https://deliveroo.co.uk/legal"}
+          <a
+            href="https://deliveroo.co.uk/legal"
             style={{ color: Colors.background.brand }}
           >
             Privacy Policy.
-          </Link>{" "}
+          </a>{" "}
           We use your data to offer you a personalized experience and to better
           understand and improve our services.{" "}
-          <Link
-            to={"https://deliveroo.co.uk/privacy#use-of-your-information"}
-            style={{ color: Colors.background.brand }}
-          >
+          <Link to="/privacy-policy" style={{ color: Colors.background.brand }}>
             For more information see here.
           </Link>
         </Typography>

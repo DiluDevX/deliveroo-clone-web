@@ -1,16 +1,16 @@
-import WithPageTitle from "../hocs/WithPageTitle";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAppSelector } from "../store/hooks/cartHooks";
 
 const SignPageLayout = () => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    window.location.href = "/";
-  }
-  return (
-    <WithPageTitle title="SignPage">
-      <Outlet />
-    </WithPageTitle>
-  );
+  const user = useAppSelector((state) => state.auth.user);
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (user) {
+      navigate({ to: "/" });
+    }
+  }, [user, navigate]);
+  return <Outlet />;
 };
 
 export default SignPageLayout;

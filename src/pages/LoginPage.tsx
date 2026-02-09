@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Box, IconButton, InputAdornment, Typography } from "@mui/material";
 import { Colors } from "../theme";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Button from "../features/menu/components/Button";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { setCredentials } from "../store/authSlice";
-import { useAppDispatch } from "../store/hooks/cartHooks";
+import { useAppDispatch, useAppSelector } from "../store/hooks/cartHooks";
 import { verifyApiKey } from "../services/admin.service";
 import { setAdminStatus } from "../store/adminSlice";
 import { showErrorSnackbar, showSuccessSnackbar } from "../utils/notifications";
@@ -28,7 +28,13 @@ type LoginForm = {
 };
 
 export default function Login() {
+  const authenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const navigate = useNavigate();
+  useEffect(() => {
+    if (authenticated) {
+      navigate({ to: "/" });
+    }
+  }, [authenticated, navigate]);
   const dispatch = useAppDispatch();
 
   const [existingUser, setExistingUser] = useState(false);
@@ -79,7 +85,9 @@ export default function Login() {
     if (checkEmailResponse.type === "EXISTING") {
       setExistingUser(true);
     } else if (checkEmailResponse.type === "NEW") {
-      return navigate(`/Account/SignUp?email=${encodeURIComponent(email)}`);
+      return navigate({
+        to: `/account/signup?email=${encodeURIComponent(email)}`,
+      });
     } else {
       toast.error("Something Went Wrong");
       return;
@@ -119,16 +127,16 @@ export default function Login() {
         const redirectPath = sessionStorage.getItem("redirectAfterLogin");
         if (redirectPath) {
           sessionStorage.removeItem("redirectAfterLogin");
-          navigate(redirectPath);
+          navigate({ to: redirectPath });
         } else if (
           loginResponse.successResponse.user.role === "restaurant_admin" &&
           loginResponse.successResponse.user.restaurantId !== null
         ) {
           showSuccessSnackbar("Logged In!");
-          navigate("/restaurant/dashboard");
+          navigate({ to: "/restaurant/dashboard" });
         } else {
           showSuccessSnackbar("Logged In!");
-          navigate("/");
+          navigate({ to: "/" });
         }
       } else if (loginResponse.type === "INVALID") {
         toast.error("Invalid Credentials");
@@ -160,7 +168,7 @@ export default function Login() {
           }),
         );
         showSuccessSnackbar("Logged In!");
-        navigate("/admin/dashboard");
+        navigate({ to: "/admin/dashboard" });
       } catch {
         showErrorSnackbar("Invalid API Key");
       }
@@ -183,7 +191,7 @@ export default function Login() {
     >
       <Box>
         <Button
-          onClick={() => navigate("/Account")}
+          onClick={() => navigate({ to: "/account" })}
           PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
           sx={{
             border: "none",
@@ -328,13 +336,7 @@ export default function Login() {
           {existingUser && !showApiKeyField && (
             <Button
               type="button"
-              onClick={() =>
-                navigate("/account/recovery", {
-                  state: {
-                    type: existingUser ? "forgotPassword" : "forgotEmail",
-                  },
-                })
-              }
+              onClick={() => navigate({ to: "/account/recovery" })}
               variant="border"
               sx={{
                 width: "100%",

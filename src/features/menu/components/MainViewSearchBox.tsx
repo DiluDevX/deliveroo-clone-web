@@ -6,7 +6,7 @@ import {
   IconButton,
 } from "@mui/material";
 import NearMeOutlinedIcon from "@mui/icons-material/NearMeOutlined";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Colors } from "../../../theme";
 import { useState } from "react";
 import { useAppSelector } from "../../../store/hooks/cartHooks";
@@ -19,9 +19,9 @@ const MainViewSearchBox = () => {
 
   const handleSearchInput = () => {
     if (searchInput.trim() !== "") {
-      navigate(
-        `/filtered-restaurants?search=${encodeURIComponent(searchInput)}`,
-      );
+      navigate({
+        to: `/filtered-restaurants?search=${encodeURIComponent(searchInput)}`,
+      });
     }
   };
 
