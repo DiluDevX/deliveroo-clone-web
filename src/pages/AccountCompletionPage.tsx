@@ -6,7 +6,6 @@ import {
   Typography,
 } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
 import TextInput from "../features/menu/components/TextInput";
 import { Colors } from "../theme";
 import Button from "../features/menu/components/Button";
@@ -319,15 +318,15 @@ const AccountCompletionPage = () => {
               </Typography>
               <Typography variant="body2" sx={{ mb: 4 }}>
                 Please review and accept our{" "}
-                <Link
-                  to={"https://deliveroo.co.uk/legal"}
+                <a
+                  href={"https://deliveroo.co.uk/legal"}
                   style={{
                     color: Colors.background.brand,
                     textDecoration: "none",
                   }}
                 >
                   Terms and Conditions
-                </Link>{" "}
+                </a>{" "}
                 before proceeding. This includes our policies on privacy,
                 security, and refunds.
               </Typography>

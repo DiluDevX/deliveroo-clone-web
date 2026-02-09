@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
-import { Outlet } from "react-router-dom";
+import { Outlet } from "@tanstack/react-router";
 import {
   Settings,
   Home,

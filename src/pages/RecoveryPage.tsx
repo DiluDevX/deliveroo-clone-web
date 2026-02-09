@@ -4,7 +4,7 @@ import TextInput from "../features/menu/components/TextInput";
 import { Colors } from "../theme";
 import Button from "../features/menu/components/Button";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,10 +21,7 @@ type RecoveryForm = {
 
 const RecoveryPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const isForgotEmail = location.state?.type === "forgotEmail";
 
   const schema = z.object({
     emailOrPhone: z
@@ -57,11 +54,9 @@ const RecoveryPage = () => {
         toast.warning("Phone recovery not yet available. Please use email.");
       }
       localStorage.setItem("emailOrPhone", values.emailOrPhone);
-      navigate("/account/recovery-confirmation", {
-        state: {
-          type: isForgotEmail ? "forgotEmail" : "forgotPassword",
-          inputType,
-        },
+      navigate({
+        to: `/account/recovery-confirmation?type=forgotPassword&inputType=${inputType}`,
+        replace: true,
       });
     } catch (error) {
       toast.error("An error occurred. Please try again.");
@@ -112,9 +107,7 @@ const RecoveryPage = () => {
               fontSmoothing: "antialiased",
             }}
           >
-            {isForgotEmail
-              ? "Retrieve Your Registered Email"
-              : "Reset Your Account Password"}
+            Reset Your Account Password
           </Typography>
           <Controller
             control={form.control}
@@ -122,11 +115,7 @@ const RecoveryPage = () => {
             render={({ field, fieldState }) => (
               <TextInput
                 fullWidth
-                label={
-                  isForgotEmail
-                    ? "Provide your recovery email or registered phone number"
-                    : "Please enter your registered email address"
-                }
+                label={"Please enter your registered email address"}
                 value={field.value ?? ""}
                 onChange={field.onChange}
                 error={fieldState.error?.message}

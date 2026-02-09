@@ -1,6 +1,6 @@
 import { Box, Grid2 as Grid } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation } from "@tanstack/react-router";
 
 import RestaurantView from "../features/menu/components/RestaurantView";
 import LoadingIndicator from "../features/menu/components/LoadingIndicator";
@@ -16,7 +16,8 @@ const FilteredRestaurantsPage = () => {
   const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>(
     [],
   );
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
   const searchQuery = searchParams.get("search")?.toLowerCase() ?? "";
 
   const delay = (ms: number) =>

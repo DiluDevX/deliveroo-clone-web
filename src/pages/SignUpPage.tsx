@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import { Colors } from "../theme/colors";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import Checkbox from "@mui/material/Checkbox";
@@ -32,7 +32,8 @@ const SignUpPage = () => {
   const [checked, setChecked] = useState(false);
 
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
 
   const schema = z
     .object({
@@ -61,7 +62,7 @@ const SignUpPage = () => {
     form.setValue("email", searchParams.get("email") ?? "");
     form.setValue("firstName", searchParams.get("firstName") ?? "");
     form.setValue("lastName", searchParams.get("lastName") ?? "");
-  }, [form, searchParams]);
+  }, [form, location.search, searchParams]);
 
   const handleSubmit = form.handleSubmit(async (values) => {
     const { email, password, firstName, lastName } = values;
@@ -73,7 +74,7 @@ const SignUpPage = () => {
       // The server should set the session via HttpOnly cookie. Do not persist tokens in client JS.
       // If you must fallback to client storage, ensure comprehensive XSS mitigations and document why.
       toast.success("Account created successfully!");
-      navigate("/");
+      navigate({ to: "/" });
     } else {
       toast.error("Something Went Wrong");
     }
@@ -95,7 +96,7 @@ const SignUpPage = () => {
     >
       <Box>
         <Button
-          onClick={() => navigate("/Account")}
+          onClick={() => navigate({ to: "/account" })}
           PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
           sx={{
             border: "none",
@@ -224,15 +225,15 @@ const SignUpPage = () => {
                   sx={{ fontWeight: "normal", color: Colors.text.default }}
                 >
                   I Agree to{" "}
-                  <Link
-                    to={"https://deliveroo.co.uk/legal"}
+                  <a
+                    href="https://deliveroo.co.uk/legal\"
                     style={{
                       color: Colors.background.brand,
                       textDecoration: "none",
                     }}
                   >
                     Terms and conditions
-                  </Link>
+                  </a>
                 </Typography>
               }
             />

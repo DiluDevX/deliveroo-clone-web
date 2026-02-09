@@ -10,7 +10,7 @@ import {
   Card,
 } from "@mui/material";
 import { Colors } from "../theme/colors";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import Button from "../features/menu/components/Button";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
@@ -31,7 +31,7 @@ const CheckoutPage = () => {
   // Redirect to menu if cart is empty
   useEffect(() => {
     if (cartItems.length === 0) {
-      navigate("/");
+      navigate({ to: "/" });
     }
   }, [cartItems, navigate]);
 
@@ -39,7 +39,7 @@ const CheckoutPage = () => {
   useEffect(() => {
     if (!isAuthenticated) {
       sessionStorage.setItem("redirectAfterLogin", "/checkout");
-      navigate("/account/login");
+      navigate({ to: "/account/login" });
     }
   }, [isAuthenticated, navigate]);
 

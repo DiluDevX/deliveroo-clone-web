@@ -1,6 +1,6 @@
 import React from "react";
 import { ButtonBase, ButtonBaseProps, Typography } from "@mui/material";
-import { Link, To } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { Colors } from "../../../theme";
 
 type ButtonProps = ButtonBaseProps & {
@@ -9,7 +9,7 @@ type ButtonProps = ButtonBaseProps & {
   }>;
   PrefixComponent?: React.ReactNode;
   SuffixComponent?: React.ReactNode;
-  linkTo?: To;
+  linkTo?: string;
   variant?: "border" | "filled";
   borderOff?: boolean;
 };

@@ -7,12 +7,15 @@ import { Colors } from "../theme";
 import { useEffect, useState, useCallback } from "react";
 import { getCategories } from "../services/category.service";
 import { ICategory } from "../data/Sides";
-import { useParams } from "react-router-dom";
+import { useParams } from "@tanstack/react-router";
 import { getSingleRestaurant } from "../services/restaurant.service";
 import { Restaurant } from "../types/restaurants";
 
 const MenuPage = () => {
-  const { orgId } = useParams();
+  const { restaurantId } = useParams({
+    from: "/restaurants/$restaurantId/menu",
+  });
+  console.log(restaurantId);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     null,
   );
@@ -27,19 +30,18 @@ const MenuPage = () => {
 
   useEffect(() => {
     const fetchRestaurantAndCategories = async () => {
-      if (!orgId) {
+      if (!restaurantId) {
         setError("No restaurant ID provided in URL.");
         return;
       }
 
       try {
-        const restaurantData = await getSingleRestaurant(orgId);
+        const restaurantData = await getSingleRestaurant(restaurantId);
         if (!restaurantData) {
           setError("Restaurant not found.");
           return;
         }
         setRestaurant(restaurantData);
-        localStorage.setItem("id", restaurantData.id);
         localStorage.setItem("restaurantName", restaurantData.name);
 
         const categoryData = await getCategories();
@@ -56,7 +58,7 @@ const MenuPage = () => {
     };
 
     fetchRestaurantAndCategories();
-  }, [orgId]);
+  }, [restaurantId]);
 
   if (error) {
     return <Typography>{error}</Typography>;

@@ -1,18 +1,27 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Outlet, useNavigate } from "@tanstack/react-router";
 import { useAppSelector } from "../store/hooks/cartHooks";
+import { useEffect } from "react";
 
 const ProtectedRoute = () => {
   const { isAuthenticated, isAuthInitialized } = useAppSelector(
     (state) => state.auth,
   );
-  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthInitialized && !isAuthenticated) {
+      navigate({
+        to: "/account/login",
+      });
+    }
+  }, [isAuthenticated, isAuthInitialized, navigate]);
 
   if (!isAuthInitialized) {
     return null;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/account/login" state={{ from: location }} replace />;
+    return null;
   }
 
   return <Outlet />;

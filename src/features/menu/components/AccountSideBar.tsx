@@ -1,6 +1,6 @@
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Colors, Svgs } from "../../../theme";
 import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
 import { IconButton, Typography } from "@mui/material";
@@ -63,7 +63,7 @@ export default function AnchorTemporaryDrawer({
 
       {!store.getState().auth.user && (
         <Box>
-          <Link to={"/Account"} style={{ textDecoration: "none" }}>
+          <Link to="/account" style={{ textDecoration: "none" }}>
             <Button
               onClick={() => toggleDrawer(false)}
               style={{
@@ -104,7 +104,7 @@ export default function AnchorTemporaryDrawer({
             (firstName === "" || firstName === undefined) && (
               <Box
                 onClick={() => {
-                  navigate("/Account/CompleteSignUp");
+                  navigate({ to: "/account/complete-signup" });
                   toggleDrawer(false);
                 }}
               >
@@ -112,9 +112,11 @@ export default function AnchorTemporaryDrawer({
               </Box>
             )}
           <Button
-            onClick={() =>
-              navigate(isPlatformAdmin ? "/admin/dashboard" : "/my-account")
-            }
+            onClick={() => {
+              const navPath = isPlatformAdmin ? "/admin/dashboard" : "/account";
+              toggleDrawer(false);
+              navigate({ to: navPath });
+            }}
             sx={{
               mt: 5,
               width: "100%",

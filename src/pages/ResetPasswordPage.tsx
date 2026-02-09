@@ -8,7 +8,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 import TextInput from "../features/menu/components/TextInput";
 import { Colors, Svgs } from "../theme";
 import Button from "../features/menu/components/Button";
@@ -59,7 +59,8 @@ const ResetPasswordPage = () => {
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
   const token = searchParams.get("token");
   const navigate = useNavigate();
   const form = useForm<ResetPasswordForm>({
@@ -88,7 +89,7 @@ const ResetPasswordPage = () => {
       });
       if (UpdatedPasswordResponse) {
         toast.success("Password updated successfully");
-        navigate("/account/login");
+        navigate({ to: "/account/login" });
       }
     } catch (error) {
       toast.error("Something went wrong");
@@ -134,7 +135,7 @@ const ResetPasswordPage = () => {
             mb: 3,
             "&:hover": { border: "none" },
           }}
-          onClick={() => navigate("/account/recovery")}
+          onClick={() => navigate({ to: "/account/recovery" })}
         >
           Request New Link
           <ArrowForwardIcon sx={{ ml: 1 }} />
@@ -261,15 +262,15 @@ const ResetPasswordPage = () => {
                   sx={{ fontWeight: "normal", color: Colors.text.default }}
                 >
                   I Agree to{" "}
-                  <Link
-                    to={"https://deliveroo.co.uk/legal"}
+                  <a
+                    href="https://deliveroo.co.uk/legal"
                     style={{
                       color: Colors.background.brand,
                       textDecoration: "none",
                     }}
                   >
                     Terms and conditions
-                  </Link>
+                  </a>
                 </Typography>
               }
             />

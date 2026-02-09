@@ -21,7 +21,7 @@ import {
   updateQuantityAndSync,
 } from "../../../store/cartSlice";
 import Button from "./Button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 
 const Cart = () => {
   const dispatch = useAppDispatch();
@@ -67,14 +67,14 @@ const Cart = () => {
       return;
     }
     // Navigate to checkout page
-    navigate("/Checkout");
+    navigate({ to: "/checkout" });
   };
 
   const handleLoginRedirect = () => {
     setShowLoginDialog(false);
     // Store the intended destination for after login
     sessionStorage.setItem("redirectAfterLogin", "/Checkout");
-    navigate("/account");
+    navigate({ to: "/account" });
   };
 
   // Login Dialog Component
