@@ -91,7 +91,7 @@ interface LoginApiResponse {
     lastName: string;
     email: string;
     phone: string | null;
-    role: string;
+    role: "user" | "platform_admin" | "restaurant_admin";
     createdAt: string;
     updatedAt: string;
   };
@@ -118,11 +118,16 @@ export const login = async (
         type: "SUCCESS",
         successResponse: {
           user: {
+            id: user.id,
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
             phone: user.phone ?? undefined,
             role: user.role,
+            status: "Active",
+            orderCount: 0,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
           },
         },
       };
@@ -163,7 +168,6 @@ export const signup = async (
       body,
     );
 
-    // The refresh token is now set by the server in an HttpOnly, Secure, SameSite cookie.
     return {
       type: "SUCCESS",
       successResponse: response.data,

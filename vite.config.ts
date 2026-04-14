@@ -21,7 +21,7 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       "/api": {
-        target: "https://deliveroo.api.test.dilum.me",
+        target: "http://localhost:3000",
         changeOrigin: true,
         secure: false,
       },

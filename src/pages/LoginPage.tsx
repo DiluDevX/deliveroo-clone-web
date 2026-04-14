@@ -12,12 +12,11 @@ import TextInput from "../features/menu/components/TextInput";
 import { emailSchema } from "../features/menu/validations/email.validation";
 import { checkPasswordSchema } from "../features/menu/validations/password.validation";
 import { checkEmail, login } from "../services/auth.service";
-import { CheckEmailResponseBodyDTO } from "../types/auth.types";
-import { useSnackbar } from "notistack";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { setCredentials } from "../store/authSlice";
 import { useAppDispatch } from "../store/hooks/cartHooks";
+import { useSnackbar } from "notistack";
 
 type LoginForm = {
   email: string;
@@ -29,7 +28,7 @@ export default function Login() {
   const dispatch = useAppDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
-  const [existingUser, setExistingUser] = useState<CheckEmailResponseBodyDTO>();
+  const [existingUser, setExistingUser] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -64,20 +63,24 @@ export default function Login() {
   const handleSubmit = form.handleSubmit(async (values) => {
     const { email, password } = values;
 
-    if (!password) {
+    if (email) {
       const checkEmailResponse = await checkEmail({ email });
 
       if (checkEmailResponse.type === "EXISTING") {
         localStorage.setItem("existingUser", true.toString());
-        setExistingUser(checkEmailResponse.existingUser);
+        setExistingUser(true);
+        return;
       } else if (checkEmailResponse.type === "NEW") {
         navigate(`/Account/SignUp?email=${encodeURIComponent(email)}`);
+        return;
       } else {
-        enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
+        enqueueSnackbar("Something went wrong.", { variant: "error" });
+        return;
       }
-    } else {
+    }
+
+    if (existingUser && password) {
       const loginResponse = await login({ email, password });
-      console.log("Login response:", loginResponse); // Debug log
 
       if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
         console.log("Login successful, dispatching credentials..."); // Debug log
@@ -97,18 +100,22 @@ export default function Login() {
         localStorage.removeItem("existingUser");
 
         // Check for redirect after login
-        const redirectPath = sessionStorage.getItem("redirectAfterLogin");
-        console.log("Navigating to:", redirectPath || "/"); // Debug log
-        if (redirectPath) {
-          sessionStorage.removeItem("redirectAfterLogin");
-          navigate(redirectPath);
+        if (loginResponse.successResponse.user.role === "platform_admin") {
+          enqueueSnackbar("Logged In!", { variant: "success" });
+          navigate("/admin/dashboard");
+        } else if (
+          loginResponse.successResponse.user.role === "restaurant_admin" &&
+          loginResponse.successResponse.user.restaurantId !== null
+        ) {
+          enqueueSnackbar("Logged In!", { variant: "success" });
+          navigate("/restaurant/dashboard");
         } else {
           navigate("/");
         }
       } else if (loginResponse.type === "INVALID") {
-        enqueueSnackbar({ variant: "error", message: "Invalid Credentials" });
+        enqueueSnackbar("Invalid Credentials", { variant: "error" });
       } else {
-        enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
+        enqueueSnackbar("Something went wrong", { variant: "error" });
       }
     }
   });
@@ -233,24 +240,25 @@ export default function Login() {
           >
             {existingUser ? "Login" : "Continue"}
           </Button>
-
-          <Button
-            type="button"
-            onClick={() =>
-              navigate("/account/recovery", {
-                state: {
-                  type: existingUser ? "forgotPassword" : "forgotEmail",
-                },
-              })
-            }
-            variant="border"
-            sx={{
-              width: "100%",
-              color: Colors.background.brand,
-            }}
-          >
-            {existingUser ? "Forgot Password?" : "Forgot Email?"}
-          </Button>
+          {existingUser && (
+            <Button
+              type="button"
+              onClick={() =>
+                navigate("/account/recovery", {
+                  state: {
+                    type: existingUser ? "forgotPassword" : "forgotEmail",
+                  },
+                })
+              }
+              variant="border"
+              sx={{
+                width: "100%",
+                color: Colors.background.brand,
+              }}
+            >
+              {existingUser ? "Forgot Password?" : "Forgot Email?"}
+            </Button>
+          )}
         </form>
       </Box>
     </Box>

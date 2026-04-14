@@ -18,6 +18,42 @@ const theme = createTheme({
       fontFamily: ["IBM Plex Sans", "serif"].join(","),
     },
   },
+  components: {
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          "& .MuiOutlinedInput-root": {
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: Colors.background.brand,
+            },
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: Colors.background.brand,
+          },
+        },
+      },
+    },
+    MuiCheckbox: {
+      styleOverrides: {
+        root: {
+          color: Colors.background.brand,
+          "&.Mui-checked": {
+            color: Colors.background.brand,
+          },
+        },
+      },
+    },
+    MuiRadio: {
+      styleOverrides: {
+        root: {
+          color: Colors.background.brand,
+          "&.Mui-checked": {
+            color: Colors.background.brand,
+          },
+        },
+      },
+    },
+  },
 });
 
 createRoot(document.getElementById("root")!).render(

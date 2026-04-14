@@ -8,26 +8,28 @@ interface CartResponse {
   };
 }
 
-// Get auth header
 const getAuthHeader = () => {
   const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return {
+    Authorization: token ? `Bearer ${token}` : "",
+    "x-api-key": import.meta.env.VITE_BFF_API_KEY || "your-bff-api-key",
+  };
 };
 
-// Get cart from database
 export const getCart = async (): Promise<CartItem[]> => {
   try {
     const token = localStorage.getItem("token");
     if (!token) return [];
 
-    const userId = localStorage.getItem("id");
-    if (!userId) return [];
-
-    const response = await axios.get<CartResponse>(`/api/cart/${userId}`, {
+    const response = await axios.get<CartResponse>("/api/cart/", {
       headers: getAuthHeader(),
     });
 
-    return response.data.data?.items || [];
+    const items = response.data.data?.items || [];
+    return items.map((item) => ({
+      ...item,
+      cartItemId: (item as unknown as { id: string }).id,
+    }));
   } catch (error) {
     if (isAxiosError(error)) {
       console.error("Error fetching cart:", error.response?.data);
@@ -36,40 +38,31 @@ export const getCart = async (): Promise<CartItem[]> => {
   }
 };
 
-// Sync entire cart to database
-export const syncCart = async (items: CartItem[]): Promise<boolean> => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) return false;
-
-    await axios.post("/api/cart/sync", { items }, { headers: getAuthHeader() });
-
-    return true;
-  } catch (error) {
-    if (isAxiosError(error)) {
-      console.error("Error syncing cart:", error.response?.data);
-    }
-    return false;
-  }
-};
-
-// Add item to cart in database
-export const addItemToCart = async (item: CartItem): Promise<boolean> => {
+export const addItemToCart = async (
+  item: CartItem,
+  restaurantId: string,
+): Promise<boolean> => {
   try {
     const token = localStorage.getItem("token");
     if (!token) return false;
 
     await axios.post(
-      "/api/cart/add",
+      "/api/cart",
       {
+        restaurantId,
         dishId: String(item._id),
-        name: item.name,
-        price: Number(item.price),
+        dishName: item.name,
+        dishImageUrl: item.image,
+        unitPrice: Number(item.price),
         quantity: item.quantity,
-        image: item.image,
-        description: item.description,
+        modifiers: [],
       },
-      { headers: getAuthHeader() },
+      {
+        headers: {
+          ...getAuthHeader(),
+          "x-api-key": import.meta.env.VITE_BFF_API_KEY || "your-bff-api-key",
+        },
+      },
     );
 
     return true;
@@ -81,9 +74,8 @@ export const addItemToCart = async (item: CartItem): Promise<boolean> => {
   }
 };
 
-// Update item quantity in database
 export const updateCartItemQuantity = async (
-  dishId: string,
+  cartItemId: string,
   quantity: number,
 ): Promise<boolean> => {
   try {
@@ -91,8 +83,8 @@ export const updateCartItemQuantity = async (
     if (!token) return false;
 
     await axios.put(
-      "/api/cart/update",
-      { dishId, quantity },
+      `/api/cart/items/${cartItemId}`,
+      { quantity },
       { headers: getAuthHeader() },
     );
 
@@ -105,13 +97,14 @@ export const updateCartItemQuantity = async (
   }
 };
 
-// Remove item from cart in database
-export const removeItemFromCart = async (dishId: string): Promise<boolean> => {
+export const removeItemFromCart = async (
+  cartItemId: string,
+): Promise<boolean> => {
   try {
     const token = localStorage.getItem("token");
     if (!token) return false;
 
-    await axios.delete(`/api/cart/remove/${dishId}`, {
+    await axios.delete(`/api/cart/items/${cartItemId}`, {
       headers: getAuthHeader(),
     });
 
@@ -124,13 +117,12 @@ export const removeItemFromCart = async (dishId: string): Promise<boolean> => {
   }
 };
 
-// Clear cart in database
 export const clearCartInDb = async (): Promise<boolean> => {
   try {
     const token = localStorage.getItem("token");
     if (!token) return false;
 
-    await axios.delete("/api/cart/clear", {
+    await axios.delete("/api/cart/", {
       headers: getAuthHeader(),
     });
 
