@@ -1,10 +1,33 @@
 import axios, { isAxiosError } from "axios";
 import { CartItem } from "../store/cartSlice";
 
+interface CartItemData {
+  id: string;
+  dishId: string;
+  dishName: string;
+  dishImageUrl: string;
+  unitPrice: number;
+  quantity: number;
+  modifiers: Array<{
+    id: string;
+    name: string;
+    option: string;
+    extraPrice: number;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface CartResponse {
+  success: boolean;
   message?: string;
   data: {
-    items: CartItem[];
+    id: string;
+    userId: string;
+    restaurantId: string;
+    items: CartItemData[];
+    createdAt: string;
+    updatedAt: string;
   };
 }
 
@@ -16,7 +39,7 @@ const getAuthHeader = () => {
   };
 };
 
-export const getCart = async (): Promise<CartItem[]> => {
+export const getCart = async (): Promise<CartItemData[]> => {
   try {
     const token = localStorage.getItem("token");
     if (!token) return [];
@@ -26,10 +49,7 @@ export const getCart = async (): Promise<CartItem[]> => {
     });
 
     const items = response.data.data?.items || [];
-    return items.map((item) => ({
-      ...item,
-      cartItemId: (item as unknown as { id: string }).id,
-    }));
+    return items;
   } catch (error) {
     if (isAxiosError(error)) {
       console.error("Error fetching cart:", error.response?.data);

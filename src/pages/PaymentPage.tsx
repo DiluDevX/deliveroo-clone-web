@@ -1,17 +1,22 @@
-import { Box, Typography, Grid, Card } from "@mui/material";
+import { Box, Typography, Grid, Card, CircularProgress } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Colors } from "../theme/colors";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../features/menu/components/Button";
 import TextInput from "../features/menu/components/TextInput";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import { useAppSelector } from "../store/hooks/cartHooks";
+import { useAppSelector, useAppDispatch } from "../store/hooks/cartHooks";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
+import {
+  createPaymentIntent,
+  confirmPayment,
+} from "../services/payment.service";
 import { checkoutCart } from "../services/order.service";
+import { clearCartAndSync } from "../store/cartSlice";
 
 const cardSchema = z.object({
   cardNumber: z.string().min(16, "Card number must be 16 digits"),
@@ -36,11 +41,24 @@ type CheckoutData = {
 const PaymentPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
+  const user = useAppSelector((state) => state.auth.user);
   const [deliveryMethod] = useState("delivery");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [processingStep, setProcessingStep] = useState<string>("");
+  const [progress, setProgress] = useState(50);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setProgress(100);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   const checkoutData = location.state?.checkoutData as CheckoutData | null;
+  const restaurantId = localStorage.getItem("selected-restaurant-id") || "";
   const restaurantName =
     localStorage.getItem("selected-restaurant-name") || "Restaurant";
   const restaurantAddress =
@@ -64,11 +82,13 @@ const PaymentPage = () => {
       !checkoutData?.city ||
       !checkoutData?.zipCode
     ) {
-      console.error("Missing delivery address");
+      setError("Missing delivery address");
       return;
     }
 
     setIsProcessing(true);
+    setError(null);
+    setProcessingStep("Creating order...");
 
     const checkoutRequest = {
       deliveryAddress: {
@@ -85,14 +105,46 @@ const PaymentPage = () => {
       paymentMethod: "card",
     };
 
-    const response = await checkoutCart(checkoutRequest);
+    const orderResponse = await checkoutCart(checkoutRequest);
 
-    setIsProcessing(false);
+    if (!orderResponse?.orderId) {
+      setIsProcessing(false);
+      setError("Failed to create order. Please try again.");
+      setProcessingStep("");
+      return;
+    }
 
-    if (response) {
-      navigate("/order-confirmation", { state: { orderId: response.orderId } });
+    setProcessingStep("Processing payment...");
+
+    const amountInPennies = Math.round(total * 100);
+
+    const paymentIntent = await createPaymentIntent({
+      orderId: orderResponse.orderId,
+      userId: user?.id || "",
+      restaurantId,
+      amount: amountInPennies,
+      currency: "USD",
+      paymentMethod: "CARD",
+      commissionPercentage: 15,
+    });
+
+    if (paymentIntent?.data?.id) {
+      setProcessingStep("Confirming payment...");
+      const confirmed = await confirmPayment(paymentIntent.data.id);
+      if (confirmed) {
+        dispatch(clearCartAndSync());
+        navigate("/order-confirmation", {
+          state: { orderId: orderResponse.orderNumber },
+        });
+      } else {
+        setIsProcessing(false);
+        setError("Payment failed. Please try again.");
+        setProcessingStep("");
+      }
     } else {
-      navigate("/order-confirmation", { state: { orderId: null } });
+      setIsProcessing(false);
+      setError("Failed to process payment. Please try again.");
+      setProcessingStep("");
     }
   };
 
@@ -178,7 +230,8 @@ const PaymentPage = () => {
             sx={{
               width: { xs: "30px", sm: "60px", md: "100px" },
               height: "2px",
-              backgroundColor: Colors.border.subtle,
+              background: `linear-gradient(to right, ${Colors.background.brand} ${progress}%, ${Colors.border.subtle} ${progress}%)`,
+              transition: "background 0.1s ease",
             }}
           />
 
@@ -207,7 +260,7 @@ const PaymentPage = () => {
                 display: { xs: "none", sm: "block" },
               }}
             >
-              Checkout
+              Payment
             </Typography>
           </Box>
         </Box>
@@ -444,8 +497,31 @@ const PaymentPage = () => {
                   mt: 3,
                 }}
               >
-                {isProcessing ? "Processing..." : "Proceed"}
+                {isProcessing ? (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <CircularProgress size={20} sx={{ color: "white" }} />
+                    {processingStep || "Processing..."}
+                  </Box>
+                ) : (
+                  "Proceed"
+                )}
               </Button>
+
+              {error && (
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 2,
+                    backgroundColor: "rgba(229, 57, 53, 0.1)",
+                    borderRadius: "8px",
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography sx={{ color: "#e53935", fontSize: "0.9rem" }}>
+                    {error}
+                  </Typography>
+                </Box>
+              )}
 
               <Box
                 sx={{

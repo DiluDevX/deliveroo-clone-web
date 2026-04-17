@@ -111,32 +111,32 @@ const CheckoutPage = () => {
     navigate("/payment", { state: { checkoutData: data, deliveryMethod } });
   });
 
-  const handleIncrement = (dishId: string) => {
-    const item = cartItems.find((i) => i._id === dishId);
+  const handleIncrement = (cartItemId: string) => {
+    const item = cartItems.find((i) => i.cartItemId === cartItemId);
     if (item) {
       dispatch(
         updateQuantityAndSync({
-          cartItemId: dishId,
+          cartItemId,
           quantity: item.quantity + 1,
         }),
       );
     }
   };
 
-  const handleDecrement = (dishId: string) => {
-    const item = cartItems.find((i) => i._id === dishId);
+  const handleDecrement = (cartItemId: string) => {
+    const item = cartItems.find((i) => i.cartItemId === cartItemId);
     if (item && item.quantity > 1) {
       dispatch(
         updateQuantityAndSync({
-          cartItemId: dishId,
+          cartItemId,
           quantity: item.quantity - 1,
         }),
       );
     }
   };
 
-  const handleRemove = (dishId: string) => {
-    dispatch(removeItemAndSync(dishId));
+  const handleRemove = (cartItemId: string) => {
+    dispatch(removeItemAndSync(cartItemId));
   };
 
   useEffect(() => {
@@ -481,7 +481,7 @@ const CheckoutPage = () => {
               <Box sx={{ mb: 3 }}>
                 {cartItems.map((item) => (
                   <Box
-                    key={item._id}
+                    key={item.cartItemId || item._id}
                     sx={{
                       display: "flex",
                       gap: 2,
@@ -524,7 +524,9 @@ const CheckoutPage = () => {
                         </Typography>
                         <IconButton
                           size="small"
-                          onClick={() => handleRemove(item._id)}
+                          onClick={() =>
+                            handleRemove(item.cartItemId || item._id)
+                          }
                           sx={{ padding: 0, color: Colors.icon.info }}
                         >
                           <DeleteOutlineIcon fontSize="small" />
@@ -540,7 +542,9 @@ const CheckoutPage = () => {
                       >
                         <IconButton
                           size="small"
-                          onClick={() => handleDecrement(item._id)}
+                          onClick={() =>
+                            handleDecrement(item.cartItemId || item._id)
+                          }
                           sx={{
                             border: `1px solid ${Colors.border.default}`,
                             borderRadius: "4px",
@@ -561,7 +565,9 @@ const CheckoutPage = () => {
                         </Typography>
                         <IconButton
                           size="small"
-                          onClick={() => handleIncrement(item._id)}
+                          onClick={() =>
+                            handleIncrement(item.cartItemId || item._id)
+                          }
                           sx={{
                             border: `1px solid ${Colors.border.default}`,
                             borderRadius: "4px",

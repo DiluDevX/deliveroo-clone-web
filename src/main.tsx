@@ -8,6 +8,7 @@ import { Provider } from "react-redux";
 import { persistor, store } from "./store/store.tsx";
 import { PersistGate } from "redux-persist/integration/react";
 import axios from "axios";
+import { Colors } from "./theme/colors.ts";
 
 axios.defaults.withCredentials = true;
 

@@ -6,6 +6,12 @@ import { RootState } from "./store";
 export interface CartItem extends IDish {
   quantity: number;
   cartItemId?: string;
+  modifiers?: Array<{
+    id: string;
+    name: string;
+    option: string;
+    extraPrice: number;
+  }>;
 }
 
 export interface CartState {
@@ -201,7 +207,7 @@ const cartSlice = createSlice({
           // Merge server cart with local cart
           action.payload.forEach((serverItem) => {
             const existingItem = state.items.find(
-              (item) => String(item._id) === String(serverItem._id),
+              (item) => String(item._id) === String(serverItem.dishId),
             );
             if (existingItem) {
               // Keep the higher quantity
@@ -210,7 +216,7 @@ const cartSlice = createSlice({
                 serverItem.quantity,
               );
             } else {
-              state.items.push(serverItem);
+              state.items.push(serverItem as unknown as CartItem);
             }
           });
         }
