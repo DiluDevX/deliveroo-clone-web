@@ -1,35 +1,6 @@
 import axios, { isAxiosError } from "axios";
 import { CartItem } from "../store/cartSlice";
-
-interface CartItemData {
-  id: string;
-  dishId: string;
-  dishName: string;
-  dishImageUrl: string;
-  unitPrice: number;
-  quantity: number;
-  modifiers: Array<{
-    id: string;
-    name: string;
-    option: string;
-    extraPrice: number;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface CartResponse {
-  success: boolean;
-  message?: string;
-  data: {
-    id: string;
-    userId: string;
-    restaurantId: string;
-    items: CartItemData[];
-    createdAt: string;
-    updatedAt: string;
-  };
-}
+import { CartItemData, CartResponse } from "../types/cart.types";
 
 const getAuthHeader = () => {
   const token = localStorage.getItem("token");

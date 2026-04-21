@@ -4,6 +4,7 @@ import {
   CheckEmailResponseBodyDTO,
   EmailOrPhoneRequestBodyDTO,
   EmailOrPhoneResponseBodyDTO,
+  LoginApiResponseBodyDTO,
   LoginRequestBodyDTO,
   LoginResponseBodyDTO,
   SignupRequestBodyDTO,
@@ -59,7 +60,7 @@ export const checkEmailOrPhone = async (
   try {
     const response = await axios.post<
       CommonResponseDTO<EmailOrPhoneResponseBodyDTO>
-    >("/api/auth/check-email-or-password", body);
+    >("/api/auth/check-email", body);
 
     return {
       type: "EXISTING",
@@ -84,26 +85,11 @@ type ILoginResponse = {
   successResponse?: LoginResponseBodyDTO;
 };
 
-interface LoginApiResponse {
-  user: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string | null;
-    role: "user" | "platform_admin" | "restaurant_admin";
-    createdAt: string;
-    updatedAt: string;
-  };
-  accessToken: string;
-  // refreshToken is now handled via HttpOnly cookie, not returned to client
-}
-
 export const login = async (
   body: LoginRequestBodyDTO,
 ): Promise<ILoginResponse> => {
   try {
-    const response = await axios.post<LoginApiResponse>(
+    const response = await axios.post<LoginApiResponseBodyDTO>(
       "/api/auth/login",
       body,
     );

@@ -9,6 +9,7 @@ import {
   Grid,
   Card,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,12 +22,22 @@ import TextInput from "../features/menu/components/TextInput";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import MoneyIcon from "@mui/icons-material/Money";
 import { useAppSelector, useAppDispatch } from "../store/hooks/cartHooks";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { updateQuantityAndSync, removeItemAndSync } from "../store/cartSlice";
+import {
+  updateQuantityAndSync,
+  removeItemAndSync,
+  clearCartAndSync,
+} from "../store/cartSlice";
 import { DeliveryDiningSharp, ShoppingBagOutlined } from "@mui/icons-material";
+import { checkoutCart } from "../services/order.service";
+import { enqueueSnackbar } from "notistack";
+
+type PaymentMethod = "CARD" | "CASH_ON_DELIVERY";
 
 const phoneSchema = z.object({
   phone: z
@@ -64,6 +75,12 @@ const CheckoutPage = () => {
 
   const [deliveryMethod, setDeliveryMethod] = useState("delivery");
   const [discountCode, setDiscountCode] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CARD");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+
+  const effectiveDeliveryMethod =
+    paymentMethod === "CASH_ON_DELIVERY" ? "delivery" : deliveryMethod;
 
   const isPhoneMissing = !user?.phone;
 
@@ -104,11 +121,54 @@ const CheckoutPage = () => {
   const {
     control,
     formState: { isValid },
+    watch,
   } = form;
 
-  const handlePlaceOrder = form.handleSubmit((data) => {
-    console.log("Checkout data:", data);
-    navigate("/payment", { state: { checkoutData: data, deliveryMethod } });
+  const agreedToTerms = watch("agreedToTerms", false);
+
+  const handlePlaceOrder = form.handleSubmit(async (data) => {
+    if (paymentMethod === "CASH_ON_DELIVERY") {
+      setIsProcessing(true);
+      const restaurantName =
+        localStorage.getItem("selected-restaurant-name") || "Restaurant";
+      const restaurantAddress =
+        localStorage.getItem("selected-restaurant-address") || "";
+
+      const checkoutRequest = {
+        deliveryAddress: {
+          line1: data.address || "",
+          city: data.city || "",
+          postcode: data.zipCode || "",
+          country: "UK",
+        },
+        restaurantName,
+        restaurantAddress,
+        deliveryFee: shippingFee,
+        serviceFee: 0.99,
+        discountAmount: 0,
+        paymentMethod: "cash_on_delivery",
+      };
+
+      const orderResponse = await checkoutCart(checkoutRequest);
+      setIsProcessing(false);
+
+      if (orderResponse?.orderId) {
+        setOrderPlaced(true);
+        dispatch(clearCartAndSync());
+        navigate("/order-confirmation", {
+          state: { orderId: 1223 },
+        });
+      } else {
+        enqueueSnackbar("Failed to place order. Please try again.", {
+          variant: "error",
+        });
+      }
+      return;
+    }
+
+    navigate("/payment", {
+      state: { checkoutData: data, deliveryMethod, paymentMethod },
+    });
   });
 
   const handleIncrement = (cartItemId: string) => {
@@ -140,10 +200,10 @@ const CheckoutPage = () => {
   };
 
   useEffect(() => {
-    if (cartItems.length === 0) {
+    if (cartItems.length === 0 && !orderPlaced) {
       navigate("/");
     }
-  }, [cartItems, navigate]);
+  }, [cartItems, navigate, orderPlaced]);
 
   useEffect(() => {
     if (import.meta.env.VITE_BYPASS_AUTH !== "true" && !isAuthenticated) {
@@ -157,7 +217,7 @@ const CheckoutPage = () => {
     0,
   );
 
-  const shippingFee = deliveryMethod === "delivery" ? 5.0 : 0;
+  const shippingFee = effectiveDeliveryMethod === "delivery" ? 5.0 : 0;
   const discount = 0;
   const total = subtotal + shippingFee - discount;
 
@@ -255,6 +315,7 @@ const CheckoutPage = () => {
                 borderRadius: "12px",
                 border: `1px solid ${Colors.border.subtle}`,
                 boxShadow: "none",
+                minHeight: "100Ch",
               }}
             >
               <Typography
@@ -305,23 +366,32 @@ const CheckoutPage = () => {
                   />
                 </Box>
                 <Box
-                  onClick={() => setDeliveryMethod("pickup")}
+                  onClick={() =>
+                    paymentMethod !== "CASH_ON_DELIVERY" &&
+                    setDeliveryMethod("pickup")
+                  }
                   sx={{
                     flex: 1,
                     minWidth: { xs: "100%", sm: "auto" },
                     border: `2px solid ${deliveryMethod === "pickup" ? Colors.border.default : Colors.border.subtle}`,
                     borderRadius: "8px",
                     p: 2,
-                    cursor: "pointer",
+                    cursor:
+                      paymentMethod === "CASH_ON_DELIVERY"
+                        ? "not-allowed"
+                        : "pointer",
                     backgroundColor:
                       deliveryMethod === "pickup"
                         ? "rgba(2,189,174,0.05)"
                         : "transparent",
+                    opacity: paymentMethod === "CASH_ON_DELIVERY" ? 0.5 : 1,
                   }}
                 >
                   <FormControlLabel
                     value="pickup"
-                    control={<Radio />}
+                    control={
+                      <Radio disabled={paymentMethod === "CASH_ON_DELIVERY"} />
+                    }
                     label={
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 1 }}
@@ -330,6 +400,83 @@ const CheckoutPage = () => {
                           sx={{ color: Colors.background.brand }}
                         />
                         <Typography>Pick up</Typography>
+                      </Box>
+                    }
+                  />
+                </Box>
+              </RadioGroup>
+
+              <Typography
+                sx={{
+                  fontWeight: "600",
+                  mb: 2,
+                  mt: 3,
+                  color: Colors.text.default,
+                }}
+              >
+                Payment Method
+              </Typography>
+              <RadioGroup
+                value={paymentMethod}
+                onChange={(e) =>
+                  setPaymentMethod(e.target.value as PaymentMethod)
+                }
+                sx={{ mb: 3, display: "flex", gap: 2, flexDirection: "row" }}
+              >
+                <Box
+                  onClick={() => setPaymentMethod("CARD")}
+                  sx={{
+                    flex: 1,
+                    minWidth: { xs: "100%", sm: "auto" },
+                    border: `2px solid ${paymentMethod === "CARD" ? Colors.border.default : Colors.border.subtle}`,
+                    borderRadius: "8px",
+                    p: 2,
+                    cursor: "pointer",
+                    backgroundColor:
+                      paymentMethod === "CARD"
+                        ? "rgba(2, 189, 174, 0.05)"
+                        : "transparent",
+                  }}
+                >
+                  <FormControlLabel
+                    value="CARD"
+                    control={<Radio />}
+                    label={
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <CreditCardIcon
+                          sx={{ color: Colors.background.brand }}
+                        />
+                        <Typography>Card</Typography>
+                      </Box>
+                    }
+                  />
+                </Box>
+                <Box
+                  onClick={() => setPaymentMethod("CASH_ON_DELIVERY")}
+                  sx={{
+                    flex: 1,
+                    minWidth: { xs: "100%", sm: "auto" },
+                    border: `2px solid ${paymentMethod === "CASH_ON_DELIVERY" ? Colors.border.default : Colors.border.subtle}`,
+                    borderRadius: "8px",
+                    p: 2,
+                    cursor: "pointer",
+                    backgroundColor:
+                      paymentMethod === "CASH_ON_DELIVERY"
+                        ? "rgba(2,189,174,0.05)"
+                        : "transparent",
+                  }}
+                >
+                  <FormControlLabel
+                    value="CASH_ON_DELIVERY"
+                    control={<Radio />}
+                    label={
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <MoneyIcon sx={{ color: Colors.background.brand }} />
+                        <Typography>Cash on Delivery</Typography>
                       </Box>
                     }
                   />
@@ -468,8 +615,7 @@ const CheckoutPage = () => {
                 borderRadius: "12px",
                 border: `1px solid ${Colors.border.subtle}`,
                 boxShadow: "none",
-                position: "sticky",
-                top: 80,
+                minHeight: "100Ch",
               }}
             >
               <Typography
@@ -686,7 +832,7 @@ const CheckoutPage = () => {
 
               <Button
                 variant="filled"
-                disabled={!isValid}
+                disabled={!isValid || isProcessing || !agreedToTerms}
                 onClick={handlePlaceOrder}
                 sx={{
                   width: "100%",
@@ -695,7 +841,16 @@ const CheckoutPage = () => {
                   fontSize: "1rem",
                 }}
               >
-                Pay Now
+                {isProcessing ? (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <CircularProgress size={20} sx={{ color: "white" }} />
+                    Processing...
+                  </Box>
+                ) : paymentMethod === "CASH_ON_DELIVERY" ? (
+                  "Place Order"
+                ) : (
+                  "Pay Now"
+                )}
               </Button>
 
               <Box

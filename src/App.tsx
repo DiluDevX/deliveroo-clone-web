@@ -13,6 +13,7 @@ import FilteredRestaurantsPage from "./pages/FilteredRestaurantsPage";
 import SignUpPage from "./pages/SignUpPage";
 import SignPageLayout from "./layout/SignPageLayout";
 import LoginPage from "./pages/LoginPage";
+import ProfilePage from "./pages/ProfilePage";
 import AccountCompletionPage from "./pages/AccountCompletionPage";
 import RecoveryPage from "./pages/RecoveryPage";
 import RecoveryConfirmationPage from "./pages/RecoveryConfirmationPage";
@@ -47,6 +48,14 @@ const App = () => {
           }
         />
         <Route element={<ProtectedRoute />}>
+          <Route
+            path="/profile"
+            element={
+              <WithPageTitle title="My Profile">
+                <ProfilePage />
+              </WithPageTitle>
+            }
+          />
           <Route
             path="/checkout"
             element={

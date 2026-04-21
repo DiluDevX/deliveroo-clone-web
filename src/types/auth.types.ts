@@ -3,6 +3,7 @@ export type {
   CheckEmailResponseBodyDTO,
   EmailOrPhoneRequestBodyDTO,
   EmailOrPhoneResponseBodyDTO,
+  LoginApiResponseBodyDTO,
   LoginRequestBodyDTO,
   LoginResponseBodyDTO,
   SignupRequestBodyDTO,

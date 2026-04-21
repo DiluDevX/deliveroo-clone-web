@@ -9,6 +9,7 @@ export const Colors = {
     lighterDark: "#cccc",
     dark: "#3d4141",
     darker: "#2e3333",
+    danger: "#e53935",
   },
   text: {
     default: "#2e3333",

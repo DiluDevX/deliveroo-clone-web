@@ -36,6 +36,7 @@ type CheckoutData = {
   address: string;
   city: string;
   zipCode: string;
+  paymentMethod?: "CARD" | "CASH_ON_DELIVERY";
 };
 
 const PaymentPage = () => {
@@ -58,6 +59,7 @@ const PaymentPage = () => {
   }, []);
 
   const checkoutData = location.state?.checkoutData as CheckoutData | null;
+  const paymentMethod = checkoutData?.paymentMethod || "CARD";
   const restaurantId = localStorage.getItem("selected-restaurant-id") || "";
   const restaurantName =
     localStorage.getItem("selected-restaurant-name") || "Restaurant";
@@ -102,7 +104,8 @@ const PaymentPage = () => {
       deliveryFee: shippingFee,
       serviceFee,
       discountAmount: discount,
-      paymentMethod: "card",
+      paymentMethod:
+        paymentMethod === "CASH_ON_DELIVERY" ? "cash_on_delivery" : "card",
     };
 
     const orderResponse = await checkoutCart(checkoutRequest);
@@ -111,6 +114,15 @@ const PaymentPage = () => {
       setIsProcessing(false);
       setError("Failed to create order. Please try again.");
       setProcessingStep("");
+      return;
+    }
+
+    if (paymentMethod === "CASH_ON_DELIVERY") {
+      dispatch(clearCartAndSync());
+      navigate("/order-confirmation", {
+        state: { orderId: orderResponse.orderNumber },
+      });
+      setIsProcessing(false);
       return;
     }
 
@@ -290,98 +302,118 @@ const PaymentPage = () => {
                 Payment Details
               </Typography>
 
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 2,
-                }}
-              >
-                <Controller
-                  name="cardNumber"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <TextInput
-                      {...field}
-                      fullWidth
-                      label="Card Number"
-                      value={field.value || ""}
-                      onChange={(e) => {
-                        const value = e.target.value
-                          .replace(/\D/g, "")
-                          .slice(0, 16);
-                        field.onChange(value);
-                      }}
-                      error={fieldState.error?.message}
-                      placeholder="1234 5678 9012 3456"
-                    />
-                  )}
-                />
-
-                <Box sx={{ display: "flex", gap: 2 }}>
+              {paymentMethod === "CARD" ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                  }}
+                >
                   <Controller
-                    name="expiryDate"
+                    name="cardNumber"
                     control={control}
                     render={({ field, fieldState }) => (
                       <TextInput
                         {...field}
                         fullWidth
-                        label="Expiry Date"
-                        value={field.value || ""}
-                        onChange={(e) => {
-                          let value = e.target.value
-                            .replace(/\D/g, "")
-                            .slice(0, 4);
-                          if (value.length > 2) {
-                            value = value.slice(0, 2) + "/" + value.slice(2);
-                          }
-                          field.onChange(value);
-                        }}
-                        error={fieldState.error?.message}
-                        placeholder="MM/YY"
-                      />
-                    )}
-                  />
-
-                  <Controller
-                    name="cvv"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                      <TextInput
-                        {...field}
-                        fullWidth
-                        label="CVV"
+                        label="Card Number"
                         value={field.value || ""}
                         onChange={(e) => {
                           const value = e.target.value
                             .replace(/\D/g, "")
-                            .slice(0, 3);
+                            .slice(0, 16);
                           field.onChange(value);
                         }}
                         error={fieldState.error?.message}
-                        placeholder="123"
-                        type="password"
+                        placeholder="1234 5678 9012 3456"
+                      />
+                    )}
+                  />
+
+                  <Box sx={{ display: "flex", gap: 2 }}>
+                    <Controller
+                      name="expiryDate"
+                      control={control}
+                      render={({ field, fieldState }) => (
+                        <TextInput
+                          {...field}
+                          fullWidth
+                          label="Expiry Date"
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            let value = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 4);
+                            if (value.length > 2) {
+                              value = value.slice(0, 2) + "/" + value.slice(2);
+                            }
+                            field.onChange(value);
+                          }}
+                          error={fieldState.error?.message}
+                          placeholder="MM/YY"
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      name="cvv"
+                      control={control}
+                      render={({ field, fieldState }) => (
+                        <TextInput
+                          {...field}
+                          fullWidth
+                          label="CVV"
+                          value={field.value || ""}
+                          onChange={(e) => {
+                            const value = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 3);
+                            field.onChange(value);
+                          }}
+                          error={fieldState.error?.message}
+                          placeholder="123"
+                          type="password"
+                        />
+                      )}
+                    />
+                  </Box>
+
+                  <Controller
+                    name="nameOnCard"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <TextInput
+                        {...field}
+                        fullWidth
+                        label="Name on Card"
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        error={fieldState.error?.message}
+                        placeholder="JOHN DOE"
                       />
                     )}
                   />
                 </Box>
-
-                <Controller
-                  name="nameOnCard"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <TextInput
-                      {...field}
-                      fullWidth
-                      label="Name on Card"
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      error={fieldState.error?.message}
-                      placeholder="JOHN DOE"
-                    />
-                  )}
-                />
-              </Box>
+              ) : (
+                <Box
+                  sx={{
+                    p: 3,
+                    backgroundColor: Colors.background.light,
+                    borderRadius: "8px",
+                    textAlign: "center",
+                  }}
+                >
+                  <Typography sx={{ color: Colors.text.default, mb: 1 }}>
+                    You will pay in cash when your order is delivered.
+                  </Typography>
+                  <Typography
+                    sx={{ color: Colors.text.placeholder, fontSize: "0.9rem" }}
+                  >
+                    Please ensure you have the exact amount ready.
+                  </Typography>
+                </Box>
+              )}
             </Card>
           </Grid>
 
@@ -487,7 +519,9 @@ const PaymentPage = () => {
 
               <Button
                 variant="filled"
-                disabled={!isValid || isProcessing}
+                disabled={
+                  (paymentMethod === "CARD" && !isValid) || isProcessing
+                }
                 onClick={handlePayment}
                 sx={{
                   width: "100%",
@@ -502,6 +536,8 @@ const PaymentPage = () => {
                     <CircularProgress size={20} sx={{ color: "white" }} />
                     {processingStep || "Processing..."}
                   </Box>
+                ) : paymentMethod === "CASH_ON_DELIVERY" ? (
+                  "Place Order"
                 ) : (
                   "Proceed"
                 )}

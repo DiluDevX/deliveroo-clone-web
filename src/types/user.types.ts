@@ -6,3 +6,28 @@ export type IUser = {
   phone?: string;
   role?: string;
 };
+
+export interface UserProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Address {
+  id: string;
+  label: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  postcode: string;
+  country: string;
+  latitude?: number;
+  longitude?: number;
+  instructions?: string;
+  isDefault: boolean;
+}
