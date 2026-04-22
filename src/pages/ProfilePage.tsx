@@ -6,18 +6,20 @@ import {
   IconButton,
   List,
   ListItem,
-  ListItemIcon,
-  ListItemText,
   ListItemButton,
 } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Colors } from "../theme/colors";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Button from "../features/menu/components/Button";
+import OrderDetailsModal from "../features/menu/components/OrderDetailsModal";
+import AddressModal from "../features/menu/components/AddressModal";
+import PaymentModal from "../features/menu/components/PaymentModal";
 import TextInput from "../features/menu/components/TextInput";
+import ClickableSwitch from "../features/menu/components/ClickableSwitch";
 import { useAppSelector, useAppDispatch } from "../store/hooks/cartHooks";
 import {
   getUserProfile,
@@ -29,6 +31,34 @@ import {
 import { getOrderHistory } from "../services/order.service";
 import { Order } from "../types/order.types";
 import { Address } from "../types/user.types";
+
+const DUMMY_ADDRESSES: Address[] = [
+  {
+    id: "addr_1",
+    label: "Home",
+    line1: "123 Main Street",
+    line2: "Flat 4B",
+    city: "London",
+    postcode: "SW1A 1AA",
+    country: "UK",
+    instructions: "Ring the bell twice",
+    isDefault: true,
+  },
+  {
+    id: "addr_2",
+    label: "Work",
+    line1: "45 Office Tower",
+    city: "London",
+    postcode: "EC2A 1AB",
+    country: "UK",
+    isDefault: false,
+  },
+];
+
+const DUMMY_PAYMENTS = [
+  { id: "pay_1", last4: "4242", brand: "Visa", expiry: "12/25" },
+  { id: "pay_2", last4: "1234", brand: "Mastercard", expiry: "06/26" },
+];
 import { logOut, setCredentials } from "../store/authSlice";
 import PersonIcon from "@mui/icons-material/Person";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -37,9 +67,10 @@ import LockIcon from "@mui/icons-material/Lock";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import {
   BikeScooter,
   CancelRounded,
@@ -66,6 +97,7 @@ type ProfileFormValues = {
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const [isEditing, setIsEditing] = useState(false);
@@ -73,14 +105,54 @@ const ProfilePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<string>("Personal details");
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [dummyAddresses, setDummyAddresses] =
+    useState<Address[]>(DUMMY_ADDRESSES);
+  const [payments] = useState(DUMMY_PAYMENTS);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [notifications, setNotifications] = useState({
+    orderUpdates: true,
+    promotions: false,
+    newsletter: false,
+  });
 
   useEffect(() => {
+    if (location.state?.selectedItem) {
+      setSelectedItem(location.state.selectedItem);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      setIsLoading(true);
+      const profile = await getUserProfile();
+      if (profile) {
+        dispatch(
+          setCredentials({
+            user: {
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              email: profile.email,
+              phone: profile.phone,
+              role: profile.role,
+            },
+          }),
+        );
+      }
+      const addressList = await getUserAddresses();
+      setAddresses(addressList);
+      setIsLoading(false);
+    };
     loadProfile();
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (selectedItem === "Order history") {
@@ -93,27 +165,6 @@ const ProfilePage = () => {
     const orderList = await getOrderHistory();
     setOrders(orderList);
     setOrdersLoading(false);
-  };
-
-  const loadProfile = async () => {
-    setIsLoading(true);
-    const profile = await getUserProfile();
-    if (profile) {
-      dispatch(
-        setCredentials({
-          user: {
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-            email: profile.email,
-            phone: profile.phone,
-            role: profile.role,
-          },
-        }),
-      );
-    }
-    const addressList = await getUserAddresses();
-    setAddresses(addressList);
-    setIsLoading(false);
   };
 
   const handleDeleteAccount = async () => {
@@ -137,39 +188,30 @@ const ProfilePage = () => {
     navigate("/");
   };
 
+  const handleSetDefaultAddress = (addressId: string) => {
+    const updatedAddresses = addresses.map((addr) => ({
+      ...addr,
+      isDefault: addr.id === addressId,
+    }));
+    setAddresses(updatedAddresses);
+  };
+
+  const handleSetDefaultDummyAddress = (addressId: string) => {
+    const updatedDummy = dummyAddresses.map((addr) => ({
+      ...addr,
+      isDefault: addr.id === addressId,
+    }));
+    setDummyAddresses(updatedDummy);
+  };
+
   const menuItems = [
-    {
-      icon: PersonIcon,
-      label: "Personal details",
-      description: "Name, email and phone",
-    },
-    {
-      icon: ShoppingBag,
-      label: "Order history",
-      description: "View your past orders",
-    },
-    {
-      icon: LocationOnIcon,
-      label: "Saved addresses",
-      description: "Manage delivery addresses",
-    },
-    {
-      icon: CreditCardIcon,
-      label: "Payments",
-      description: "Manage payment methods",
-    },
-    { icon: LockIcon, label: "Password", description: "Change your password" },
-    {
-      icon: NotificationsIcon,
-      label: "Notifications",
-      description: "Email and SMS preferences",
-    },
-    {
-      icon: DeleteIcon,
-      label: "Delete account",
-      description: "Permanently delete your account",
-      danger: true,
-    },
+    { icon: PersonIcon, label: "Personal details" },
+    { icon: ShoppingBag, label: "Order history" },
+    { icon: LocationOnIcon, label: "Saved addresses" },
+    { icon: CreditCardIcon, label: "Payments" },
+    { icon: LockIcon, label: "Password" },
+    { icon: NotificationsIcon, label: "Notifications" },
+    { icon: DeleteIcon, label: "Delete account", danger: true },
   ];
 
   const form = useForm<ProfileFormValues>({
@@ -293,11 +335,13 @@ const ProfilePage = () => {
                     sx={{
                       mb: 2,
                       p: 2,
-                      backgroundColor: "rgba(229, 57, 53, 0.1)",
+                      backgroundColor: Colors.error.light,
                       borderRadius: "8px",
                     }}
                   >
-                    <Typography sx={{ color: "#e53935" }}>{error}</Typography>
+                    <Typography sx={{ color: Colors.background.danger }}>
+                      {error}
+                    </Typography>
                   </Box>
                 )}
 
@@ -413,18 +457,33 @@ const ProfilePage = () => {
         const getOrderStatusColor = (status: string) => {
           switch (status) {
             case "DELIVERED":
-              return { bg: "#e8f5e9", color: "#2e7d32" };
+              return {
+                bg: Colors.status.delivered.bg,
+                color: Colors.status.delivered.text,
+              };
             case "CANCELLED":
             case "REFUNDED":
-              return { bg: "#ffebee", color: "#c62828" };
+              return {
+                bg: Colors.status.cancelled.bg,
+                color: Colors.status.cancelled.text,
+              };
             case "ON_THE_WAY":
-              return { bg: "#f3e5f5", color: "#7b1fa2" };
+              return {
+                bg: Colors.status.onTheWay.bg,
+                color: Colors.status.onTheWay.text,
+              };
             case "PREPARING":
             case "CONFIRMED":
             case "PENDING":
-              return { bg: "#e3f2fd", color: "#1565c0" };
+              return {
+                bg: Colors.status.pending.bg,
+                color: Colors.status.pending.text,
+              };
             default:
-              return { bg: "#fff3e0", color: "#e65100" };
+              return {
+                bg: Colors.status.default.bg,
+                color: Colors.status.default.text,
+              };
           }
         };
 
@@ -666,11 +725,10 @@ const ProfilePage = () => {
                         <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
                           <Button
                             variant="border"
-                            onClick={() =>
-                              navigate(`/order/${order.id}`, {
-                                state: { order },
-                              })
-                            }
+                            onClick={() => {
+                              setSelectedOrder(order);
+                              setShowOrderModal(true);
+                            }}
                             sx={{ flex: 1, fontSize: "0.85rem" }}
                           >
                             View Details
@@ -719,18 +777,107 @@ const ProfilePage = () => {
               <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                 Saved Addresses
               </Typography>
-              <Button variant="filled" sx={{ fontSize: "0.85rem", py: 0.5 }}>
+              <Button
+                variant="filled"
+                sx={{ fontSize: "0.85rem", py: 0.5 }}
+                onClick={() => {
+                  setEditingAddress(null);
+                  setShowAddressModal(true);
+                }}
+              >
                 <AddIcon sx={{ mr: 0.5 }} /> Add New
               </Button>
             </Box>
             {addresses.length === 0 ? (
-              <Box sx={{ textAlign: "center", py: 4 }}>
-                <LocationOnIcon
-                  sx={{ fontSize: 48, color: Colors.text.placeholder, mb: 2 }}
-                />
-                <Typography sx={{ color: Colors.text.placeholder }}>
-                  No saved addresses
-                </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {dummyAddresses.map((addr) => (
+                  <Box
+                    key={addr.id}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      p: 2,
+                      border: `1px solid ${Colors.border.subtle}`,
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Box>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography sx={{ fontWeight: 600 }}>
+                          {addr.label}
+                        </Typography>
+                        {addr.isDefault && (
+                          <CheckCircleIcon
+                            sx={{
+                              color: Colors.background.brand,
+                              fontSize: "1.2rem",
+                            }}
+                          />
+                        )}
+                      </Box>
+                      <Typography
+                        sx={{
+                          color: Colors.text.placeholder,
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {addr.line1}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: Colors.text.placeholder,
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {addr.city}, {addr.postcode}
+                      </Typography>
+                      {addr.instructions && (
+                        <Typography
+                          sx={{
+                            mt: 1,
+                            fontSize: "0.8rem",
+                            color: Colors.text.placeholder,
+                            fontStyle: "italic",
+                          }}
+                        >
+                          📍 {addr.instructions}
+                        </Typography>
+                      )}
+                      {!addr.isDefault && (
+                        <Typography
+                          onClick={() => handleSetDefaultDummyAddress(addr.id)}
+                          sx={{
+                            mt: 1,
+                            fontSize: "0.85rem",
+                            color: Colors.background.brand,
+                            fontWeight: 500,
+                            cursor: "pointer",
+                            "&:hover": { textDecoration: "underline" },
+                          }}
+                        >
+                          Set as Default
+                        </Typography>
+                      )}
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <IconButton
+                        onClick={() => {
+                          setEditingAddress(addr);
+                          setShowAddressModal(true);
+                        }}
+                        size="small"
+                      >
+                        <EditIcon sx={{ fontSize: "1.2rem" }} />
+                      </IconButton>
+                      <IconButton size="small">
+                        <DeleteIcon sx={{ fontSize: "1.2rem" }} />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                ))}
               </Box>
             ) : (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -738,30 +885,88 @@ const ProfilePage = () => {
                   <Box
                     key={addr.id}
                     sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
                       p: 2,
                       border: `1px solid ${Colors.border.subtle}`,
                       borderRadius: 2,
                     }}
                   >
-                    <Typography sx={{ fontWeight: 600 }}>
-                      {addr.label}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        color: Colors.text.placeholder,
-                        fontSize: "0.9rem",
-                      }}
-                    >
-                      {addr.line1}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        color: Colors.text.placeholder,
-                        fontSize: "0.9rem",
-                      }}
-                    >
-                      {addr.city}, {addr.postcode}
-                    </Typography>
+                    <Box>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <Typography sx={{ fontWeight: 600 }}>
+                          {addr.label}
+                        </Typography>
+                        {addr.isDefault && (
+                          <CheckCircleIcon
+                            sx={{
+                              color: Colors.background.brand,
+                              fontSize: "1.2rem",
+                            }}
+                          />
+                        )}
+                      </Box>
+                      <Typography
+                        sx={{
+                          color: Colors.text.placeholder,
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {addr.line1}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: Colors.text.placeholder,
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {addr.city}, {addr.postcode}
+                      </Typography>
+                      {addr.instructions && (
+                        <Typography
+                          sx={{
+                            mt: 1,
+                            fontSize: "0.8rem",
+                            color: Colors.text.placeholder,
+                            fontStyle: "italic",
+                          }}
+                        >
+                          📍 {addr.instructions}
+                        </Typography>
+                      )}
+                      {!addr.isDefault && (
+                        <Typography
+                          onClick={() => handleSetDefaultAddress(addr.id)}
+                          sx={{
+                            mt: 1,
+                            fontSize: "0.85rem",
+                            color: Colors.background.brand,
+                            fontWeight: 500,
+                            cursor: "pointer",
+                            "&:hover": { textDecoration: "underline" },
+                          }}
+                        >
+                          Set as Default
+                        </Typography>
+                      )}
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <IconButton
+                        onClick={() => {
+                          setEditingAddress(addr);
+                          setShowAddressModal(true);
+                        }}
+                        size="small"
+                      >
+                        <EditIcon sx={{ fontSize: "1.2rem" }} />
+                      </IconButton>
+                      <IconButton size="small">
+                        <DeleteIcon sx={{ fontSize: "1.2rem" }} />
+                      </IconButton>
+                    </Box>
                   </Box>
                 ))}
               </Box>
@@ -791,17 +996,48 @@ const ProfilePage = () => {
               <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                 Payment Methods
               </Typography>
-              <Button variant="filled" sx={{ fontSize: "0.85rem", py: 0.5 }}>
+              <Button
+                variant="filled"
+                sx={{ fontSize: "0.85rem", py: 0.5 }}
+                onClick={() => setShowPaymentModal(true)}
+              >
                 <AddIcon sx={{ mr: 0.5 }} /> Add New
               </Button>
             </Box>
-            <Box sx={{ textAlign: "center", py: 4 }}>
-              <CreditCardIcon
-                sx={{ fontSize: 48, color: Colors.text.placeholder, mb: 2 }}
-              />
-              <Typography sx={{ color: Colors.text.placeholder }}>
-                No saved payment methods
-              </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {payments.map((pay) => (
+                <Box
+                  key={pay.id}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    p: 2,
+                    border: `1px solid ${Colors.border.subtle}`,
+                    borderRadius: 2,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <CreditCardIcon sx={{ color: Colors.text.placeholder }} />
+                    <Box>
+                      <Typography sx={{ fontWeight: 600 }}>
+                        {pay.brand} ****{pay.last4}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: Colors.text.placeholder,
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        Expires {pay.expiry}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <IconButton size="small">
+                    <DeleteIcon sx={{ fontSize: "1.2rem" }} />
+                  </IconButton>
+                </Box>
+              ))}
             </Box>
           </Card>
         );
@@ -809,7 +1045,7 @@ const ProfilePage = () => {
       case "Password": {
         const passwordsMatch =
           newPassword === confirmPassword && newPassword.length > 0;
-        const canUpdate = passwordsMatch;
+        const canUpdate = currentPassword.length > 0 && passwordsMatch;
 
         return (
           <Card
@@ -822,9 +1058,33 @@ const ProfilePage = () => {
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: "bold", mb: 3 }}>
-              Change Password
+              Password
             </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Box sx={{ display: "flex", flexDirection: "column" }}>
+                <TextInput
+                  fullWidth
+                  label="Current Password"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                  <Typography
+                    sx={{
+                      color: Colors.background.brand,
+                      cursor: "pointer",
+                      fontSize: "0.85rem",
+                      width: "fit-content",
+                      "&:hover": { textDecoration: "underline" },
+                    }}
+                    onClick={() => navigate("/account/recovery")}
+                  >
+                    Forgot password?
+                  </Typography>
+                </Box>
+              </Box>
+
               <TextInput
                 fullWidth
                 label="New Password"
@@ -851,12 +1111,16 @@ const ProfilePage = () => {
               disabled={!canUpdate}
               onClick={async () => {
                 const success = await updatePassword({
+                  currentPassword,
                   newPassword,
                 });
                 if (success) {
                   alert("Password updated successfully");
+                  setCurrentPassword("");
                   setNewPassword("");
                   setConfirmPassword("");
+                } else {
+                  setError("Failed to update password");
                 }
               }}
             >
@@ -901,6 +1165,15 @@ const ProfilePage = () => {
                     Get notified about your order status
                   </Typography>
                 </Box>
+                <ClickableSwitch
+                  checked={notifications.orderUpdates}
+                  onChange={(e) =>
+                    setNotifications({
+                      ...notifications,
+                      orderUpdates: e.target.checked,
+                    })
+                  }
+                />
               </Box>
               <Box
                 sx={{
@@ -922,6 +1195,15 @@ const ProfilePage = () => {
                     Receive promotional emails
                   </Typography>
                 </Box>
+                <ClickableSwitch
+                  checked={notifications.promotions}
+                  onChange={(e) =>
+                    setNotifications({
+                      ...notifications,
+                      promotions: e.target.checked,
+                    })
+                  }
+                />
               </Box>
               <Box
                 sx={{
@@ -941,6 +1223,15 @@ const ProfilePage = () => {
                     Latest news and updates
                   </Typography>
                 </Box>
+                <ClickableSwitch
+                  checked={notifications.newsletter}
+                  onChange={(e) =>
+                    setNotifications({
+                      ...notifications,
+                      newsletter: e.target.checked,
+                    })
+                  }
+                />
               </Box>
             </Box>
           </Card>
@@ -960,7 +1251,11 @@ const ProfilePage = () => {
             <Box sx={{ p: 3, textAlign: "center" }}>
               <Typography
                 variant="h6"
-                sx={{ fontWeight: "bold", mb: 2, color: "#e53935" }}
+                sx={{
+                  fontWeight: "bold",
+                  mb: 2,
+                  color: Colors.background.danger,
+                }}
               >
                 Delete Account
               </Typography>
@@ -972,12 +1267,12 @@ const ProfilePage = () => {
                 variant="border"
                 onClick={handleDeleteAccount}
                 sx={{
-                  borderColor: "#e53935",
-                  color: "#e53935",
+                  borderColor: Colors.background.danger,
+                  color: Colors.background.danger,
                   width: "100%",
                   "&:hover": {
-                    borderColor: "#c62828",
-                    backgroundColor: "rgba(229, 57, 53, 0.05)",
+                    borderColor: Colors.background.dangerHover,
+                    backgroundColor: Colors.error.lighter,
                   },
                 }}
               >
@@ -1003,128 +1298,163 @@ const ProfilePage = () => {
       }}
     >
       <Box sx={{ maxWidth: "1200px", mx: "auto", px: 3 }}>
-        <Typography
-          variant="h4"
-          sx={{ fontWeight: "bold", mb: 1, color: Colors.text.default }}
-        >
-          My account
-        </Typography>
-        <Typography sx={{ color: Colors.text.placeholder, mb: 4 }}>
-          Manage your account settings
-        </Typography>
-
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <Card
-              sx={{
-                borderRadius: "12px",
-                border: `1px solid ${Colors.border.subtle}`,
-                boxShadow: "none",
-                overflow: "hidden",
-              }}
-            >
-              <Box sx={{ p: 1 }}>
-                <List disablePadding>
-                  {menuItems.map((item) => (
-                    <ListItem key={item.label} disablePadding>
-                      <ListItemButton
-                        selected={selectedItem === item.label}
-                        onClick={() => setSelectedItem(item.label)}
-                        sx={{
-                          py: 2,
-                          borderRadius: 1,
-                          "&.Mui-selected": {
-                            backgroundColor: "transparent",
-                            color: Colors.text.inverse,
-                          },
-                          "&.Mui-selected:hover": {
-                            backgroundColor: "transparent",
-                          },
-                        }}
-                      >
-                        <ListItemIcon sx={{ minWidth: 40 }}>
-                          <item.icon
-                            sx={{
-                              color:
-                                selectedItem === item.label
-                                  ? Colors.background.brand
-                                  : Colors.text.placeholder,
-                            }}
-                          />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={item.label}
-                          secondary={item.description}
-                          primaryTypographyProps={{
-                            fontWeight: 600,
-                            color:
-                              selectedItem === item.label
-                                ? Colors.background.brand
-                                : Colors.text.default,
-                          }}
-                          secondaryTypographyProps={{
-                            color:
-                              selectedItem === item.label
-                                ? Colors.background.brand
-                                : Colors.text.placeholder,
-                            fontSize: "0.85rem",
-                          }}
-                        />
-                        <ArrowForwardIcon
-                          sx={{
-                            color:
-                              selectedItem === item.label
-                                ? Colors.background.brand
-                                : Colors.text.placeholder,
-                            fontSize: "1.2rem",
-                          }}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  ))}
-                </List>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ mb: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 2,
+                  mb: 1,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: "50%",
+                    backgroundColor: Colors.background.brand,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      color: Colors.text.inverse,
+                      fontWeight: "bold",
+                      fontSize: "1.8rem",
+                    }}
+                  >
+                    {user?.firstName?.[0]}
+                    {user?.lastName?.[0]}
+                  </Typography>
+                </Box>
+                <Box sx={{ textAlign: "center" }}>
+                  <Typography
+                    sx={{ fontWeight: "bold", color: Colors.text.default }}
+                  >
+                    {user?.firstName} {user?.lastName}
+                  </Typography>
+                  <Typography
+                    sx={{ color: Colors.text.placeholder, fontSize: "0.85rem" }}
+                  >
+                    {user?.email}
+                  </Typography>
+                </Box>
               </Box>
-            </Card>
+            </Box>
 
-            <Card
-              sx={{
-                mt: 2,
-                borderRadius: "12px",
-                border: `1px solid ${Colors.border.subtle}`,
-                boxShadow: "none",
-                overflow: "hidden",
-              }}
+            <List
+              disablePadding
+              sx={{ borderTop: `1px solid ${Colors.border.subtle}` }}
             >
-              <List disablePadding>
-                <ListItem disablePadding>
-                  <ListItemButton onClick={handleLogout} sx={{ py: 2 }}>
-                    <ListItemIcon sx={{ minWidth: 40 }}>
-                      <LogoutIcon sx={{ color: Colors.text.placeholder }} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Log out"
-                      primaryTypographyProps={{
-                        fontWeight: 600,
-                        color: Colors.text.default,
-                      }}
-                    />
-                    <ArrowForwardIcon
+              {menuItems.map((item) => (
+                <ListItem key={item.label} disablePadding>
+                  <ListItemButton
+                    selected={selectedItem === item.label}
+                    onClick={() => setSelectedItem(item.label)}
+                    sx={{
+                      py: 1.5,
+                      borderBottom: `1px solid ${Colors.border.subtle}`,
+                      transition: "background-color 0.2s ease",
+                      "&.Mui-selected": {
+                        backgroundColor: "transparent",
+                      },
+                      "&.Mui-selected:hover": {
+                        backgroundColor: "rgba(0, 0, 0, 0.03)",
+                      },
+                      "&:hover": {
+                        backgroundColor: "rgba(0, 0, 0, 0.02)",
+                      },
+                    }}
+                  >
+                    <item.icon
                       sx={{
-                        color: Colors.text.placeholder,
-                        fontSize: "1.2rem",
+                        mr: 2,
+                        color: item.danger
+                          ? Colors.background.danger
+                          : selectedItem === item.label
+                            ? Colors.background.brand
+                            : Colors.text.default,
+                        fontSize: "1.3rem",
                       }}
                     />
+                    <Typography
+                      sx={{
+                        fontWeight: 500,
+                        color: item.danger
+                          ? Colors.background.danger
+                          : selectedItem === item.label
+                            ? Colors.background.brand
+                            : Colors.text.default,
+                      }}
+                    >
+                      {item.label}
+                    </Typography>
                   </ListItemButton>
                 </ListItem>
-              </List>
-            </Card>
+              ))}
+            </List>
+
+            <List disablePadding>
+              <ListItem disablePadding>
+                <ListItemButton onClick={handleLogout} sx={{ py: 1.5 }}>
+                  <LogoutIcon
+                    sx={{
+                      mr: 2,
+                      color: Colors.text.default,
+                      fontSize: "1.3rem",
+                    }}
+                  />
+                  <Typography
+                    sx={{ fontWeight: 500, color: Colors.text.default }}
+                  >
+                    Log out
+                  </Typography>
+                </ListItemButton>
+              </ListItem>
+            </List>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={8}>
             {renderRightContent()}
           </Grid>
         </Grid>
       </Box>
+
+      <OrderDetailsModal
+        open={showOrderModal}
+        onClose={() => {
+          setShowOrderModal(false);
+          setSelectedOrder(null);
+        }}
+        order={selectedOrder}
+      />
+
+      <AddressModal
+        open={showAddressModal}
+        onClose={() => {
+          setShowAddressModal(false);
+          setEditingAddress(null);
+        }}
+        address={editingAddress}
+        onSave={async () => {
+          setShowAddressModal(false);
+          return true;
+        }}
+      />
+
+      <PaymentModal
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSave={async () => {
+          setShowPaymentModal(false);
+          return true;
+        }}
+      />
     </Box>
   );
 };

@@ -10,6 +10,7 @@ export const Colors = {
     dark: "#3d4141",
     darker: "#2e3333",
     danger: "#e53935",
+    dangerHover: "#c62828",
   },
   text: {
     default: "#2e3333",
@@ -33,5 +34,31 @@ export const Colors = {
     star: "#4d7c1b",
     info: "#585c5c",
     facebook: "#4c69ba",
+  },
+  status: {
+    delivered: {
+      bg: "#e8f5e9",
+      text: "#2e7d32",
+    },
+    cancelled: {
+      bg: "#ffebee",
+      text: "#c62828",
+    },
+    onTheWay: {
+      bg: "#f3e5f5",
+      text: "#7b1fa2",
+    },
+    pending: {
+      bg: "#e3f2fd",
+      text: "#1565c0",
+    },
+    default: {
+      bg: "#fff3e0",
+      text: "#e65100",
+    },
+  },
+  error: {
+    light: "rgba(229, 57, 53, 0.1)",
+    lighter: "rgba(229, 57, 53, 0.05)",
   },
 };

@@ -86,14 +86,16 @@ export const deleteUserAccount = async (): Promise<boolean> => {
 };
 
 export const updatePassword = async ({
+  currentPassword,
   newPassword,
 }: {
+  currentPassword: string;
   newPassword: string;
 }): Promise<boolean> => {
   try {
     await axios.post(
-      "/api/auth/reset-password/update",
-      { password: newPassword },
+      "/api/auth/change-password",
+      { currentPassword, newPassword },
       { headers: getAuthHeader() },
     );
     return true;
