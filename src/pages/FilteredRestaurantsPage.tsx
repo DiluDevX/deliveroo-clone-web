@@ -265,12 +265,9 @@ const FilteredRestaurantsPage = () => {
               sx={{
                 "& .MuiButtonBase-root": {
                   color: Colors.background.brand,
-                },
-                "& .Mui-selected": {
-                  backgroundColor: Colors.background.brand,
-                  color: Colors.text.inverse,
-                  "&:hover": {
-                    backgroundColor: Colors.background.brand,
+                  "&.Mui-selected": {
+                    backgroundColor: `${Colors.background.brand} !important`,
+                    color: `${Colors.text.inverse} !important`,
                   },
                 },
               }}
