@@ -1,4 +1,4 @@
-import { Box, Container, Grid2 as Grid, Typography } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Colors } from "../../../theme";
 import { useState } from "react";
@@ -22,12 +22,9 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <Grid
-      size={{ xs: 12, sm: 6, md: 6, lg: 6 }}
-      key={restaurant.name}
+    <Box
       sx={{
-        p: 3,
-        minWidth: "500px",
+        pb: { xs: 2, md: 4 },
         width: "100%",
       }}
     >
@@ -52,8 +49,7 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
             transition: "transform 0.2s ease-in-out",
             "&:hover": {
               cursor: "pointer",
-              transform: "scale(1.02)",
-              boxShadow: `0px 4px 12px ${Colors.boxShadow.default}`,
+              boxShadow: `1px 2px 4px ${Colors.background.brandHover}`,
             },
           }}
         >
@@ -88,21 +84,23 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
           <Box
             sx={{
               flexGrow: 1,
+              minWidth: 0,
               padding: "1rem",
               display: "flex",
               flexDirection: "column",
               gap: 1,
               justifyContent: "center",
               textAlign: "center",
+              overflow: "hidden",
             }}
           >
             <Typography
               variant="h6"
               sx={{
                 fontWeight: "bold",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
+                whiteSpace: "normal",
+                wordWrap: "break-word",
+                minWidth: 0,
               }}
             >
               {restaurant.name}
@@ -116,6 +114,7 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
                 WebkitBoxOrient: "vertical",
                 WebkitLineClamp: 2,
                 overflow: "hidden",
+                minWidth: 0,
               }}
             >
               {restaurant.tags.join(" • ")}
@@ -123,7 +122,7 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
           </Box>
         </Container>
       </Link>
-    </Grid>
+    </Box>
   );
 };
 

@@ -4,11 +4,35 @@ import { Box, InputAdornment, OutlinedInput } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { Colors } from "../../../theme/colors";
 
-const SearchBar = () => {
-  const [searchKey, setSearchKey] = useState("");
+interface SearchBarProps {
+  value?: string;
+  onChange?: (value: string) => void;
+  onSearch?: (value: string) => void;
+  placeholder?: string;
+}
+
+const SearchBar = ({
+  value: externalValue,
+  onChange,
+  onSearch,
+  placeholder,
+}: SearchBarProps) => {
+  const [internalValue, setInternalValue] = useState("");
+  const searchKey = externalValue ?? internalValue;
 
   const handleOnChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setSearchKey(e.target.value);
+    const newValue = e.target.value;
+    if (onChange) {
+      onChange(newValue);
+    } else {
+      setInternalValue(newValue);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && onSearch && searchKey.trim()) {
+      onSearch(searchKey.trim());
+    }
   };
 
   return (
@@ -16,7 +40,6 @@ const SearchBar = () => {
       sx={{
         display: "flex",
         flexDirection: "row",
-        mx: 1,
         alignItems: "center",
         width: "100%",
         maxWidth: "600px",
@@ -24,17 +47,18 @@ const SearchBar = () => {
     >
       <OutlinedInput
         fullWidth
+        size="small"
         value={searchKey}
         onChange={handleOnChange}
+        onKeyDown={handleKeyDown}
         id="outlined-basic"
-        placeholder={`Search ${localStorage.getItem("restaurantName")}`}
+        placeholder={
+          placeholder ?? `Search ${localStorage.getItem("restaurantName")}`
+        }
         sx={{
           height: 43,
-          display: {
-            xs: "none",
-            sm: "flex",
-            md: "flex",
-          },
+          flex: 1,
+          minWidth: 100,
           "& .MuiOutlinedInput-notchedOutline": {
             border: "none",
           },
@@ -48,7 +72,16 @@ const SearchBar = () => {
         endAdornment={
           searchKey.length > 0 ? (
             <InputAdornment position="start">
-              <CloseIcon onClick={() => setSearchKey("")} />
+              <CloseIcon
+                onClick={() => {
+                  if (onChange) {
+                    onChange("");
+                  } else {
+                    setInternalValue("");
+                  }
+                }}
+                sx={{ cursor: "pointer" }}
+              />
             </InputAdornment>
           ) : undefined
         }

@@ -10,7 +10,7 @@ type ButtonProps = ButtonBaseProps & {
   PrefixComponent?: React.ReactNode;
   SuffixComponent?: React.ReactNode;
   linkTo?: To;
-  variant?: "border" | "filled" | undefined;
+  variant?: "border" | "filled" | "outlined" | undefined;
 };
 
 const getBackgroundColor = (disabled: boolean | undefined, variant: string) => {
@@ -19,6 +19,10 @@ const getBackgroundColor = (disabled: boolean | undefined, variant: string) => {
   }
 
   if (variant === "border") {
+    return Colors.background.light;
+  }
+
+  if (variant === "outlined") {
     return Colors.background.light;
   }
 
@@ -53,10 +57,7 @@ function Button({
         "&:hover": {
           border: disabled ? "none" : `0.5px solid ${Colors.border.subtle}`,
         },
-        "&:focus": {
-          outline: disabled ? "none" : `2.7px solid rgba(2, 189, 174, 0.5)`,
-          outlineOffset: "-2.7px",
-        },
+        borderColor: variant === "outlined" ? Colors.border.brand : "none",
         "&:active": {
           outline: disabled ? "none" : `2.7px solid rgba(2, 189, 174, 0.5)`,
           outlineOffset: "-2.7px",
