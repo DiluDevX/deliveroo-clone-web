@@ -267,10 +267,10 @@ const FilteredRestaurantsPage = () => {
                   color: Colors.background.brand,
                 },
                 "& .Mui-selected": {
-                  backgroundColor: Colors.background.brandHover,
+                  backgroundColor: Colors.background.brand,
                   color: Colors.text.inverse,
                   "&:hover": {
-                    backgroundColor: Colors.background.brandHover,
+                    backgroundColor: Colors.background.brand,
                   },
                 },
               }}
