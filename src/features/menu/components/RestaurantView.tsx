@@ -1,7 +1,10 @@
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Container, Typography, Chip } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Colors } from "../../../theme";
 import { useState } from "react";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import StarIcon from "@mui/icons-material/Star";
 
 interface Restaurant {
   name: string;
@@ -80,46 +83,94 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
             />
           </Box>
 
-          {/* Text Section */}
-          <Box
-            sx={{
-              flexGrow: 1,
-              minWidth: 0,
-              padding: "1rem",
-              display: "flex",
-              flexDirection: "column",
-              gap: 1,
-              justifyContent: "center",
-              textAlign: "center",
-              overflow: "hidden",
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: "bold",
-                whiteSpace: "normal",
-                wordWrap: "break-word",
-                minWidth: 0,
-              }}
-            >
-              {restaurant.name}
-            </Typography>
+           {/* Text Section */}
+           <Box
+             sx={{
+               flexGrow: 1,
+               minWidth: 0,
+               padding: "1.2rem",
+               display: "flex",
+               flexDirection: "column",
+               gap: 1.2,
+               justifyContent: "space-between",
+               textAlign: "left",
+               overflow: "hidden",
+             }}
+           >
+             {/* Header: Name & Rating */}
+             <Box>
+               <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 0.5 }}>
+                 <Typography
+                   variant="h6"
+                   sx={{
+                     fontWeight: "bold",
+                     whiteSpace: "normal",
+                     wordWrap: "break-word",
+                     minWidth: 0,
+                     flex: 1,
+                   }}
+                 >
+                   {restaurant.name}
+                 </Typography>
+                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.3, whiteSpace: "nowrap" }}>
+                   <StarIcon sx={{ fontSize: "0.9rem", color: Colors.background.brand }} />
+                   <Typography sx={{ fontSize: "0.85rem", fontWeight: 600 }}>4.5</Typography>
+                 </Box>
+               </Box>
 
-            <Typography
-              sx={{
-                color: "gray",
-                fontSize: "0.875rem",
-                display: "-webkit-box",
-                WebkitBoxOrient: "vertical",
-                WebkitLineClamp: 2,
-                overflow: "hidden",
-                minWidth: 0,
-              }}
-            >
-              {restaurant.tags.join(" • ")}
-            </Typography>
-          </Box>
+               <Typography
+                 sx={{
+                   color: Colors.text.placeholder,
+                   fontSize: "0.85rem",
+                   display: "-webkit-box",
+                   WebkitBoxOrient: "vertical",
+                   WebkitLineClamp: 1,
+                   overflow: "hidden",
+                   minWidth: 0,
+                 }}
+               >
+                 {restaurant.tags.join(" • ")}
+               </Typography>
+             </Box>
+
+             {/* Info Pills */}
+             <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap" }}>
+               <Chip
+                 icon={<LocalShippingIcon sx={{ fontSize: "0.9rem" }} />}
+                 label={`₹${restaurant.deliveryCharge} delivery`}
+                 size="small"
+                 sx={{
+                   height: "24px",
+                   fontSize: "0.75rem",
+                   backgroundColor: `${Colors.background.brand}15`,
+                   color: Colors.background.brand,
+                   fontWeight: 600,
+                   "& .MuiChip-icon": { fontSize: "0.9rem", marginLeft: "4px" },
+                 }}
+               />
+               <Chip
+                 icon={<AccessTimeIcon sx={{ fontSize: "0.9rem" }} />}
+                 label={`${restaurant.openingAt} - ${restaurant.closingAt}`}
+                 size="small"
+                 sx={{
+                   height: "24px",
+                   fontSize: "0.75rem",
+                   backgroundColor: `${Colors.text.placeholder}15`,
+                   color: Colors.text.placeholder,
+                   fontWeight: 600,
+                   "& .MuiChip-icon": { fontSize: "0.9rem", marginLeft: "4px" },
+                 }}
+               />
+             </Box>
+
+             {/* Min Order */}
+             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+               <Typography sx={{ fontSize: "0.8rem", color: Colors.text.placeholder }}>Min order:</Typography>
+               <Typography sx={{ fontSize: "0.9rem", fontWeight: 600, color: Colors.text.default }}>
+                 ₹{restaurant.minimumValue}
+               </Typography>
+             </Box>
+           </Box>
         </Container>
       </Link>
     </Box>
