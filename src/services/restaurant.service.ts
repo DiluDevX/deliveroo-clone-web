@@ -139,6 +139,24 @@ export const getFilteredRestaurants = async (
       );
     }
 
+    if (filters?.minDeliveryFee !== undefined) {
+      filtered = filtered.filter(
+        (r) => parseFloat(r.deliveryCharge) >= filters.minDeliveryFee!,
+      );
+    }
+
+    if (filters?.maxDeliveryFee !== undefined) {
+      filtered = filtered.filter(
+        (r) => parseFloat(r.deliveryCharge) <= filters.maxDeliveryFee!,
+      );
+    }
+
+    if (filters?.minOrderValue !== undefined) {
+      filtered = filtered.filter(
+        (r) => parseFloat(r.minimumValue) >= filters.minOrderValue!,
+      );
+    }
+
     if (filters?.tags === "popular") {
       filtered = filtered.slice(0, 5);
     }

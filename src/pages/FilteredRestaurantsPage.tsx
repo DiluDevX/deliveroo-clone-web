@@ -74,6 +74,17 @@ const FilteredRestaurantsPage = () => {
         if (filters.minRating) {
           filterParams.rating = filters.minRating;
         }
+        if (filters.priceRange === "budget") {
+          filterParams.maxDeliveryFee = 50;
+        } else if (filters.priceRange === "mid") {
+          filterParams.minDeliveryFee = 51;
+          filterParams.maxDeliveryFee = 150;
+        } else if (filters.priceRange === "premium") {
+          filterParams.minDeliveryFee = 151;
+        }
+        if (filters.deliveryTime) {
+          filterParams.minOrderValue = filters.deliveryTime;
+        }
         if (filters.offers) {
           filterParams.tags = "popular";
         }
