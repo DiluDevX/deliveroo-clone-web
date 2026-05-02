@@ -96,10 +96,12 @@ export default function Login() {
       }
 
       if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
+        console.log("Login successful", loginResponse.successResponse);
         dispatch(
           setCredentials({
             user: {
               id: loginResponse.successResponse.user.id,
+              restaurantId: loginResponse.successResponse.user.restaurantId,
               orderCount: loginResponse.successResponse.user.orderCount ?? 0,
               status: loginResponse.successResponse.user.status,
               email: loginResponse.successResponse.user.email,
@@ -118,6 +120,12 @@ export default function Login() {
         if (redirectPath) {
           sessionStorage.removeItem("redirectAfterLogin");
           navigate(redirectPath);
+        } else if (
+          loginResponse.successResponse.user.role === "restaurant_admin" &&
+          loginResponse.successResponse.user.restaurantId !== null
+        ) {
+          showSuccessSnackbar("Logged In!");
+          navigate("/restaurant/dashboard");
         } else {
           showSuccessSnackbar("Logged In!");
           navigate("/");
@@ -138,6 +146,7 @@ export default function Login() {
           setCredentials({
             user: {
               id: loginResponse.user.id,
+              restaurantId: loginResponse.user.restaurantId,
               orderCount: loginResponse.user.orderCount ?? 0,
               status: loginResponse.user.status,
               email: loginResponse.user.email,
@@ -151,7 +160,7 @@ export default function Login() {
           }),
         );
         showSuccessSnackbar("Logged In!");
-        navigate("/");
+        navigate("/admin/dashboard");
       } catch {
         showErrorSnackbar("Invalid API Key");
       }

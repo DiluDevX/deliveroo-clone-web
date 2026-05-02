@@ -26,10 +26,17 @@ import AdminLayout from "./layout/AdminLayout";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminRestaurantsPage from "./pages/admin/AdminRestaurantsPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
+import AdminProtectedRoute from "./routes/AdminProtectedRoute";
 import AdminFinancePage from "./pages/admin/AdminFinancePage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
-import AdminProtectedRoute from "./routes/AdminProtectedRoute";
+import RestaurantAdminLayout from "./layout/RestaurantAdminLayout";
+import RestaurantDashboardPage from "./pages/restaurant/RestaurantDashboardPage";
+import RestaurantOrdersPage from "./pages/restaurant/RestaurantOrdersPage";
+import RestaurantMenuPage from "./pages/restaurant/RestaurantMenuPage";
+import RestaurantAnalyticsPage from "./pages/restaurant/RestaurantAnalyticsPage";
+import RestaurantSettingsPage from "./pages/restaurant/RestaurantSettingsPage";
+import RestaurantAdminProtectedRoute from "./routes/RestaurantAdminProtectedRoute";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -203,6 +210,52 @@ const App = () => {
               element={
                 <WithPageTitle title="Admin Users">
                   <AdminUsersPage />
+                </WithPageTitle>
+              }
+            />
+          </Route>
+        </Route>
+        ,
+        <Route element={<RestaurantAdminLayout />}>
+          <Route element={<RestaurantAdminProtectedRoute />}>
+            <Route
+              index
+              path="/restaurant/dashboard"
+              element={
+                <WithPageTitle title="Restaurant Dashboard">
+                  <RestaurantDashboardPage />
+                </WithPageTitle>
+              }
+            />
+            <Route
+              path="/restaurant/orders"
+              element={
+                <WithPageTitle title="Restaurant Orders">
+                  <RestaurantOrdersPage />
+                </WithPageTitle>
+              }
+            />
+            <Route
+              path="/restaurant/menu"
+              element={
+                <WithPageTitle title="Restaurant Menu">
+                  <RestaurantMenuPage />
+                </WithPageTitle>
+              }
+            />
+            <Route
+              path="/restaurant/analytics"
+              element={
+                <WithPageTitle title="Restaurant Analytics">
+                  <RestaurantAnalyticsPage />
+                </WithPageTitle>
+              }
+            />
+            <Route
+              path="/restaurant/settings"
+              element={
+                <WithPageTitle title="Restaurant Settings">
+                  <RestaurantSettingsPage />
                 </WithPageTitle>
               }
             />

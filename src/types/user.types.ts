@@ -9,5 +9,5 @@ export type IUser = {
   orderCount: number;
   createdAt: string;
   updatedAt: string;
-  restaurantId?: string | null;
+  restaurantId?: string;
 };
