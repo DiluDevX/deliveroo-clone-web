@@ -122,7 +122,19 @@ const PaymentPage = () => {
     if (paymentMethod === "CASH_ON_DELIVERY") {
       dispatch(clearCartAndSync());
       navigate("/order-confirmation", {
-        state: { orderId: orderResponse.orderNumber },
+        state: {
+          orderId: orderResponse.orderNumber,
+          orderDetails: {
+            subtotal: cartItems.reduce(
+              (total, item) => total + Number(item.price) * Number(item.quantity),
+              0,
+            ),
+            shippingFee,
+            serviceFee,
+            discount,
+            total,
+          },
+        },
       });
       setIsProcessing(false);
       return;
@@ -148,7 +160,19 @@ const PaymentPage = () => {
       if (confirmed) {
         dispatch(clearCartAndSync());
         navigate("/order-confirmation", {
-          state: { orderId: orderResponse.orderNumber },
+          state: {
+            orderId: orderResponse.orderNumber,
+            orderDetails: {
+              subtotal: cartItems.reduce(
+                (total, item) => total + Number(item.price) * Number(item.quantity),
+                0,
+              ),
+              shippingFee,
+              serviceFee,
+              discount,
+              total,
+            },
+          },
         });
       } else {
         setIsProcessing(false);

@@ -162,7 +162,16 @@ const CheckoutPage = () => {
         setOrderPlaced(true);
         dispatch(clearCartAndSync());
         navigate("/order-confirmation", {
-          state: { orderId: orderResponse.orderNumber },
+          state: {
+            orderId: orderResponse.orderNumber,
+            orderDetails: {
+              subtotal,
+              shippingFee,
+              serviceFee: 0.99,
+              discount: 0,
+              total: subtotal + shippingFee + 0.99,
+            },
+          },
         });
       } else {
         enqueueSnackbar("Failed to place order. Please try again.", {

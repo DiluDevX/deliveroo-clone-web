@@ -4,23 +4,21 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../features/menu/components/Button";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from "@mui/icons-material/Error";
-import { useAppSelector } from "../store/hooks/cartHooks";
 
 const OrderConfirmationPage = () => {
   const navigate = useNavigate();
-  const cartItems = useAppSelector((state) => state.cart.items);
   const location = useLocation();
 
   const orderId = location.state?.orderId || null;
+  const orderDetails = location.state?.orderDetails;
   const isSuccess = orderId !== null;
 
-  const subtotal = cartItems.reduce(
-    (total, item) => total + Number(item.price) * Number(item.quantity),
-    0,
-  );
-
-  const shippingFee = 5.0;
-  const total = subtotal + shippingFee;
+  // Use passed orderDetails, fallback to calculating from empty cart (will be 0)
+  const subtotal = orderDetails?.subtotal ?? 0;
+  const shippingFee = orderDetails?.shippingFee ?? 5.0;
+  const serviceFee = orderDetails?.serviceFee ?? 0.99;
+  const discount = orderDetails?.discount ?? 0;
+  const total = orderDetails?.total ?? subtotal + shippingFee + serviceFee - discount;
 
   if (!isSuccess) {
     return (
