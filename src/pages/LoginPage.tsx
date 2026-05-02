@@ -99,19 +99,8 @@ export default function Login() {
         // The server should set the session via HttpOnly cookie. Do not persist tokens in client JS.
         localStorage.removeItem("existingUser");
 
-        // Check for redirect after login
-        if (loginResponse.successResponse.user.role === "platform_admin") {
-          enqueueSnackbar("Logged In!", { variant: "success" });
-          navigate("/admin/dashboard");
-        } else if (
-          loginResponse.successResponse.user.role === "restaurant_admin" &&
-          loginResponse.successResponse.user.restaurantId !== null
-        ) {
-          enqueueSnackbar("Logged In!", { variant: "success" });
-          navigate("/restaurant/dashboard");
-        } else {
-          navigate("/");
-        }
+        enqueueSnackbar("Logged In!", { variant: "success" });
+        navigate("/");
       } else if (loginResponse.type === "INVALID") {
         enqueueSnackbar("Invalid Credentials", { variant: "error" });
       } else {

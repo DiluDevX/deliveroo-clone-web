@@ -2,17 +2,7 @@ import { Box, Container, Grid2 as Grid, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Colors } from "../../../theme";
 import { useState } from "react";
-
-interface Restaurant {
-  name: string;
-  image: string;
-  description: string;
-  tags: string[];
-  openingAt: string;
-  closingAt: string;
-  minimumValue: string;
-  deliveryCharge: string;
-}
+import { Restaurant } from "../../../types/restaurants";
 
 interface RestaurantViewProps {
   restaurant: Restaurant;
