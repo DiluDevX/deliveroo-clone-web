@@ -46,18 +46,6 @@ const phoneSchema = z.object({
     .max(10, "Phone number should be at most 10 digits"),
 });
 
-const addressSchema = z.object({
-  address: z
-    .string()
-    .min(1, "Address is required")
-    .max(100, "Address is too long"),
-  city: z.string().min(1, "City is required").max(100, "City is too long"),
-  zipCode: z
-    .string()
-    .min(1, "ZIP code is required")
-    .max(10, "ZIP code should be at most 10 characters"),
-});
-
 type CheckoutFormValues = {
   phone?: string;
   address?: string;
@@ -84,24 +72,23 @@ const CheckoutPage = () => {
 
   const isPhoneMissing = !user?.phone;
 
+  const handlePaymentMethodChange = (method: PaymentMethod) => {
+    setPaymentMethod(method);
+    if (method === "CASH_ON_DELIVERY") {
+      setDeliveryMethod("delivery");
+    }
+  };
+
   const getSchema = () => {
     const phonePart = isPhoneMissing
       ? { phone: phoneSchema.shape.phone }
       : { phone: z.string().optional() };
-    const addressPart =
-      deliveryMethod === "delivery"
-        ? addressSchema.shape
-        : {
-            address: z.string().optional(),
-            city: z.string().optional(),
-            zipCode: z.string().optional(),
-          };
 
     return z.object({
       phone: phonePart.phone,
-      address: addressPart.address,
-      city: addressPart.city,
-      zipCode: addressPart.zipCode,
+      address: z.string().optional(),
+      city: z.string().optional(),
+      zipCode: z.string().optional(),
       agreedToTerms: z.boolean(),
     });
   };
@@ -125,8 +112,27 @@ const CheckoutPage = () => {
   } = form;
 
   const agreedToTerms = watch("agreedToTerms", false);
+  const phone = watch("phone", "");
+  const address = watch("address", "");
+  const city = watch("city", "");
+  const zipCode = watch("zipCode", "");
+  const hasRequiredContact = !isPhoneMissing || Boolean(phone?.trim());
+  const hasRequiredAddress =
+    effectiveDeliveryMethod !== "delivery" ||
+    (Boolean(address?.trim()) &&
+      Boolean(city?.trim()) &&
+      Boolean(zipCode?.trim()));
+  const canPlaceOrder =
+    isValid && agreedToTerms && hasRequiredContact && hasRequiredAddress;
 
   const handlePlaceOrder = form.handleSubmit(async (data) => {
+    if (!hasRequiredAddress) {
+      enqueueSnackbar("Please enter a delivery address.", {
+        variant: "error",
+      });
+      return;
+    }
+
     if (paymentMethod === "CASH_ON_DELIVERY") {
       setIsProcessing(true);
       const restaurantName =
@@ -156,7 +162,7 @@ const CheckoutPage = () => {
         setOrderPlaced(true);
         dispatch(clearCartAndSync());
         navigate("/order-confirmation", {
-          state: { orderId: 1223 },
+          state: { orderId: orderResponse.orderNumber },
         });
       } else {
         enqueueSnackbar("Failed to place order. Please try again.", {
@@ -331,7 +337,7 @@ const CheckoutPage = () => {
                 Shipping Information
               </Typography>
               <RadioGroup
-                value={deliveryMethod}
+                value={effectiveDeliveryMethod}
                 onChange={(e) => setDeliveryMethod(e.target.value)}
                 sx={{ mb: 3, display: "flex", gap: 2, flexDirection: "row" }}
               >
@@ -340,12 +346,12 @@ const CheckoutPage = () => {
                   sx={{
                     flex: 1,
                     minWidth: { xs: "100%", sm: "auto" },
-                    border: `2px solid ${deliveryMethod === "delivery" ? Colors.border.default : Colors.border.subtle}`,
+                    border: `2px solid ${effectiveDeliveryMethod === "delivery" ? Colors.border.default : Colors.border.subtle}`,
                     borderRadius: "8px",
                     p: 2,
                     cursor: "pointer",
                     backgroundColor:
-                      deliveryMethod === "delivery"
+                      effectiveDeliveryMethod === "delivery"
                         ? "rgba(2, 189, 174, 0.05)"
                         : "transparent",
                   }}
@@ -373,7 +379,7 @@ const CheckoutPage = () => {
                   sx={{
                     flex: 1,
                     minWidth: { xs: "100%", sm: "auto" },
-                    border: `2px solid ${deliveryMethod === "pickup" ? Colors.border.default : Colors.border.subtle}`,
+                    border: `2px solid ${effectiveDeliveryMethod === "pickup" ? Colors.border.default : Colors.border.subtle}`,
                     borderRadius: "8px",
                     p: 2,
                     cursor:
@@ -381,7 +387,7 @@ const CheckoutPage = () => {
                         ? "not-allowed"
                         : "pointer",
                     backgroundColor:
-                      deliveryMethod === "pickup"
+                      effectiveDeliveryMethod === "pickup"
                         ? "rgba(2,189,174,0.05)"
                         : "transparent",
                     opacity: paymentMethod === "CASH_ON_DELIVERY" ? 0.5 : 1,
@@ -419,12 +425,12 @@ const CheckoutPage = () => {
               <RadioGroup
                 value={paymentMethod}
                 onChange={(e) =>
-                  setPaymentMethod(e.target.value as PaymentMethod)
+                  handlePaymentMethodChange(e.target.value as PaymentMethod)
                 }
                 sx={{ mb: 3, display: "flex", gap: 2, flexDirection: "row" }}
               >
                 <Box
-                  onClick={() => setPaymentMethod("CARD")}
+                  onClick={() => handlePaymentMethodChange("CARD")}
                   sx={{
                     flex: 1,
                     minWidth: { xs: "100%", sm: "auto" },
@@ -454,7 +460,7 @@ const CheckoutPage = () => {
                   />
                 </Box>
                 <Box
-                  onClick={() => setPaymentMethod("CASH_ON_DELIVERY")}
+                  onClick={() => handlePaymentMethodChange("CASH_ON_DELIVERY")}
                   sx={{
                     flex: 1,
                     minWidth: { xs: "100%", sm: "auto" },
@@ -524,7 +530,7 @@ const CheckoutPage = () => {
                 </Box>
               </Box>
 
-              {deliveryMethod === "delivery" && (
+              {effectiveDeliveryMethod === "delivery" && (
                 <Box sx={{ mt: 3 }}>
                   <Typography sx={{ fontWeight: 600, mb: 1 }}>
                     Delivery Address
@@ -832,7 +838,7 @@ const CheckoutPage = () => {
 
               <Button
                 variant="filled"
-                disabled={!isValid || isProcessing || !agreedToTerms}
+                disabled={!canPlaceOrder || isProcessing}
                 onClick={handlePlaceOrder}
                 sx={{
                   width: "100%",

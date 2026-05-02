@@ -2,6 +2,7 @@ import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { IDish } from "../data/Sides";
 import * as cartService from "../services/cart.service";
 import { RootState } from "./store";
+import { CartItemData } from "../types/cart.types";
 
 export interface CartItem extends IDish {
   quantity: number;
@@ -25,6 +26,21 @@ const initialState: CartState = {
   isLoading: false,
   isSyncing: false,
 };
+
+const mapServerCartItem = (item: CartItemData): CartItem => ({
+  _id: item.dishId,
+  name: item.dishName,
+  description: "",
+  price: String(item.unitPrice),
+  image: item.dishImageUrl,
+  categoryId: 0,
+  quantity: item.quantity,
+  cartItemId: item.id,
+  modifiers: item.modifiers,
+});
+
+const matchesCartItem = (item: CartItem, id: string) =>
+  item.cartItemId === id || item._id === id;
 
 // Async thunk to fetch cart from server
 export const fetchCart = createAsyncThunk(
@@ -66,7 +82,10 @@ export const addItemAndSync = createAsyncThunk(
       const restaurantId = localStorage.getItem("selected-restaurant-id");
       if (restaurantId) {
         const cartItem: CartItem = { ...dish, quantity: 1 };
-        await cartService.addItemToCart(cartItem, restaurantId);
+        const didSync = await cartService.addItemToCart(cartItem, restaurantId);
+        if (didSync) {
+          dispatch(fetchCart());
+        }
       }
     }
   },
@@ -133,15 +152,15 @@ const cartSlice = createSlice({
     },
     removeItem: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter(
-        (item) => item.cartItemId !== action.payload.toString(),
+        (item) => !matchesCartItem(item, action.payload),
       );
     },
     updateQuantity: (
       state,
       action: PayloadAction<{ cartItemId: string; quantity: number }>,
     ) => {
-      const item = state.items.find(
-        (item) => item.cartItemId === action.payload.cartItemId,
+      const item = state.items.find((item) =>
+        matchesCartItem(item, action.payload.cartItemId),
       );
       if (item) {
         if (action.payload.quantity === 0) {
@@ -206,17 +225,23 @@ const cartSlice = createSlice({
         if (action.payload.length > 0) {
           // Merge server cart with local cart
           action.payload.forEach((serverItem) => {
+            const normalizedItem = mapServerCartItem(serverItem);
             const existingItem = state.items.find(
-              (item) => String(item._id) === String(serverItem.dishId),
+              (item) => String(item._id) === String(normalizedItem._id),
             );
             if (existingItem) {
               // Keep the higher quantity
               existingItem.quantity = Math.max(
                 existingItem.quantity,
-                serverItem.quantity,
+                normalizedItem.quantity,
               );
+              existingItem.cartItemId = normalizedItem.cartItemId;
+              existingItem.name = normalizedItem.name;
+              existingItem.image = normalizedItem.image;
+              existingItem.price = normalizedItem.price;
+              existingItem.modifiers = normalizedItem.modifiers;
             } else {
-              state.items.push(serverItem as unknown as CartItem);
+              state.items.push(normalizedItem);
             }
           });
         }

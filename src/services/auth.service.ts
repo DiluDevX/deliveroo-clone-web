@@ -1,4 +1,5 @@
 import axios, { isAxiosError } from "axios";
+import { jwtDecode } from "jwt-decode";
 import {
   CheckEmailRequestBodyDTO,
   CheckEmailResponseBodyDTO,
@@ -11,6 +12,17 @@ import {
   SignupResponseBodyDTO,
 } from "../types/auth.types";
 import { CommonResponseDTO } from "../types/common";
+import {
+  getAuthHeader,
+  getStoredAccessToken,
+  getStoredRefreshToken,
+} from "./auth-headers";
+
+type AccessTokenPayload = {
+  userId?: string;
+  email?: string;
+  role?: "user" | "platform_admin" | "restaurant_admin";
+};
 
 type ICheckEmailResponse = {
   token?: string;
@@ -82,27 +94,57 @@ export const checkEmailOrPhone = async (
 
 type ILoginResponse = {
   type: "SUCCESS" | "INVALID" | "UNKNOWN";
-  successResponse?: LoginResponseBodyDTO;
+  successResponse?: LoginResponseBodyDTO & {
+    accessToken?: string;
+    refreshToken?: string;
+  };
 };
 
 export const login = async (
   body: LoginRequestBodyDTO,
 ): Promise<ILoginResponse> => {
   try {
-    const response = await axios.post<LoginApiResponseBodyDTO>(
-      "/api/auth/login",
-      body,
-    );
-    console.log("login response", response.data);
+    const response = await axios.post<
+      | CommonResponseDTO<{
+          accessToken: string;
+          refreshToken?: string;
+          user?: LoginApiResponseBodyDTO["user"];
+        }>
+      | LoginApiResponseBodyDTO
+    >("/api/auth/login", body);
 
     if (response.data) {
-      const { user } = response.data;
+      const payload =
+        "data" in response.data ? response.data.data : response.data;
+      const accessToken = payload.accessToken;
+      const refreshToken =
+        "refreshToken" in payload ? payload.refreshToken : undefined;
 
-      // The refresh token and access tokens are now set by the server in an HttpOnly, Secure, SameSite cookie.
+      if (!accessToken) {
+        return {
+          type: "UNKNOWN",
+        };
+      }
+
+      const decoded = jwtDecode<AccessTokenPayload>(accessToken);
+      const user = payload.user ?? {
+        id: decoded.userId || "",
+        email: decoded.email || body.email,
+        firstName: "",
+        lastName: "",
+        phone: undefined,
+        role: decoded.role || "user",
+        status: "Active" as const,
+        orderCount: 0,
+        createdAt: "",
+        updatedAt: "",
+      };
 
       return {
         type: "SUCCESS",
         successResponse: {
+          accessToken,
+          refreshToken,
           user: {
             id: user.id,
             email: user.email,
@@ -197,14 +239,17 @@ export const resetUserPassword = async ({
 
 export const checkAuthStatus = async () => {
   try {
-    const response = await axios.post(
-      "/api/auth/me",
-      {},
-      { withCredentials: true },
-    );
-    console.log("checkAuthStatus response", response.data);
-    if (response.data?.valid === true && response.data?.user !== null) {
-      return response.data;
+    if (!getStoredAccessToken()) {
+      return false;
+    }
+
+    const response = await axios.get("/api/auth/me", {
+      headers: getAuthHeader(),
+    });
+
+    const user = response.data?.data ?? response.data?.user;
+    if (user) {
+      return { valid: true, user };
     }
     return false;
   } catch (error) {
@@ -215,25 +260,41 @@ export const checkAuthStatus = async () => {
 
 export const refreshToken = async () => {
   try {
-    const response = await axios.post(
-      "/api/auth/refresh",
-      {},
-      { withCredentials: true },
-    );
-    return response.status === 200;
+    const storedRefreshToken = getStoredRefreshToken();
+    if (!storedRefreshToken) {
+      return {
+        status: false,
+        accessToken: undefined,
+        refreshToken: undefined,
+      };
+    }
+
+    const response = await axios.post("/api/auth/refresh", {
+      refreshToken: storedRefreshToken,
+    });
+    const payload = response.data?.data ?? response.data;
+
+    return {
+      status: response.status === 200,
+      accessToken: payload?.accessToken,
+      refreshToken: payload?.refreshToken,
+    };
   } catch (error) {
     console.error("Error refreshing token", error);
-    return false;
+    return {
+      status: false,
+      accessToken: undefined,
+      refreshToken: undefined,
+    };
   }
 };
 
 export const logout = async () => {
   try {
-    const response = await axios.post(
-      "/api/auth/logout",
-      {},
-      { withCredentials: true },
-    );
+    const storedRefreshToken = getStoredRefreshToken();
+    const response = await axios.post("/api/auth/logout", {
+      refreshToken: storedRefreshToken,
+    });
     return response.status === 200;
   } catch (error) {
     console.error("Error logging out", error);

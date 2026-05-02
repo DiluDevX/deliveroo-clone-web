@@ -33,10 +33,9 @@ type PaymentFormValues = {
 };
 
 type CheckoutData = {
-  address: string;
-  city: string;
-  zipCode: string;
-  paymentMethod?: "CARD" | "CASH_ON_DELIVERY";
+  address?: string;
+  city?: string;
+  zipCode?: string;
 };
 
 const PaymentPage = () => {
@@ -45,7 +44,6 @@ const PaymentPage = () => {
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
   const user = useAppSelector((state) => state.auth.user);
-  const [deliveryMethod] = useState("delivery");
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingStep, setProcessingStep] = useState<string>("");
@@ -59,7 +57,12 @@ const PaymentPage = () => {
   }, []);
 
   const checkoutData = location.state?.checkoutData as CheckoutData | null;
-  const paymentMethod = checkoutData?.paymentMethod || "CARD";
+  const deliveryMethod = (location.state?.deliveryMethod || "delivery") as
+    | "delivery"
+    | "pickup";
+  const paymentMethod = (location.state?.paymentMethod || "CARD") as
+    | "CARD"
+    | "CASH_ON_DELIVERY";
   const restaurantId = localStorage.getItem("selected-restaurant-id") || "";
   const restaurantName =
     localStorage.getItem("selected-restaurant-name") || "Restaurant";
@@ -80,9 +83,8 @@ const PaymentPage = () => {
 
   const handlePayment = async () => {
     if (
-      !checkoutData?.address ||
-      !checkoutData?.city ||
-      !checkoutData?.zipCode
+      deliveryMethod === "delivery" &&
+      (!checkoutData?.address || !checkoutData?.city || !checkoutData?.zipCode)
     ) {
       setError("Missing delivery address");
       return;
@@ -94,9 +96,9 @@ const PaymentPage = () => {
 
     const checkoutRequest = {
       deliveryAddress: {
-        line1: checkoutData.address,
-        city: checkoutData.city,
-        postcode: checkoutData.zipCode,
+        line1: checkoutData?.address || "",
+        city: checkoutData?.city || "",
+        postcode: checkoutData?.zipCode || "",
         country: "UK",
       },
       restaurantName,

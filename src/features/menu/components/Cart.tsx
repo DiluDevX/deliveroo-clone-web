@@ -35,32 +35,39 @@ const Cart = () => {
     0,
   );
 
-  const handleIncrement = (dishId: string) => {
-    const item = cartItems.find((item) => item.cartItemId === dishId);
+  const getCartItemActionId = (item: { cartItemId?: string; _id: string }) =>
+    item.cartItemId || item._id;
+
+  const handleIncrement = (itemId: string) => {
+    const item = cartItems.find(
+      (item) => item.cartItemId === itemId || item._id === itemId,
+    );
     if (item) {
       dispatch(
         updateQuantityAndSync({
-          cartItemId: dishId,
+          cartItemId: itemId,
           quantity: item.quantity + 1,
         }),
       );
     }
   };
 
-  const handleDecrement = (dishId: string) => {
-    const item = cartItems.find((item) => item.cartItemId === dishId);
+  const handleDecrement = (itemId: string) => {
+    const item = cartItems.find(
+      (item) => item.cartItemId === itemId || item._id === itemId,
+    );
     if (item && item.quantity > 1) {
       dispatch(
         updateQuantityAndSync({
-          cartItemId: dishId,
+          cartItemId: itemId,
           quantity: item.quantity - 1,
         }),
       );
     }
   };
 
-  const handleRemove = (dishId: string) => {
-    dispatch(removeItemAndSync(dishId));
+  const handleRemove = (itemId: string) => {
+    dispatch(removeItemAndSync(itemId));
   };
 
   const handleClearCart = () => {
@@ -73,14 +80,14 @@ const Cart = () => {
       return;
     }
     // Navigate to checkout page
-    navigate("/Checkout");
+    navigate("/checkout");
   };
 
   const handleLoginRedirect = () => {
     setShowLoginDialog(false);
     // Store the intended destination for after login
-    sessionStorage.setItem("redirectAfterLogin", "/Checkout");
-    navigate("/account");
+    sessionStorage.setItem("redirectAfterLogin", "/checkout");
+    navigate("/account/login");
   };
 
   // Login Dialog Component
@@ -273,7 +280,7 @@ const Cart = () => {
                     }}
                   >
                     <img
-                      src="https://assets.dilum.me/deliveroo-clone/images/salad.jpeg"
+                      src={item.image}
                       alt={item.name}
                       style={{
                         width: "100%",
@@ -299,7 +306,7 @@ const Cart = () => {
                       </Typography>
                       <IconButton
                         size="small"
-                        onClick={() => handleRemove(String(item._id))}
+                        onClick={() => handleRemove(getCartItemActionId(item))}
                       >
                         <DeleteOutlineIcon fontSize="small" />
                       </IconButton>
@@ -322,7 +329,9 @@ const Cart = () => {
                     >
                       <IconButton
                         size="small"
-                        onClick={() => handleDecrement(String(item._id))}
+                        onClick={() =>
+                          handleDecrement(getCartItemActionId(item))
+                        }
                         sx={{
                           border: `1px solid ${Colors.border.subtle}`,
                           borderRadius: "4px",
@@ -337,7 +346,9 @@ const Cart = () => {
                       </Typography>
                       <IconButton
                         size="small"
-                        onClick={() => handleIncrement(String(item._id))}
+                        onClick={() =>
+                          handleIncrement(getCartItemActionId(item))
+                        }
                         sx={{
                           border: `1px solid ${Colors.border.subtle}`,
                           borderRadius: "4px",

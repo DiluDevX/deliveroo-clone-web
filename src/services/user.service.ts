@@ -1,13 +1,6 @@
 import axios, { isAxiosError } from "axios";
 import { UserProfile, Address } from "../types/user.types";
-
-const getAuthHeader = () => {
-  const token = localStorage.getItem("token");
-  return {
-    Authorization: token ? `Bearer ${token}` : "",
-    "x-api-key": import.meta.env.VITE_BFF_API_KEY || "your-bff-api-key",
-  };
-};
+import { getAuthHeader } from "./auth-headers";
 
 const DUMMY_USER: UserProfile = {
   id: "user_001",

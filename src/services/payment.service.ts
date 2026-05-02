@@ -5,14 +5,7 @@ import {
   PaymentResponse,
   OrderResponse,
 } from "../types/payment.types";
-
-const getAuthHeader = () => {
-  const token = localStorage.getItem("token");
-  return {
-    Authorization: token ? `Bearer ${token}` : "",
-    "x-api-key": import.meta.env.VITE_BFF_API_KEY || "your-bff-api-key",
-  };
-};
+import { getAuthHeader } from "./auth-headers";
 
 export const createPaymentIntent = async (
   data: PaymentIntentRequest,

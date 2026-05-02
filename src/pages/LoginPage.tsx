@@ -86,7 +86,10 @@ export default function Login() {
         console.log("Login successful, dispatching credentials..."); // Debug log
         dispatch(
           setCredentials({
+            accessToken: loginResponse.successResponse.accessToken,
+            refreshToken: loginResponse.successResponse.refreshToken,
             user: {
+              id: loginResponse.successResponse.user.id,
               email: loginResponse.successResponse.user.email,
               firstName: loginResponse.successResponse.user.firstName,
               lastName: loginResponse.successResponse.user.lastName,

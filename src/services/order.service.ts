@@ -5,6 +5,7 @@ import {
   CheckoutResult,
   CheckoutResponse,
 } from "../types/order.types";
+import { getAuthHeader } from "./auth-headers";
 
 const DUMMY_ORDERS: Order[] = [
   {
@@ -171,14 +172,6 @@ const DUMMY_ORDERS: Order[] = [
   },
 ];
 
-const getAuthHeader = () => {
-  const token = localStorage.getItem("token");
-  return {
-    Authorization: token ? `Bearer ${token}` : "",
-    "x-api-key": import.meta.env.VITE_BFF_API_KEY || "your-bff-api-key",
-  };
-};
-
 export const getOrderHistory = async (): Promise<Order[]> => {
   if (import.meta.env.VITE_BYPASS_AUTH === "true") {
     return DUMMY_ORDERS;
@@ -217,9 +210,6 @@ export const checkoutCart = async (
   checkoutData: CheckoutRequest,
 ): Promise<CheckoutResult | null> => {
   try {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-
     const response = await axios.post<CheckoutResponse>(
       "/api/cart/checkout",
       checkoutData,

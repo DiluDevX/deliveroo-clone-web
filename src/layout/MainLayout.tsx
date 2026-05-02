@@ -36,7 +36,7 @@ const MainLayout = () => {
         // Error refreshing token
         console.error("Error refreshing token", error);
       } finally {
-        if (result) {
+        if (result && typeof result !== "boolean") {
           dispatch(setCredentials({ user: result.user }));
         } else {
           dispatch(setCredentials({}));
