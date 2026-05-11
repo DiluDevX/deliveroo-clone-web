@@ -10,18 +10,21 @@ export interface PaymentIntentRequest {
 
 export interface PaymentIntentResponse {
   success: boolean;
+  message: string;
   data: {
-    id: string;
-    orderId: string;
-    userId: string;
-    restaurantId: string;
-    amount: number;
-    currency: string;
+    paymentId?: string;
+    id?: string;
+    orderId?: string;
+    userId?: string;
+    restaurantId?: string;
+    amount?: number;
+    currency?: string;
     status: string;
-    paymentMethod: string;
-    commissionPercentage: number;
-    createdAt: string;
-    updatedAt: string;
+    paymentMethod?: string;
+    commissionPercentage?: number;
+    clientSecret?: string;
+    createdAt?: string;
+    updatedAt?: string;
   };
 }
 

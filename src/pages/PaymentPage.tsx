@@ -1,12 +1,9 @@
 import { Box, Typography, Grid, Card, CircularProgress } from "@mui/material";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { Elements } from "@stripe/react-stripe-js";
 import { Colors } from "../theme/colors";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
 import { useState, useEffect } from "react";
 import Button from "../features/menu/components/Button";
-import TextInput from "../features/menu/components/TextInput";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useAppSelector, useAppDispatch } from "../store/hooks/cartHooks";
@@ -17,20 +14,8 @@ import {
 } from "../services/payment.service";
 import { checkoutCart } from "../services/order.service";
 import { clearCartAndSync } from "../store/cartSlice";
-
-const cardSchema = z.object({
-  cardNumber: z.string().min(16, "Card number must be 16 digits"),
-  expiryDate: z.string().min(4, "Expiry date is required"),
-  cvv: z.string().min(3, "CVV must be 3 digits"),
-  nameOnCard: z.string().min(1, "Name on card is required"),
-});
-
-type PaymentFormValues = {
-  cardNumber: string;
-  expiryDate: string;
-  cvv: string;
-  nameOnCard: string;
-};
+import { stripePromise } from "../config/stripe";
+import { StripeCardForm } from "../features/menu/components/StripeCardForm";
 
 type CheckoutData = {
   address?: string;
@@ -48,6 +33,8 @@ const PaymentPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [processingStep, setProcessingStep] = useState<string>("");
   const [progress, setProgress] = useState(50);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -81,7 +68,16 @@ const PaymentPage = () => {
     serviceFee -
     discount;
 
-  const handlePayment = async () => {
+  const subtotal = cartItems.reduce(
+    (total, item) => total + Number(item.price) * Number(item.quantity),
+    0,
+  );
+
+  /**
+   * Handle cash on delivery payment
+   * Creates order and navigates to confirmation
+   */
+  const handleCashPayment = async () => {
     if (
       deliveryMethod === "delivery" &&
       (!checkoutData?.address || !checkoutData?.city || !checkoutData?.zipCode)
@@ -92,43 +88,41 @@ const PaymentPage = () => {
 
     setIsProcessing(true);
     setError(null);
-    setProcessingStep("Creating order...");
 
-    const checkoutRequest = {
-      deliveryAddress: {
-        line1: checkoutData?.address || "",
-        city: checkoutData?.city || "",
-        postcode: checkoutData?.zipCode || "",
-        country: "UK",
-      },
-      restaurantName,
-      restaurantAddress,
-      deliveryFee: shippingFee,
-      serviceFee,
-      discountAmount: discount,
-      paymentMethod:
-        paymentMethod === "CASH_ON_DELIVERY" ? "cash_on_delivery" : "card",
-    };
+    try {
+      setProcessingStep("Creating order...");
 
-    const orderResponse = await checkoutCart(checkoutRequest);
+      const checkoutRequest = {
+        deliveryAddress: {
+          line1: checkoutData?.address || "",
+          city: checkoutData?.city || "",
+          postcode: checkoutData?.zipCode || "",
+          country: "UK",
+        },
+        restaurantName,
+        restaurantAddress,
+        deliveryFee: shippingFee,
+        serviceFee,
+        discountAmount: discount,
+        paymentMethod: "cash_on_delivery",
+      };
 
-    if (!orderResponse?.orderId) {
-      setIsProcessing(false);
-      setError("Failed to create order. Please try again.");
-      setProcessingStep("");
-      return;
-    }
+      const orderResponse = await checkoutCart(checkoutRequest);
 
-    if (paymentMethod === "CASH_ON_DELIVERY") {
+      if (!orderResponse?.orderId) {
+        setIsProcessing(false);
+        setError("Failed to create order. Please try again.");
+        setProcessingStep("");
+        return;
+      }
+
+      // Order created successfully for cash payment
       dispatch(clearCartAndSync());
       navigate("/order-confirmation", {
         state: {
           orderId: orderResponse.orderNumber,
           orderDetails: {
-            subtotal: cartItems.reduce(
-              (total, item) => total + Number(item.price) * Number(item.quantity),
-              0,
-            ),
+            subtotal,
             shippingFee,
             serviceFee,
             discount,
@@ -137,75 +131,151 @@ const PaymentPage = () => {
         },
       });
       setIsProcessing(false);
-      return;
-    }
-
-    setProcessingStep("Processing payment...");
-
-    const amountInPennies = Math.round(total * 100);
-
-    const paymentIntent = await createPaymentIntent({
-      orderId: orderResponse.orderId,
-      userId: user?.id || "",
-      restaurantId,
-      amount: amountInPennies,
-      currency: "USD",
-      paymentMethod: "CARD",
-      commissionPercentage: 15,
-    });
-
-    if (paymentIntent?.data?.id) {
-      setProcessingStep("Confirming payment...");
-      const confirmed = await confirmPayment(paymentIntent.data.id);
-      if (confirmed) {
-        dispatch(clearCartAndSync());
-        navigate("/order-confirmation", {
-          state: {
-            orderId: orderResponse.orderNumber,
-            orderDetails: {
-              subtotal: cartItems.reduce(
-                (total, item) => total + Number(item.price) * Number(item.quantity),
-                0,
-              ),
-              shippingFee,
-              serviceFee,
-              discount,
-              total,
-            },
-          },
-        });
-      } else {
-        setIsProcessing(false);
-        setError("Payment failed. Please try again.");
-        setProcessingStep("");
-      }
-    } else {
+    } catch (err) {
       setIsProcessing(false);
-      setError("Failed to process payment. Please try again.");
+      setError("An unexpected error occurred. Please try again.");
       setProcessingStep("");
+      console.error("Cash payment error:", err);
     }
   };
 
-  const form = useForm<PaymentFormValues>({
-    resolver: zodResolver(cardSchema),
-    defaultValues: {
-      cardNumber: "",
-      expiryDate: "",
-      cvv: "",
-      nameOnCard: "",
-    },
-    mode: "onChange",
-  });
+  /**
+   * Handle card payment - creates order and payment intent
+   */
+  const handleCardPayment = async () => {
+    if (
+      deliveryMethod === "delivery" &&
+      (!checkoutData?.address || !checkoutData?.city || !checkoutData?.zipCode)
+    ) {
+      setError("Missing delivery address");
+      return;
+    }
 
-  const {
-    control,
-    formState: { isValid },
-  } = form;
+    setIsProcessing(true);
+    setError(null);
 
-  const subtotal = cartItems.reduce(
-    (total, item) => total + Number(item.price) * Number(item.quantity),
-    0,
-  );
+    try {
+      setProcessingStep("Creating order...");
+
+      const checkoutRequest = {
+        deliveryAddress: {
+          line1: checkoutData?.address || "",
+          city: checkoutData?.city || "",
+          postcode: checkoutData?.zipCode || "",
+          country: "UK",
+        },
+        restaurantName,
+        restaurantAddress,
+        deliveryFee: shippingFee,
+        serviceFee,
+        discountAmount: discount,
+        paymentMethod: "card",
+      };
+
+      const orderResponse = await checkoutCart(checkoutRequest);
+
+      if (!orderResponse?.orderId) {
+        setIsProcessing(false);
+        setError("Failed to create order. Please try again.");
+        setProcessingStep("");
+        return;
+      }
+
+      // Order created, now create payment intent
+      setProcessingStep("Preparing payment...");
+
+      const amountInPennies = Math.round(total * 100);
+
+      const paymentIntent = await createPaymentIntent({
+        orderId: orderResponse.orderId,
+        userId: user?.id || "",
+        restaurantId,
+        amount: amountInPennies,
+        currency: "GBP",
+        paymentMethod: "CARD",
+        commissionPercentage: 15,
+      });
+
+      if (!paymentIntent?.data?.clientSecret || !paymentIntent?.data?.paymentId) {
+        setIsProcessing(false);
+        setError("Failed to process payment. Please try again.");
+        setProcessingStep("");
+        return;
+      }
+
+      // Store payment details for StripeCardForm to use
+      setPaymentId(paymentIntent.data.paymentId);
+      setClientSecret(paymentIntent.data.clientSecret);
+      setIsProcessing(false);
+    } catch (err) {
+      setIsProcessing(false);
+      setError("An unexpected error occurred. Please try again.");
+      setProcessingStep("");
+      console.error("Card payment setup error:", err);
+    }
+  };
+
+  /**
+   * Called when StripeCardForm successfully creates a payment method
+   */
+  const handlePaymentMethodCreated = async () => {
+    if (!paymentId) {
+      setError("Payment setup failed. Please try again.");
+      return;
+    }
+
+    setIsProcessing(true);
+    setProcessingStep("Confirming payment with Stripe...");
+
+    try {
+      // Confirm the payment with backend
+      const confirmed = await confirmPayment(paymentId);
+
+      if (!confirmed) {
+        setIsProcessing(false);
+        setError("Payment confirmation failed. Please try again.");
+        setProcessingStep("");
+        return;
+      }
+
+      // ✅ Payment confirmed - order is complete!
+      dispatch(clearCartAndSync());
+
+      const orderResponse = await checkoutCart({
+        deliveryAddress: {
+          line1: checkoutData?.address || "",
+          city: checkoutData?.city || "",
+          postcode: checkoutData?.zipCode || "",
+          country: "UK",
+        },
+        restaurantName,
+        restaurantAddress,
+        deliveryFee: shippingFee,
+        serviceFee,
+        discountAmount: discount,
+        paymentMethod: "card",
+      });
+
+      navigate("/order-confirmation", {
+        state: {
+          orderId: orderResponse?.orderNumber || "unknown",
+          orderDetails: {
+            subtotal,
+            shippingFee,
+            serviceFee,
+            discount,
+            total,
+          },
+        },
+      });
+      setIsProcessing(false);
+    } catch (err) {
+      setIsProcessing(false);
+      setError("An unexpected error occurred. Please try again.");
+      setProcessingStep("");
+      console.error("Payment confirmation error:", err);
+    }
+  };
 
   return (
     <Box
@@ -329,98 +399,32 @@ const PaymentPage = () => {
               </Typography>
 
               {paymentMethod === "CARD" ? (
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2,
-                  }}
-                >
-                  <Controller
-                    name="cardNumber"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                      <TextInput
-                        {...field}
-                        fullWidth
-                        label="Card Number"
-                        value={field.value || ""}
-                        onChange={(e) => {
-                          const value = e.target.value
-                            .replace(/\D/g, "")
-                            .slice(0, 16);
-                          field.onChange(value);
-                        }}
-                        error={fieldState.error?.message}
-                        placeholder="1234 5678 9012 3456"
+                <>
+                  {clientSecret && paymentId ? (
+                    <Elements stripe={stripePromise} options={{ clientSecret }}>
+                      <StripeCardForm
+                        isProcessing={isProcessing}
+                        onPaymentSuccess={handlePaymentMethodCreated}
+                        onPaymentError={setError}
+                        totalAmount={total}
                       />
-                    )}
-                  />
-
-                  <Box sx={{ display: "flex", gap: 2 }}>
-                    <Controller
-                      name="expiryDate"
-                      control={control}
-                      render={({ field, fieldState }) => (
-                        <TextInput
-                          {...field}
-                          fullWidth
-                          label="Expiry Date"
-                          value={field.value || ""}
-                          onChange={(e) => {
-                            let value = e.target.value
-                              .replace(/\D/g, "")
-                              .slice(0, 4);
-                            if (value.length > 2) {
-                              value = value.slice(0, 2) + "/" + value.slice(2);
-                            }
-                            field.onChange(value);
-                          }}
-                          error={fieldState.error?.message}
-                          placeholder="MM/YY"
-                        />
-                      )}
-                    />
-
-                    <Controller
-                      name="cvv"
-                      control={control}
-                      render={({ field, fieldState }) => (
-                        <TextInput
-                          {...field}
-                          fullWidth
-                          label="CVV"
-                          value={field.value || ""}
-                          onChange={(e) => {
-                            const value = e.target.value
-                              .replace(/\D/g, "")
-                              .slice(0, 3);
-                            field.onChange(value);
-                          }}
-                          error={fieldState.error?.message}
-                          placeholder="123"
-                          type="password"
-                        />
-                      )}
-                    />
-                  </Box>
-
-                  <Controller
-                    name="nameOnCard"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                      <TextInput
-                        {...field}
-                        fullWidth
-                        label="Name on Card"
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        error={fieldState.error?.message}
-                        placeholder="JOHN DOE"
-                      />
-                    )}
-                  />
-                </Box>
+                    </Elements>
+                  ) : (
+                    <Box
+                      sx={{
+                        p: 3,
+                        backgroundColor: Colors.background.light,
+                        borderRadius: "8px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <CircularProgress size={30} sx={{ mb: 2 }} />
+                      <Typography sx={{ color: Colors.text.default }}>
+                        {processingStep || "Preparing payment..."}
+                      </Typography>
+                    </Box>
+                  )}
+                </>
               ) : (
                 <Box
                   sx={{
@@ -545,10 +549,12 @@ const PaymentPage = () => {
 
               <Button
                 variant="filled"
-                disabled={
-                  (paymentMethod === "CARD" && !isValid) || isProcessing
+                disabled={isProcessing}
+                onClick={
+                  paymentMethod === "CASH_ON_DELIVERY"
+                    ? handleCashPayment
+                    : handleCardPayment
                 }
-                onClick={handlePayment}
                 sx={{
                   width: "100%",
                   fontWeight: "bold",
@@ -564,8 +570,10 @@ const PaymentPage = () => {
                   </Box>
                 ) : paymentMethod === "CASH_ON_DELIVERY" ? (
                   "Place Order"
+                ) : clientSecret ? (
+                  "Payment Ready"
                 ) : (
-                  "Proceed"
+                  "Prepare Payment"
                 )}
               </Button>
 

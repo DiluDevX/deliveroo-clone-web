@@ -19,6 +19,7 @@
     "@mui/icons-material": "^6.3.1",
     "@mui/material": "^6.3.1",
     "@reduxjs/toolkit": "^2.4.0",
+    "@stripe/react-stripe-js": "^6.3.0",
     "axios": "^1.7.9",
     "classnames": "^2.5.1",
     "firebase": "^11.4.0",
@@ -36,6 +37,7 @@
     "react-router-dom": "^7.0.2",
     "react-ui-scrollspy": "^2.3.0",
     "redux-persist": "^6.0.0",
+    "stripe": "^22.1.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
