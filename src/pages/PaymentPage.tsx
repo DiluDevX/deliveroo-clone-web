@@ -28,13 +28,13 @@ const PaymentPage = () => {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
-  const user = useAppSelector((state) => state.auth.user);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingStep, setProcessingStep] = useState<string>("");
   const [progress, setProgress] = useState(50);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -50,7 +50,6 @@ const PaymentPage = () => {
   const paymentMethod = (location.state?.paymentMethod || "CARD") as
     | "CARD"
     | "CASH_ON_DELIVERY";
-  const restaurantId = localStorage.getItem("selected-restaurant-id") || "";
   const restaurantName =
     localStorage.getItem("selected-restaurant-name") || "Restaurant";
   const restaurantAddress =
@@ -104,7 +103,7 @@ const PaymentPage = () => {
         deliveryFee: shippingFee,
         serviceFee,
         discountAmount: discount,
-        paymentMethod: "cash_on_delivery",
+        paymentMethod: "cash",
       };
 
       const orderResponse = await checkoutCart(checkoutRequest);
@@ -181,22 +180,20 @@ const PaymentPage = () => {
         return;
       }
 
-      // Order created, now create payment intent
-      setProcessingStep("Preparing payment...");
+      setOrderNumber(orderResponse.orderNumber);
 
-      const amountInPennies = Math.round(total * 100);
+      // Order created, now create payment intent from the server-owned order total
+      setProcessingStep("Preparing payment...");
 
       const paymentIntent = await createPaymentIntent({
         orderId: orderResponse.orderId,
-        userId: user?.id || "",
-        restaurantId,
-        amount: amountInPennies,
-        currency: "GBP",
-        paymentMethod: "CARD",
-        commissionPercentage: 15,
+        expectedTotalAmount: total,
       });
 
-      if (!paymentIntent?.data?.clientSecret || !paymentIntent?.data?.paymentId) {
+      if (
+        !paymentIntent?.data?.clientSecret ||
+        !paymentIntent?.data?.paymentId
+      ) {
         setIsProcessing(false);
         setError("Failed to process payment. Please try again.");
         setProcessingStep("");
@@ -215,20 +212,16 @@ const PaymentPage = () => {
     }
   };
 
-  /**
-   * Called when StripeCardForm successfully creates a payment method
-   */
-  const handlePaymentMethodCreated = async () => {
+  const handleStripePaymentSucceeded = async () => {
     if (!paymentId) {
       setError("Payment setup failed. Please try again.");
       return;
     }
 
     setIsProcessing(true);
-    setProcessingStep("Confirming payment with Stripe...");
+    setProcessingStep("Finalizing payment...");
 
     try {
-      // Confirm the payment with backend
       const confirmed = await confirmPayment(paymentId);
 
       if (!confirmed) {
@@ -238,27 +231,11 @@ const PaymentPage = () => {
         return;
       }
 
-      // ✅ Payment confirmed - order is complete!
       dispatch(clearCartAndSync());
-
-      const orderResponse = await checkoutCart({
-        deliveryAddress: {
-          line1: checkoutData?.address || "",
-          city: checkoutData?.city || "",
-          postcode: checkoutData?.zipCode || "",
-          country: "UK",
-        },
-        restaurantName,
-        restaurantAddress,
-        deliveryFee: shippingFee,
-        serviceFee,
-        discountAmount: discount,
-        paymentMethod: "card",
-      });
 
       navigate("/order-confirmation", {
         state: {
-          orderId: orderResponse?.orderNumber || "unknown",
+          orderId: orderNumber || "unknown",
           orderDetails: {
             subtotal,
             shippingFee,
@@ -403,8 +380,9 @@ const PaymentPage = () => {
                   {clientSecret && paymentId ? (
                     <Elements stripe={stripePromise} options={{ clientSecret }}>
                       <StripeCardForm
+                        clientSecret={clientSecret}
                         isProcessing={isProcessing}
-                        onPaymentSuccess={handlePaymentMethodCreated}
+                        onPaymentSuccess={handleStripePaymentSucceeded}
                         onPaymentError={setError}
                         totalAmount={total}
                       />
@@ -549,7 +527,10 @@ const PaymentPage = () => {
 
               <Button
                 variant="filled"
-                disabled={isProcessing}
+                disabled={
+                  isProcessing ||
+                  (paymentMethod === "CARD" && Boolean(clientSecret))
+                }
                 onClick={
                   paymentMethod === "CASH_ON_DELIVERY"
                     ? handleCashPayment

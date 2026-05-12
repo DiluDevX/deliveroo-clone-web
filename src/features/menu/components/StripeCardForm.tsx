@@ -5,8 +5,9 @@ import Button from "./Button";
 import { useState } from "react";
 
 interface StripeCardFormProps {
+  clientSecret: string;
   isProcessing: boolean;
-  onPaymentSuccess: (clientSecret: string) => void;
+  onPaymentSuccess: () => void;
   onPaymentError: (error: string) => void;
   totalAmount: number;
 }
@@ -17,6 +18,7 @@ interface StripeCardFormProps {
  * PCI compliance is handled by Stripe - card data never touches your server
  */
 export const StripeCardForm = ({
+  clientSecret,
   isProcessing,
   onPaymentSuccess,
   onPaymentError,
@@ -25,6 +27,7 @@ export const StripeCardForm = ({
   const stripe = useStripe();
   const elements = useElements();
   const [cardholderName, setCardholderName] = useState("");
+  const [isConfirming, setIsConfirming] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,29 +48,40 @@ export const StripeCardForm = ({
       return;
     }
 
+    setIsConfirming(true);
+
     try {
-      // Create payment method from card details
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: "card",
-        card: cardElement,
-        billing_details: {
-          name: cardholderName,
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: cardholderName,
+            },
+          },
         },
-      });
+      );
 
       if (error) {
-        onPaymentError(error.message || "Card validation failed");
+        onPaymentError(error.message || "Payment confirmation failed");
         return;
       }
 
-      // Return payment method ID to parent to send to backend
-      if (paymentMethod) {
-        onPaymentSuccess(paymentMethod.id);
+      if (paymentIntent?.status !== "succeeded") {
+        onPaymentError(
+          `Payment not completed. Status: ${paymentIntent?.status ?? "unknown"}`,
+        );
+        return;
       }
+
+      onPaymentSuccess();
     } catch (err) {
       onPaymentError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
+        err instanceof Error ? err.message : "An unexpected error occurred",
       );
+    } finally {
+      setIsConfirming(false);
     }
   };
 
@@ -91,7 +105,13 @@ export const StripeCardForm = ({
 
           <Box sx={{ mb: 2 }}>
             <label htmlFor="cardholder-name">
-              <Typography sx={{ fontSize: "0.875rem", mb: 0.5, color: Colors.text.default }}>
+              <Typography
+                sx={{
+                  fontSize: "0.875rem",
+                  mb: 0.5,
+                  color: Colors.text.default,
+                }}
+              >
                 Cardholder Name
               </Typography>
             </label>
@@ -101,7 +121,7 @@ export const StripeCardForm = ({
               value={cardholderName}
               onChange={(e) => setCardholderName(e.target.value)}
               placeholder="John Doe"
-              disabled={isProcessing}
+              disabled={isProcessing || isConfirming}
               style={{
                 width: "100%",
                 padding: "10px 12px",
@@ -110,14 +130,23 @@ export const StripeCardForm = ({
                 fontSize: "1rem",
                 fontFamily: "inherit",
                 boxSizing: "border-box",
-                backgroundColor: isProcessing ? Colors.background.default : "white",
+                backgroundColor:
+                  isProcessing || isConfirming
+                    ? Colors.background.default
+                    : "white",
               }}
             />
           </Box>
 
           <Box sx={{ mb: 2 }}>
             <label htmlFor="card-element">
-              <Typography sx={{ fontSize: "0.875rem", mb: 0.5, color: Colors.text.default }}>
+              <Typography
+                sx={{
+                  fontSize: "0.875rem",
+                  mb: 0.5,
+                  color: Colors.text.default,
+                }}
+              >
                 Card Number
               </Typography>
             </label>
@@ -127,7 +156,10 @@ export const StripeCardForm = ({
                 padding: "10px 12px",
                 borderRadius: "8px",
                 border: `1px solid ${Colors.border.subtle}`,
-                backgroundColor: isProcessing ? Colors.background.default : "white",
+                backgroundColor:
+                  isProcessing || isConfirming
+                    ? Colors.background.default
+                    : "white",
                 minHeight: "40px",
                 display: "flex",
                 alignItems: "center",
@@ -148,7 +180,7 @@ export const StripeCardForm = ({
                       color: "#dc3545",
                     },
                   },
-                  disabled: isProcessing,
+                  disabled: isProcessing || isConfirming,
                 }}
               />
             </Box>
@@ -162,7 +194,8 @@ export const StripeCardForm = ({
               mb: 2,
             }}
           >
-            💳 This is a test payment. Use card: <strong>4242 4242 4242 4242</strong>
+            💳 This is a test payment. Use card:{" "}
+            <strong>4242 4242 4242 4242</strong>
             <br />
             Expiry: Any future date | CVC: Any 3 digits
           </Typography>
@@ -171,7 +204,7 @@ export const StripeCardForm = ({
         <Button
           variant="filled"
           type="submit"
-          disabled={isProcessing || !stripe}
+          disabled={isProcessing || isConfirming || !stripe}
           sx={{
             width: "100%",
             fontWeight: "bold",
@@ -179,7 +212,9 @@ export const StripeCardForm = ({
             fontSize: "1rem",
           }}
         >
-          {isProcessing ? "Processing..." : `Pay £${totalAmount.toFixed(2)}`}
+          {isProcessing || isConfirming
+            ? "Processing..."
+            : `Pay £${totalAmount.toFixed(2)}`}
         </Button>
       </form>
     </Card>

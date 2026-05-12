@@ -1,30 +1,15 @@
 export interface PaymentIntentRequest {
   orderId: string;
-  userId: string;
-  restaurantId: string;
-  amount: number;
-  currency?: string;
-  paymentMethod: "CASH_ON_DELIVERY" | "CARD";
-  commissionPercentage: number;
+  expectedTotalAmount?: number;
 }
 
 export interface PaymentIntentResponse {
   success: boolean;
   message: string;
   data: {
-    paymentId?: string;
-    id?: string;
-    orderId?: string;
-    userId?: string;
-    restaurantId?: string;
-    amount?: number;
-    currency?: string;
+    paymentId: string;
     status: string;
-    paymentMethod?: string;
-    commissionPercentage?: number;
-    clientSecret?: string;
-    createdAt?: string;
-    updatedAt?: string;
+    clientSecret: string;
   };
 }
 
