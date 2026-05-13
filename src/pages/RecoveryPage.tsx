@@ -12,6 +12,7 @@ import LoadingIndicator from "../features/menu/components/LoadingIndicator";
 import { useState } from "react";
 import { sendEmail } from "../services/mail.service";
 import { enqueueSnackbar } from "notistack";
+import { useAppSelector } from "../store/hooks/cartHooks";
 
 type RecoveryForm = {
   emailOrPhone: string;
@@ -23,6 +24,7 @@ const RecoveryPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const user = useAppSelector((state) => state.auth.user);
 
   const isForgotEmail = location.state?.type === "forgotEmail";
 
@@ -35,6 +37,9 @@ const RecoveryPage = () => {
   const form = useForm<RecoveryForm>({
     mode: "onChange",
     resolver: zodResolver(schema),
+    defaultValues: {
+      emailOrPhone: user?.email || "",
+    },
   });
 
   const handleSubmit = form.handleSubmit(async (values) => {

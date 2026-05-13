@@ -53,10 +53,6 @@ function Button({
         "&:hover": {
           border: disabled ? "none" : `0.5px solid ${Colors.border.subtle}`,
         },
-        "&:focus": {
-          outline: disabled ? "none" : `2.7px solid rgba(2, 189, 174, 0.5)`,
-          outlineOffset: "-2.7px",
-        },
         "&:active": {
           outline: disabled ? "none" : `2.7px solid rgba(2, 189, 174, 0.5)`,
           outlineOffset: "-2.7px",

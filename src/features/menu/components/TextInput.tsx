@@ -8,22 +8,36 @@ type TextInputProps = Omit<TextFieldProps, "error"> & {
 };
 
 const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
-  ({ error, label, ...props }: TextInputProps, ref) => {
+  ({ error, label, required, ...props }: TextInputProps, ref) => {
     return (
       <Box sx={{ marginBottom: "1rem" }}>
-        <Typography sx={{ fontWeight: "normal", color: Colors.text.default }}>
-          {label}
-        </Typography>
         <TextField
           {...props}
           error={!!error}
           ref={ref}
+          label={label}
+          required={required}
           sx={{
             fontSize: "1rem",
             marginTop: "0.5rem",
             outlineColor: Colors.text.default,
             borderRadius: "3px",
             boxShadow: `inset 0 1px 3px ${Colors.boxShadow.default}, inset 0 0 0 100px #fff`,
+            "& .MuiInputLabel-root.Mui-focused": {
+              color: Colors.background.brand,
+            },
+            "& .MuiInputLabel-root.Mui-error.Mui-focused": {
+              color: Colors.error.main,
+            },
+            "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
+              {
+                borderColor: Colors.error.main,
+              },
+            "& .MuiOutlinedInput-root.Mui-error.Mui-focused .MuiOutlinedInput-notchedOutline":
+              {
+                borderColor: Colors.error.main,
+              },
+            ...props.sx,
           }}
         />
         {error && (

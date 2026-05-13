@@ -1,33 +1,16 @@
 import axios, { isAxiosError } from "axios";
 import { CartItem } from "../store/cartSlice";
+import { CartItemData, CartResponse } from "../types/cart.types";
+import { getAuthHeader } from "./auth-headers";
 
-interface CartResponse {
-  message?: string;
-  data: {
-    items: CartItem[];
-  };
-}
-
-// Get auth header
-const getAuthHeader = () => {
-  const token = localStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
-// Get cart from database
-export const getCart = async (): Promise<CartItem[]> => {
+export const getCart = async (): Promise<CartItemData[]> => {
   try {
-    const token = localStorage.getItem("token");
-    if (!token) return [];
-
-    const userId = localStorage.getItem("id");
-    if (!userId) return [];
-
-    const response = await axios.get<CartResponse>(`/api/cart/${userId}`, {
+    const response = await axios.get<CartResponse>("/api/cart/", {
       headers: getAuthHeader(),
     });
 
-    return response.data.data?.items || [];
+    const items = response.data.data?.items || [];
+    return items;
   } catch (error) {
     if (isAxiosError(error)) {
       console.error("Error fetching cart:", error.response?.data);
@@ -36,40 +19,25 @@ export const getCart = async (): Promise<CartItem[]> => {
   }
 };
 
-// Sync entire cart to database
-export const syncCart = async (items: CartItem[]): Promise<boolean> => {
+export const addItemToCart = async (
+  item: CartItem,
+  restaurantId: string,
+): Promise<boolean> => {
   try {
-    const token = localStorage.getItem("token");
-    if (!token) return false;
-
-    await axios.post("/api/cart/sync", { items }, { headers: getAuthHeader() });
-
-    return true;
-  } catch (error) {
-    if (isAxiosError(error)) {
-      console.error("Error syncing cart:", error.response?.data);
-    }
-    return false;
-  }
-};
-
-// Add item to cart in database
-export const addItemToCart = async (item: CartItem): Promise<boolean> => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) return false;
-
     await axios.post(
-      "/api/cart/add",
+      "/api/cart",
       {
+        restaurantId,
         dishId: String(item._id),
-        name: item.name,
-        price: Number(item.price),
+        dishName: item.name,
+        dishImageUrl: item.image,
+        unitPrice: Number(item.price),
         quantity: item.quantity,
-        image: item.image,
-        description: item.description,
+        modifiers: item.modifiers ?? [],
       },
-      { headers: getAuthHeader() },
+      {
+        headers: getAuthHeader(),
+      },
     );
 
     return true;
@@ -81,18 +49,45 @@ export const addItemToCart = async (item: CartItem): Promise<boolean> => {
   }
 };
 
-// Update item quantity in database
+export const syncCart = async (
+  items: CartItem[],
+  restaurantId: string,
+): Promise<CartItemData[] | null> => {
+  try {
+    const response = await axios.post<CartResponse>(
+      "/api/cart/sync",
+      {
+        restaurantId,
+        items: items.map((item) => ({
+          dishId: String(item._id),
+          quantity: item.quantity,
+          modifiers: (item.modifiers ?? []).map((modifier) => ({
+            name: modifier.name,
+            option: modifier.option,
+            extraPrice: modifier.extraPrice,
+          })),
+        })),
+      },
+      { headers: getAuthHeader() },
+    );
+
+    return response.data.data?.items || [];
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error syncing cart:", error.response?.data);
+    }
+    return null;
+  }
+};
+
 export const updateCartItemQuantity = async (
-  dishId: string,
+  cartItemId: string,
   quantity: number,
 ): Promise<boolean> => {
   try {
-    const token = localStorage.getItem("token");
-    if (!token) return false;
-
     await axios.put(
-      "/api/cart/update",
-      { dishId, quantity },
+      `/api/cart/items/${cartItemId}`,
+      { quantity },
       { headers: getAuthHeader() },
     );
 
@@ -105,13 +100,11 @@ export const updateCartItemQuantity = async (
   }
 };
 
-// Remove item from cart in database
-export const removeItemFromCart = async (dishId: string): Promise<boolean> => {
+export const removeItemFromCart = async (
+  cartItemId: string,
+): Promise<boolean> => {
   try {
-    const token = localStorage.getItem("token");
-    if (!token) return false;
-
-    await axios.delete(`/api/cart/remove/${dishId}`, {
+    await axios.delete(`/api/cart/items/${cartItemId}`, {
       headers: getAuthHeader(),
     });
 
@@ -124,13 +117,9 @@ export const removeItemFromCart = async (dishId: string): Promise<boolean> => {
   }
 };
 
-// Clear cart in database
 export const clearCartInDb = async (): Promise<boolean> => {
   try {
-    const token = localStorage.getItem("token");
-    if (!token) return false;
-
-    await axios.delete("/api/cart/clear", {
+    await axios.delete("/api/cart/", {
       headers: getAuthHeader(),
     });
 
