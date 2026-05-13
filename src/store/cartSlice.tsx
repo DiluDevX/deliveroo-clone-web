@@ -86,7 +86,9 @@ export const addItemAndSync = createAsyncThunk(
     if (state.auth.isAuthenticated) {
       const restaurantId = localStorage.getItem("selected-restaurant-id");
       if (restaurantId) {
-        const cartItem: CartItem = { ...dish, quantity: 1 };
+        const cartItem =
+          state.cart.items.find((item) => item._id === dish._id) ??
+          ({ ...dish, quantity: 1 } satisfies CartItem);
         const didSync = await cartService.addItemToCart(cartItem, restaurantId);
         if (didSync) {
           dispatch(fetchCart());
@@ -164,15 +166,17 @@ const cartSlice = createSlice({
       state,
       action: PayloadAction<{ cartItemId: string; quantity: number }>,
     ) => {
-      const item = state.items.find((item) =>
+      const itemIndex = state.items.findIndex((item) =>
         matchesCartItem(item, action.payload.cartItemId),
       );
-      if (item) {
-        if (action.payload.quantity === 0) {
-          item.quantity = 0;
-        } else {
-          item.quantity = action.payload.quantity;
-        }
+      if (itemIndex === -1) {
+        return;
+      }
+
+      if (action.payload.quantity === 0) {
+        state.items.splice(itemIndex, 1);
+      } else {
+        state.items[itemIndex].quantity = action.payload.quantity;
       }
     },
     clearCart: (state) => {

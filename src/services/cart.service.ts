@@ -33,7 +33,7 @@ export const addItemToCart = async (
         dishImageUrl: item.image,
         unitPrice: Number(item.price),
         quantity: item.quantity,
-        modifiers: [],
+        modifiers: item.modifiers ?? [],
       },
       {
         headers: getAuthHeader(),
