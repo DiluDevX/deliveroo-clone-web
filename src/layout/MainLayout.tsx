@@ -17,7 +17,7 @@ const MainLayout = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      if (import.meta.env.VITE_BYPASS_AUTH === "true") {
+      if (import.meta.env.DEV && import.meta.env.VITE_BYPASS_AUTH === "true") {
         localStorage.setItem("selected-restaurant-id", "dummy-restaurant");
         dispatch(setAuthInitialized(true));
         dispatch(populateDummyCart());

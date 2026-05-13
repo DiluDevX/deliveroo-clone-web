@@ -30,18 +30,31 @@ const authSlice = createSlice({
         refreshToken?: string;
       }>,
     ) => {
-      if (action.payload.user) {
+      const { user, accessToken, refreshToken } = action.payload;
+
+      if (user) {
+        state.user = user;
         state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.token = action.payload.accessToken || state.token;
-        state.refreshToken = action.payload.refreshToken || state.refreshToken;
-      } else {
+      }
+
+      if (accessToken !== undefined) {
+        state.token = accessToken;
+        state.isAuthenticated = true;
+      }
+
+      if (refreshToken !== undefined) {
+        state.refreshToken = refreshToken;
+        state.isAuthenticated = true;
+      }
+
+      if (!user && accessToken === undefined && refreshToken === undefined) {
         state.isAuthenticated = false;
         state.user = null;
         state.token = null;
         state.refreshToken = null;
       }
     },
+
     setAuthInitialized: (state, action: PayloadAction<boolean>) => {
       state.isAuthInitialized = action.payload;
     },

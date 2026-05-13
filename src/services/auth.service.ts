@@ -126,39 +126,47 @@ export const login = async (
         };
       }
 
-      const decoded = jwtDecode<AccessTokenPayload>(accessToken);
-      const user = payload.user ?? {
-        id: decoded.userId || "",
-        email: decoded.email || body.email,
-        firstName: "",
-        lastName: "",
-        phone: undefined,
-        role: decoded.role || "user",
-        status: "Active" as const,
-        orderCount: 0,
-        createdAt: "",
-        updatedAt: "",
-      };
+      try {
+        const decoded = jwtDecode<AccessTokenPayload>(accessToken);
 
-      return {
-        type: "SUCCESS",
-        successResponse: {
-          accessToken,
-          refreshToken,
-          user: {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            phone: user.phone ?? undefined,
-            role: user.role,
-            status: "Active",
-            orderCount: 0,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
+        const user = payload.user ?? {
+          id: decoded.userId || "",
+          email: decoded.email || body.email,
+          firstName: "",
+          lastName: "",
+          phone: undefined,
+          role: decoded.role || "user",
+          status: "Active" as const,
+          orderCount: 0,
+          createdAt: "",
+          updatedAt: "",
+        };
+
+        return {
+          type: "SUCCESS",
+          successResponse: {
+            accessToken,
+            refreshToken,
+            user: {
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              phone: user.phone ?? undefined,
+              role: user.role,
+              status: "Active",
+              orderCount: 0,
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
+            },
           },
-        },
-      };
+        };
+      } catch (error) {
+        console.error("Error decoding access token:", error);
+        return {
+          type: "INVALID",
+        };
+      }
     }
 
     return {

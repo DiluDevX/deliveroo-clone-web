@@ -1,6 +1,6 @@
 export interface PaymentIntentRequest {
   orderId: string;
-  expectedTotalAmount?: number;
+  expectedTotalAmount: number;
 }
 
 export interface PaymentIntentResponse {

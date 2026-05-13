@@ -60,5 +60,7 @@ export const Colors = {
   error: {
     light: "rgba(229, 57, 53, 0.1)",
     lighter: "rgba(229, 57, 53, 0.05)",
+    main: "#e53935",
+    default: "#d32f2f",
   },
 };

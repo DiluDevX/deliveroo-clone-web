@@ -63,20 +63,17 @@ export default function Login() {
   const handleSubmit = form.handleSubmit(async (values) => {
     const { email, password } = values;
 
-    if (email) {
-      const checkEmailResponse = await checkEmail({ email });
+    const checkEmailResponse = await checkEmail({ email });
 
-      if (checkEmailResponse.type === "EXISTING") {
-        localStorage.setItem("existingUser", true.toString());
-        setExistingUser(true);
-        return;
-      } else if (checkEmailResponse.type === "NEW") {
-        navigate(`/Account/SignUp?email=${encodeURIComponent(email)}`);
-        return;
-      } else {
-        enqueueSnackbar("Something went wrong.", { variant: "error" });
-        return;
-      }
+    if (checkEmailResponse.type === "EXISTING") {
+      localStorage.setItem("existingUser", true.toString());
+      setExistingUser(true);
+    } else if (checkEmailResponse.type === "NEW") {
+      navigate(`/Account/SignUp?email=${encodeURIComponent(email)}`);
+      return;
+    } else {
+      enqueueSnackbar("Something went wrong.", { variant: "error" });
+      return;
     }
 
     if (existingUser && password) {
@@ -103,7 +100,15 @@ export default function Login() {
         localStorage.removeItem("existingUser");
 
         enqueueSnackbar("Logged In!", { variant: "success" });
-        navigate("/");
+
+        // Honor saved redirect if available, otherwise go to home
+        const redirectAfterLogin = sessionStorage.getItem("redirectAfterLogin");
+        if (redirectAfterLogin) {
+          sessionStorage.removeItem("redirectAfterLogin");
+          navigate(redirectAfterLogin);
+        } else {
+          navigate("/");
+        }
       } else if (loginResponse.type === "INVALID") {
         enqueueSnackbar("Invalid Credentials", { variant: "error" });
       } else {

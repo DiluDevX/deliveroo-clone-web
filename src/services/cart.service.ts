@@ -36,10 +36,7 @@ export const addItemToCart = async (
         modifiers: [],
       },
       {
-        headers: {
-          ...getAuthHeader(),
-          "x-api-key": import.meta.env.VITE_BFF_API_KEY || "your-bff-api-key",
-        },
+        headers: getAuthHeader(),
       },
     );
 
@@ -49,6 +46,37 @@ export const addItemToCart = async (
       console.error("Error adding item to cart:", error.response?.data);
     }
     return false;
+  }
+};
+
+export const syncCart = async (
+  items: CartItem[],
+  restaurantId: string,
+): Promise<CartItemData[] | null> => {
+  try {
+    const response = await axios.post<CartResponse>(
+      "/api/cart/sync",
+      {
+        restaurantId,
+        items: items.map((item) => ({
+          dishId: String(item._id),
+          quantity: item.quantity,
+          modifiers: (item.modifiers ?? []).map((modifier) => ({
+            name: modifier.name,
+            option: modifier.option,
+            extraPrice: modifier.extraPrice,
+          })),
+        })),
+      },
+      { headers: getAuthHeader() },
+    );
+
+    return response.data.data?.items || [];
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error syncing cart:", error.response?.data);
+    }
+    return null;
   }
 };
 

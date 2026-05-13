@@ -18,7 +18,8 @@ const OrderConfirmationPage = () => {
   const shippingFee = orderDetails?.shippingFee ?? 5.0;
   const serviceFee = orderDetails?.serviceFee ?? 0.99;
   const discount = orderDetails?.discount ?? 0;
-  const total = orderDetails?.total ?? subtotal + shippingFee + serviceFee - discount;
+  const total =
+    orderDetails?.total ?? subtotal + shippingFee + serviceFee - discount;
 
   if (!isSuccess) {
     return (

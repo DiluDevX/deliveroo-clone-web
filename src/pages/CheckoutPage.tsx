@@ -89,7 +89,9 @@ const CheckoutPage = () => {
       address: z.string().optional(),
       city: z.string().optional(),
       zipCode: z.string().optional(),
-      agreedToTerms: z.boolean(),
+      agreedToTerms: z.boolean().refine((val) => val === true, {
+        message: "You must agree to the terms and conditions",
+      }),
     });
   };
 
@@ -100,7 +102,7 @@ const CheckoutPage = () => {
       address: "",
       city: "",
       zipCode: "",
-      agreedToTerms: false,
+      agreedToTerms: true,
     },
     mode: "onChange",
   });
@@ -186,9 +188,12 @@ const CheckoutPage = () => {
     });
   });
 
-  const handleIncrement = (cartItemId: string) => {
-    const item = cartItems.find((i) => i.cartItemId === cartItemId);
+  const handleIncrement = (itemId: string) => {
+    const item = cartItems.find(
+      (i) => i.cartItemId === itemId || i._id === itemId,
+    );
     if (item) {
+      const cartItemId = item.cartItemId || item._id;
       dispatch(
         updateQuantityAndSync({
           cartItemId,
@@ -198,9 +203,12 @@ const CheckoutPage = () => {
     }
   };
 
-  const handleDecrement = (cartItemId: string) => {
-    const item = cartItems.find((i) => i.cartItemId === cartItemId);
+  const handleDecrement = (itemId: string) => {
+    const item = cartItems.find(
+      (i) => i.cartItemId === itemId || i._id === itemId,
+    );
     if (item && item.quantity > 1) {
+      const cartItemId = item.cartItemId || item._id;
       dispatch(
         updateQuantityAndSync({
           cartItemId,
@@ -749,7 +757,7 @@ const CheckoutPage = () => {
                         justifyContent: "flex-end",
                       }}
                     >
-                      ${(Number(item.price) * item.quantity).toFixed(2)}
+                      £{(Number(item.price) * item.quantity).toFixed(2)}
                     </Typography>
                   </Box>
                 ))}
@@ -795,7 +803,7 @@ const CheckoutPage = () => {
                     Subtotal
                   </Typography>
                   <Typography sx={{ fontWeight: "600" }}>
-                    ${subtotal.toFixed(2)}
+                    £{subtotal.toFixed(2)}
                   </Typography>
                 </Box>
                 <Box
@@ -809,7 +817,7 @@ const CheckoutPage = () => {
                     Shipping
                   </Typography>
                   <Typography sx={{ fontWeight: "600" }}>
-                    ${shippingFee.toFixed(2)}
+                    £{shippingFee.toFixed(2)}
                   </Typography>
                 </Box>
                 {discount > 0 && (
@@ -824,7 +832,7 @@ const CheckoutPage = () => {
                       Discount
                     </Typography>
                     <Typography sx={{ fontWeight: "600", color: "red" }}>
-                      -${discount.toFixed(2)}
+                      -£{discount.toFixed(2)}
                     </Typography>
                   </Box>
                 )}
@@ -840,7 +848,7 @@ const CheckoutPage = () => {
                     Total
                   </Typography>
                   <Typography sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
-                    ${total.toFixed(2)}
+                    £{total.toFixed(2)}
                   </Typography>
                 </Box>
               </Box>

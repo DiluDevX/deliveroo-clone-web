@@ -45,6 +45,6 @@ export const getAuthHeader = () => {
 
   return {
     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    "x-api-key": import.meta.env.VITE_BFF_API_KEY || "your-bff-api-key",
+    "x-api-key": import.meta.env.VITE_BFF_API_KEY,
   };
 };

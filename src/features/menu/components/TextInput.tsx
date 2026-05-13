@@ -27,15 +27,15 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
               color: Colors.background.brand,
             },
             "& .MuiInputLabel-root.Mui-error.Mui-focused": {
-              color: "#d32f2f",
+              color: Colors.error.main,
             },
             "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
               {
-                borderColor: "#d32f2f",
+                borderColor: Colors.error.main,
               },
             "& .MuiOutlinedInput-root.Mui-error.Mui-focused .MuiOutlinedInput-notchedOutline":
               {
-                borderColor: "#d32f2f",
+                borderColor: Colors.error.main,
               },
             ...props.sx,
           }}

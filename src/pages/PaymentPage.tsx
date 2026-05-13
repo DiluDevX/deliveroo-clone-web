@@ -16,11 +16,17 @@ import { checkoutCart } from "../services/order.service";
 import { clearCartAndSync } from "../store/cartSlice";
 import { stripePromise } from "../config/stripe";
 import { StripeCardForm } from "../features/menu/components/StripeCardForm";
+import { CheckoutRequest, CheckoutResult } from "../types/order.types";
 
 type CheckoutData = {
   address?: string;
   city?: string;
   zipCode?: string;
+};
+
+type PaymentSetup = {
+  paymentId: string;
+  clientSecret: string;
 };
 
 const PaymentPage = () => {
@@ -72,69 +78,144 @@ const PaymentPage = () => {
     0,
   );
 
+  const hasRequiredDeliveryAddress = () => {
+    if (deliveryMethod !== "delivery") {
+      return true;
+    }
+
+    return Boolean(
+      checkoutData?.address && checkoutData.city && checkoutData.zipCode,
+    );
+  };
+
+  const canStartPayment = () => {
+    if (!hasRequiredDeliveryAddress()) {
+      setError("Missing delivery address");
+      return false;
+    }
+
+    return true;
+  };
+
+  const buildCheckoutRequest = (
+    checkoutPaymentMethod: "card" | "cash",
+  ): CheckoutRequest => ({
+    deliveryAddress: {
+      line1: checkoutData?.address || "",
+      city: checkoutData?.city || "",
+      postcode: checkoutData?.zipCode || "",
+      country: "UK",
+    },
+    restaurantName,
+    restaurantAddress,
+    deliveryFee: shippingFee,
+    serviceFee,
+    discountAmount: discount,
+    paymentMethod: checkoutPaymentMethod,
+  });
+
+  const startPaymentProcessing = (step: string) => {
+    setIsProcessing(true);
+    setError(null);
+    setProcessingStep(step);
+  };
+
+  const stopPaymentProcessing = () => {
+    setIsProcessing(false);
+    setProcessingStep("");
+  };
+
+  const createCheckoutOrder = async (
+    checkoutPaymentMethod: "card" | "cash",
+  ): Promise<CheckoutResult> => {
+    const orderResponse = await checkoutCart(
+      buildCheckoutRequest(checkoutPaymentMethod),
+    );
+
+    if (!orderResponse?.orderId) {
+      throw new Error("Failed to create order. Please try again.");
+    }
+
+    return orderResponse;
+  };
+
+  const createCardPaymentSetup = async (
+    orderId: string,
+  ): Promise<PaymentSetup> => {
+    setProcessingStep("Preparing payment...");
+
+    const paymentIntent = await createPaymentIntent({
+      orderId,
+      expectedTotalAmount: total,
+    });
+
+    const paymentData = paymentIntent?.data;
+
+    if (!paymentData?.clientSecret || !paymentData.paymentId) {
+      throw new Error("Failed to process payment. Please try again.");
+    }
+
+    return {
+      paymentId: paymentData.paymentId,
+      clientSecret: paymentData.clientSecret,
+    };
+  };
+
+  const storeCardPaymentSetup = (
+    order: CheckoutResult,
+    paymentSetup: PaymentSetup,
+  ) => {
+    setOrderNumber(order.orderNumber);
+    setPaymentId(paymentSetup.paymentId);
+    setClientSecret(paymentSetup.clientSecret);
+  };
+
+  const getOrderDetails = () => ({
+    subtotal,
+    shippingFee,
+    serviceFee,
+    discount,
+    total,
+  });
+
+  const navigateToOrderConfirmation = (confirmationOrderId: string) => {
+    dispatch(clearCartAndSync());
+    navigate("/order-confirmation", {
+      state: {
+        orderId: confirmationOrderId,
+        orderDetails: getOrderDetails(),
+      },
+    });
+  };
+
+  const handlePaymentError = (err: unknown, context: string) => {
+    const message =
+      err instanceof Error
+        ? err.message
+        : "An unexpected error occurred. Please try again.";
+
+    setError(message);
+    console.error(context, err);
+  };
+
   /**
    * Handle cash on delivery payment
    * Creates order and navigates to confirmation
    */
   const handleCashPayment = async () => {
-    if (
-      deliveryMethod === "delivery" &&
-      (!checkoutData?.address || !checkoutData?.city || !checkoutData?.zipCode)
-    ) {
-      setError("Missing delivery address");
+    if (!canStartPayment()) {
       return;
     }
 
-    setIsProcessing(true);
-    setError(null);
+    startPaymentProcessing("Creating order...");
 
     try {
-      setProcessingStep("Creating order...");
-
-      const checkoutRequest = {
-        deliveryAddress: {
-          line1: checkoutData?.address || "",
-          city: checkoutData?.city || "",
-          postcode: checkoutData?.zipCode || "",
-          country: "UK",
-        },
-        restaurantName,
-        restaurantAddress,
-        deliveryFee: shippingFee,
-        serviceFee,
-        discountAmount: discount,
-        paymentMethod: "cash",
-      };
-
-      const orderResponse = await checkoutCart(checkoutRequest);
-
-      if (!orderResponse?.orderId) {
-        setIsProcessing(false);
-        setError("Failed to create order. Please try again.");
-        setProcessingStep("");
-        return;
-      }
-
-      // Order created successfully for cash payment
-      dispatch(clearCartAndSync());
-      navigate("/order-confirmation", {
-        state: {
-          orderId: orderResponse.orderNumber,
-          orderDetails: {
-            subtotal,
-            shippingFee,
-            serviceFee,
-            discount,
-            total,
-          },
-        },
-      });
-      setIsProcessing(false);
+      const orderResponse = await createCheckoutOrder("cash");
+      navigateToOrderConfirmation(orderResponse.orderNumber);
     } catch (err) {
-      setIsProcessing(false);
-      setError("An unexpected error occurred. Please try again.");
-      setProcessingStep("");
-      console.error("Cash payment error:", err);
+      handlePaymentError(err, "Cash payment error:");
+    } finally {
+      stopPaymentProcessing();
     }
   };
 
@@ -142,73 +223,20 @@ const PaymentPage = () => {
    * Handle card payment - creates order and payment intent
    */
   const handleCardPayment = async () => {
-    if (
-      deliveryMethod === "delivery" &&
-      (!checkoutData?.address || !checkoutData?.city || !checkoutData?.zipCode)
-    ) {
-      setError("Missing delivery address");
+    if (!canStartPayment()) {
       return;
     }
 
-    setIsProcessing(true);
-    setError(null);
+    startPaymentProcessing("Creating order...");
 
     try {
-      setProcessingStep("Creating order...");
-
-      const checkoutRequest = {
-        deliveryAddress: {
-          line1: checkoutData?.address || "",
-          city: checkoutData?.city || "",
-          postcode: checkoutData?.zipCode || "",
-          country: "UK",
-        },
-        restaurantName,
-        restaurantAddress,
-        deliveryFee: shippingFee,
-        serviceFee,
-        discountAmount: discount,
-        paymentMethod: "card",
-      };
-
-      const orderResponse = await checkoutCart(checkoutRequest);
-
-      if (!orderResponse?.orderId) {
-        setIsProcessing(false);
-        setError("Failed to create order. Please try again.");
-        setProcessingStep("");
-        return;
-      }
-
-      setOrderNumber(orderResponse.orderNumber);
-
-      // Order created, now create payment intent from the server-owned order total
-      setProcessingStep("Preparing payment...");
-
-      const paymentIntent = await createPaymentIntent({
-        orderId: orderResponse.orderId,
-        expectedTotalAmount: total,
-      });
-
-      if (
-        !paymentIntent?.data?.clientSecret ||
-        !paymentIntent?.data?.paymentId
-      ) {
-        setIsProcessing(false);
-        setError("Failed to process payment. Please try again.");
-        setProcessingStep("");
-        return;
-      }
-
-      // Store payment details for StripeCardForm to use
-      setPaymentId(paymentIntent.data.paymentId);
-      setClientSecret(paymentIntent.data.clientSecret);
-      setIsProcessing(false);
+      const orderResponse = await createCheckoutOrder("card");
+      const paymentSetup = await createCardPaymentSetup(orderResponse.orderId);
+      storeCardPaymentSetup(orderResponse, paymentSetup);
     } catch (err) {
+      handlePaymentError(err, "Card payment setup error:");
+    } finally {
       setIsProcessing(false);
-      setError("An unexpected error occurred. Please try again.");
-      setProcessingStep("");
-      console.error("Card payment setup error:", err);
     }
   };
 
@@ -225,32 +253,14 @@ const PaymentPage = () => {
       const confirmed = await confirmPayment(paymentId);
 
       if (!confirmed) {
-        setIsProcessing(false);
-        setError("Payment confirmation failed. Please try again.");
-        setProcessingStep("");
-        return;
+        throw new Error("Payment confirmation failed. Please try again.");
       }
 
-      dispatch(clearCartAndSync());
-
-      navigate("/order-confirmation", {
-        state: {
-          orderId: orderNumber || "unknown",
-          orderDetails: {
-            subtotal,
-            shippingFee,
-            serviceFee,
-            discount,
-            total,
-          },
-        },
-      });
-      setIsProcessing(false);
+      navigateToOrderConfirmation(orderNumber || "unknown");
     } catch (err) {
-      setIsProcessing(false);
-      setError("An unexpected error occurred. Please try again.");
-      setProcessingStep("");
-      console.error("Payment confirmation error:", err);
+      handlePaymentError(err, "Payment confirmation error:");
+    } finally {
+      stopPaymentProcessing();
     }
   };
 

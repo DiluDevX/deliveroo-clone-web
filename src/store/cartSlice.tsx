@@ -57,16 +57,21 @@ export const fetchCart = createAsyncThunk(
 // Async thunk to sync cart to server
 export const syncCartToServer = createAsyncThunk(
   "cart/syncCartToServer",
-  async (_, { getState }) => {
+  async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
     if (!state.auth.isAuthenticated) return false;
 
     const restaurantId = localStorage.getItem("selected-restaurant-id");
     if (!restaurantId) return false;
 
-    for (const item of state.cart.items) {
-      await cartService.addItemToCart(item, restaurantId);
-    }
+    const syncedItems = await cartService.syncCart(
+      state.cart.items,
+      restaurantId,
+    );
+    if (!syncedItems) return false;
+
+    dispatch(setCart(syncedItems.map(mapServerCartItem)));
+
     return true;
   },
 );
