@@ -59,8 +59,10 @@ const AllRestaurantsPage = () => {
 
         const data = await getAllRestaurants(filterParams);
         if (data && data.length > 0) {
+          setError("");
           setRestaurant(data);
         } else {
+          setRestaurant([]);
           setError("Restaurant not found.");
         }
       } catch (error) {
@@ -164,7 +166,7 @@ const AllRestaurantsPage = () => {
         ) : (
           <Grid container spacing={2} justifyContent="center">
             {filteredRestaurants.map((restaurant) => (
-              <Grid size={{ xs: 12, sm: 6, md: 6 }} key={restaurant.name}>
+              <Grid size={{ xs: 12, sm: 6, md: 6 }} key={restaurant.id}>
                 <RestaurantView restaurant={restaurant} />
               </Grid>
             ))}

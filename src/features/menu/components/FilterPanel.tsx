@@ -2,7 +2,6 @@ import {
   Box,
   Checkbox,
   FormControlLabel,
-  FormGroup,
   RadioGroup,
   Radio,
   Typography,
@@ -18,7 +17,6 @@ import {
   CUISINE_OPTIONS,
   PRICE_OPTIONS,
   RATING_OPTIONS,
-  DELIVERY_TIME_OPTIONS,
 } from "../../../types/filters";
 
 interface FilterPanelProps {
@@ -38,11 +36,10 @@ const FilterPanel = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const handleCuisineChange = (cuisineId: string) => {
-    const newCuisines = filters.cuisines.includes(cuisineId)
-      ? filters.cuisines.filter((c) => c !== cuisineId)
-      : [...filters.cuisines, cuisineId];
-
-    onFilterChange({ ...filters, cuisines: newCuisines });
+    onFilterChange({
+      ...filters,
+      cuisines: filters.cuisines.includes(cuisineId) ? [] : [cuisineId],
+    });
   };
 
   const handlePriceChange = (price: string) => {
@@ -56,13 +53,6 @@ const FilterPanel = ({
     onFilterChange({
       ...filters,
       minRating: filters.minRating === rating ? null : rating,
-    });
-  };
-
-  const handleDeliveryTimeChange = (time: number | null) => {
-    onFilterChange({
-      ...filters,
-      deliveryTime: filters.deliveryTime === time ? null : time,
     });
   };
 
@@ -82,14 +72,9 @@ const FilterPanel = ({
         display: "flex",
         flexDirection: "column",
         gap: 2,
-        maxHeight: "calc(100vh)",
-        overflowY: "auto",
+        maxHeight: isMobile ? "85vh" : "none",
+        overflowY: isMobile ? "auto" : "visible",
         overscrollBehavior: "contain",
-        scrollbarWidth: "none",
-        "&::-webkit-scrollbar": {
-          display: "none",
-        },
-        msOverflowStyle: "none",
       }}
     >
       {/* Close button for mobile */}
@@ -120,12 +105,13 @@ const FilterPanel = ({
         >
           Cuisines
         </Typography>
-        <FormGroup sx={{ gap: 0.5 }}>
+        <RadioGroup value={filters.cuisines[0] ?? ""} sx={{ gap: 0.5 }}>
           {CUISINE_OPTIONS.map((cuisine) => (
             <FormControlLabel
               key={cuisine.id}
+              value={cuisine.id}
               control={
-                <Checkbox
+                <Radio
                   checked={filters.cuisines.includes(cuisine.id)}
                   onChange={() => handleCuisineChange(cuisine.id)}
                   size="small"
@@ -150,7 +136,7 @@ const FilterPanel = ({
               sx={{ gap: 1, m: 0 }}
             />
           ))}
-        </FormGroup>
+        </RadioGroup>
       </Box>
 
       <Box sx={{ borderTop: `1px solid ${Colors.border.subtle}`, pt: 2 }}>
@@ -215,14 +201,18 @@ const FilterPanel = ({
         >
           Rating
         </Typography>
-        <FormGroup sx={{ gap: 0.5 }}>
+        <RadioGroup
+          value={filters.minRating ?? ""}
+          onChange={(e) => handleRatingChange(Number(e.target.value))}
+          sx={{ gap: 0.5 }}
+        >
           {RATING_OPTIONS.map((option) => (
             <FormControlLabel
               key={option.value}
+              value={option.value}
               control={
-                <Checkbox
+                <Radio
                   checked={filters.minRating === option.value}
-                  onChange={() => handleRatingChange(option.value)}
                   size="small"
                   sx={{
                     color: Colors.border.subtle,
@@ -245,53 +235,7 @@ const FilterPanel = ({
               sx={{ gap: 1, m: 0 }}
             />
           ))}
-        </FormGroup>
-      </Box>
-
-      <Box sx={{ borderTop: `1px solid ${Colors.border.subtle}`, pt: 2 }}>
-        <Typography
-          sx={{
-            fontWeight: 700,
-            mb: 2,
-            color: Colors.text.default,
-            fontSize: "0.95rem",
-            textTransform: "uppercase",
-            letterSpacing: "0.5px",
-          }}
-        >
-          Delivery Time
-        </Typography>
-        <FormGroup sx={{ gap: 0.5 }}>
-          {DELIVERY_TIME_OPTIONS.map((option) => (
-            <FormControlLabel
-              key={option.value}
-              control={
-                <Checkbox
-                  checked={filters.deliveryTime === option.value}
-                  onChange={() => handleDeliveryTimeChange(option.value)}
-                  size="small"
-                  sx={{
-                    color: Colors.border.subtle,
-                    "&.Mui-checked": {
-                      color: Colors.background.brand,
-                    },
-                    "&:hover": {
-                      backgroundColor: "transparent",
-                    },
-                  }}
-                />
-              }
-              label={
-                <Typography
-                  sx={{ fontSize: "0.9rem", color: Colors.text.default }}
-                >
-                  {option.label}
-                </Typography>
-              }
-              sx={{ gap: 1, m: 0 }}
-            />
-          ))}
-        </FormGroup>
+        </RadioGroup>
       </Box>
 
       <Box sx={{ borderTop: `1px solid ${Colors.border.subtle}`, pt: 2 }}>
@@ -359,11 +303,6 @@ const FilterPanel = ({
         top: 100,
         overflowY: "auto",
         overscrollBehavior: "contain",
-        scrollbarWidth: "none",
-        "&::-webkit-scrollbar": {
-          display: "none",
-        },
-        msOverflowStyle: "none",
       }}
     >
       {panelContent}

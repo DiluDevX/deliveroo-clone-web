@@ -34,12 +34,13 @@ const FilteredRestaurantsPage = () => {
   const [loading, setLoading] = useState(true);
   const [restaurantsData, setRestaurantsData] = useState<Restaurant[]>([]);
   const [totalPages, setTotalPages] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("search")?.toLowerCase() ?? "";
-  const pageFromUrl = parseInt(searchParams.get("page") ?? "1");
+  const rawPageFromUrl = Number.parseInt(searchParams.get("page") ?? "1", 10);
+  const pageFromUrl =
+    Number.isFinite(rawPageFromUrl) && rawPageFromUrl > 0 ? rawPageFromUrl : 1;
   const [searchKey, setSearchKey] = useState(searchQuery);
   const [filters, setFilters] = useState<FilterState>({
     cuisines: [],
@@ -53,15 +54,11 @@ const FilteredRestaurantsPage = () => {
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
-    setCurrentPage(pageFromUrl);
-  }, [pageFromUrl]);
-
-  useEffect(() => {
     const fetchRestaurants = async () => {
       try {
         setLoading(true);
         const filterParams: RestaurantFilters = {
-          page: currentPage,
+          page: pageFromUrl,
           limit: ITEMS_PER_PAGE,
         };
 
@@ -82,9 +79,6 @@ const FilteredRestaurantsPage = () => {
         } else if (filters.priceRange === "premium") {
           filterParams.minDeliveryFee = 151;
         }
-        if (filters.deliveryTime) {
-          filterParams.minOrderValue = filters.deliveryTime;
-        }
         if (filters.offers) {
           filterParams.tags = "popular";
         }
@@ -103,14 +97,14 @@ const FilteredRestaurantsPage = () => {
       }
     };
     fetchRestaurants();
-  }, [searchQuery, filters, currentPage]);
-
-  useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      searchQuery: searchQuery,
-    }));
-  }, [searchQuery]);
+  }, [
+    searchQuery,
+    pageFromUrl,
+    filters.cuisines,
+    filters.minRating,
+    filters.offers,
+    filters.priceRange,
+  ]);
 
   useEffect(() => {
     setSearchKey(searchQuery);
@@ -145,7 +139,7 @@ const FilteredRestaurantsPage = () => {
         sx={{ width: "100%" }}
       >
         {filteredRestaurants.map((restaurant) => (
-          <Grid key={restaurant.name} size={{ xs: 12, sm: 6, md: 6 }}>
+          <Grid key={restaurant.id} size={{ xs: 12, sm: 6, md: 6 }}>
             <RestaurantView restaurant={restaurant} />
           </Grid>
         ))}
@@ -266,12 +260,19 @@ const FilteredRestaurantsPage = () => {
           >
             <Pagination
               count={totalPages}
-              page={currentPage}
+              page={pageFromUrl}
               onChange={(_, page) => {
                 window.scrollTo({ top: 0, behavior: "smooth" });
-                navigate(
-                  `/filtered-restaurants?search=${encodeURIComponent(searchQuery)}&page=${page}`,
-                );
+                const nextParams = new URLSearchParams(searchParams);
+                nextParams.set("page", page.toString());
+
+                if (searchQuery) {
+                  nextParams.set("search", searchQuery);
+                } else {
+                  nextParams.delete("search");
+                }
+
+                setSearchParams(nextParams);
               }}
               sx={{
                 "& .MuiButtonBase-root": {

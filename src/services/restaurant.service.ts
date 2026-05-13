@@ -37,17 +37,141 @@ export interface ApiPaginatedResponse {
   };
 }
 
+const normalizeCuisineValue = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, " ");
+
+const appendRestaurantFilters = (
+  params: URLSearchParams,
+  filters?: RestaurantFilters,
+) => {
+  if (!filters) return;
+
+  if (filters.search) params.append("search", filters.search);
+  if (filters.cuisine) params.append("cuisine", filters.cuisine);
+  if (filters.status) params.append("status", filters.status);
+  if (filters.tags) params.append("tags", filters.tags);
+  if (filters.rating !== undefined) {
+    params.append("rating", filters.rating.toString());
+  }
+  if (filters.minDeliveryFee !== undefined) {
+    params.append("minDeliveryFee", filters.minDeliveryFee.toString());
+  }
+  if (filters.maxDeliveryFee !== undefined) {
+    params.append("maxDeliveryFee", filters.maxDeliveryFee.toString());
+  }
+  if (filters.minOrderValue !== undefined) {
+    params.append("minOrderValue", filters.minOrderValue.toString());
+  }
+  if (filters.isOpen !== undefined) {
+    params.append("isOpen", filters.isOpen.toString());
+  }
+  if (filters.page !== undefined)
+    params.append("page", filters.page.toString());
+  if (filters.limit !== undefined) {
+    params.append("limit", filters.limit.toString());
+  }
+  if (filters.sort) params.append("sort", filters.sort);
+};
+
+const parseMoneyValue = (value: string) => {
+  const parsedValue = Number.parseFloat(value);
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+};
+
+const isRestaurantOpen = (restaurant: Restaurant) => {
+  const currentTime = new Date().toTimeString().slice(0, 5);
+  return (
+    restaurant.openingAt <= currentTime && restaurant.closingAt >= currentTime
+  );
+};
+
+const applyFallbackFilters = (
+  restaurants: Restaurant[],
+  filters?: RestaurantFilters,
+) => {
+  let filtered = [...restaurants];
+
+  if (filters?.search) {
+    const searchLower = filters.search.toLowerCase();
+    filtered = filtered.filter(
+      (restaurant) =>
+        restaurant.name.toLowerCase().includes(searchLower) ||
+        restaurant.tags.some((tag) =>
+          tag.toLowerCase().includes(searchLower),
+        ) ||
+        restaurant.description.toLowerCase().includes(searchLower),
+    );
+  }
+
+  if (filters?.cuisine) {
+    const selectedCuisine = normalizeCuisineValue(filters.cuisine);
+    filtered = filtered.filter((restaurant) =>
+      restaurant.tags.some(
+        (tag) => normalizeCuisineValue(tag) === selectedCuisine,
+      ),
+    );
+  }
+
+  if (filters?.rating !== undefined) {
+    const minimumRating = filters.rating;
+    filtered = filtered.filter(
+      (restaurant) => (restaurant.rating ?? 0) >= minimumRating,
+    );
+  }
+
+  if (filters?.minDeliveryFee !== undefined) {
+    const minimumDeliveryFee = filters.minDeliveryFee;
+    filtered = filtered.filter((restaurant) => {
+      const deliveryCharge = parseMoneyValue(restaurant.deliveryCharge);
+      return deliveryCharge !== null && deliveryCharge >= minimumDeliveryFee;
+    });
+  }
+
+  if (filters?.maxDeliveryFee !== undefined) {
+    const maximumDeliveryFee = filters.maxDeliveryFee;
+    filtered = filtered.filter((restaurant) => {
+      const deliveryCharge = parseMoneyValue(restaurant.deliveryCharge);
+      return deliveryCharge !== null && deliveryCharge <= maximumDeliveryFee;
+    });
+  }
+
+  if (filters?.minOrderValue !== undefined) {
+    const minimumOrderValue = filters.minOrderValue;
+    filtered = filtered.filter((restaurant) => {
+      const minimumValue = parseMoneyValue(restaurant.minimumValue);
+      return minimumValue !== null && minimumValue >= minimumOrderValue;
+    });
+  }
+
+  if (filters?.tags) {
+    const selectedTags = filters.tags.split(",").map(normalizeCuisineValue);
+    if (selectedTags.includes("popular")) {
+      filtered = filtered.slice(0, 5);
+    } else {
+      filtered = filtered.filter((restaurant) =>
+        restaurant.tags.some((tag) =>
+          selectedTags.includes(normalizeCuisineValue(tag)),
+        ),
+      );
+    }
+  }
+
+  if (filters?.isOpen !== undefined) {
+    filtered = filtered.filter((restaurant) => isRestaurantOpen(restaurant));
+  }
+
+  return filtered;
+};
+
 export const getAllRestaurants = async (
   filters?: RestaurantFilters,
 ): Promise<Restaurant[]> => {
   try {
     const params = new URLSearchParams();
-
-    if (filters?.search) params.append("search", filters.search);
-    if (filters?.cuisine) params.append("cuisine", filters.cuisine);
-    if (filters?.page) params.append("page", filters.page.toString());
-    if (filters?.limit) params.append("limit", filters.limit.toString());
-    if (filters?.sort) params.append("sort", filters.sort);
+    appendRestaurantFilters(params, filters);
 
     const queryString = params.toString();
     const url = queryString
@@ -62,27 +186,13 @@ export const getAllRestaurants = async (
     return data.data;
   } catch (error) {
     console.error("Error fetching all Restaurants.", error);
+
+    if (!import.meta.env.DEV) {
+      return [];
+    }
+
     console.log("Using dummy restaurant data for development");
-
-    let filtered = [...DUMMY_RESTAURANTS];
-
-    if (filters?.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        (r) =>
-          r.name.toLowerCase().includes(searchLower) ||
-          r.tags.some((t) => t.toLowerCase().includes(searchLower)) ||
-          r.description.toLowerCase().includes(searchLower),
-      );
-    }
-
-    if (filters?.cuisine) {
-      filtered = filtered.filter((r) =>
-        r.tags.some((t) => t.toLowerCase() === filters.cuisine?.toLowerCase()),
-      );
-    }
-
-    return filtered;
+    return applyFallbackFilters(DUMMY_RESTAURANTS, filters);
   }
 };
 
@@ -91,12 +201,7 @@ export const getFilteredRestaurants = async (
 ): Promise<PaginatedResponse> => {
   try {
     const params = new URLSearchParams();
-
-    if (filters?.search) params.append("search", filters.search);
-    if (filters?.cuisine) params.append("cuisine", filters.cuisine);
-    if (filters?.page) params.append("page", filters.page.toString());
-    if (filters?.limit) params.append("limit", filters.limit.toString());
-    if (filters?.sort) params.append("sort", filters.sort);
+    appendRestaurantFilters(params, filters);
 
     const queryString = params.toString();
     const url = queryString
@@ -119,47 +224,19 @@ export const getFilteredRestaurants = async (
     };
   } catch (error) {
     console.error("Error fetching filtered Restaurants:", error);
+
+    if (!import.meta.env.DEV) {
+      return {
+        data: [],
+        total: 0,
+        page: filters?.page ?? 1,
+        limit: filters?.limit ?? 10,
+        totalPages: 0,
+      };
+    }
+
     console.log("Using dummy restaurant data for development");
-
-    let filtered = [...DUMMY_RESTAURANTS];
-
-    if (filters?.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        (r) =>
-          r.name.toLowerCase().includes(searchLower) ||
-          r.tags.some((t) => t.toLowerCase().includes(searchLower)) ||
-          r.description.toLowerCase().includes(searchLower),
-      );
-    }
-
-    if (filters?.cuisine) {
-      filtered = filtered.filter((r) =>
-        r.tags.some((t) => t.toLowerCase() === filters.cuisine?.toLowerCase()),
-      );
-    }
-
-    if (filters?.minDeliveryFee !== undefined) {
-      filtered = filtered.filter(
-        (r) => parseFloat(r.deliveryCharge) >= filters.minDeliveryFee!,
-      );
-    }
-
-    if (filters?.maxDeliveryFee !== undefined) {
-      filtered = filtered.filter(
-        (r) => parseFloat(r.deliveryCharge) <= filters.maxDeliveryFee!,
-      );
-    }
-
-    if (filters?.minOrderValue !== undefined) {
-      filtered = filtered.filter(
-        (r) => parseFloat(r.minimumValue) >= filters.minOrderValue!,
-      );
-    }
-
-    if (filters?.tags === "popular") {
-      filtered = filtered.slice(0, 5);
-    }
+    const filtered = applyFallbackFilters(DUMMY_RESTAURANTS, filters);
 
     // Pagination
     const page = filters?.page ?? 1;

@@ -57,7 +57,8 @@ function Button({
         "&:hover": {
           border: disabled ? "none" : `0.5px solid ${Colors.border.subtle}`,
         },
-        borderColor: variant === "outlined" ? Colors.border.brand : "none",
+        borderColor:
+          variant === "outlined" ? Colors.border.brand : Colors.border.subtle,
         "&:active": {
           outline: disabled ? "none" : `2.7px solid rgba(2, 189, 174, 0.5)`,
           outlineOffset: "-2.7px",

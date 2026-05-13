@@ -19,13 +19,18 @@ const SearchBar = ({
 }: SearchBarProps) => {
   const [internalValue, setInternalValue] = useState("");
   const searchKey = externalValue ?? internalValue;
+  const defaultPlaceholder = `Search ${
+    localStorage.getItem("restaurantName") ?? "restaurants"
+  }`;
 
   const handleOnChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const newValue = e.target.value;
+    if (externalValue === undefined) {
+      setInternalValue(newValue);
+    }
+
     if (onChange) {
       onChange(newValue);
-    } else {
-      setInternalValue(newValue);
     }
   };
 
@@ -52,9 +57,7 @@ const SearchBar = ({
         onChange={handleOnChange}
         onKeyDown={handleKeyDown}
         id="outlined-basic"
-        placeholder={
-          placeholder ?? `Search ${localStorage.getItem("restaurantName")}`
-        }
+        placeholder={placeholder ?? defaultPlaceholder}
         sx={{
           height: 43,
           flex: 1,
@@ -74,10 +77,12 @@ const SearchBar = ({
             <InputAdornment position="start">
               <CloseIcon
                 onClick={() => {
+                  if (externalValue === undefined) {
+                    setInternalValue("");
+                  }
+
                   if (onChange) {
                     onChange("");
-                  } else {
-                    setInternalValue("");
                   }
                 }}
                 sx={{ cursor: "pointer" }}
