@@ -6,6 +6,7 @@ import { useCartSync } from "../store/hooks/useCartSync";
 import { useEffect } from "react";
 import { useAppDispatch } from "../store/hooks/cartHooks";
 import { setAuthInitialized, setCredentials } from "../store/authSlice";
+import { populateDummyCart } from "../store/cartSlice";
 import { checkAuthStatus, refreshToken } from "../services/auth.service";
 
 const MainLayout = () => {
@@ -13,8 +14,16 @@ const MainLayout = () => {
   useCartSync();
 
   const dispatch = useAppDispatch();
+
   useEffect(() => {
     const checkAuth = async () => {
+      if (import.meta.env.DEV && import.meta.env.VITE_BYPASS_AUTH === "true") {
+        localStorage.setItem("selected-restaurant-id", "dummy-restaurant");
+        dispatch(setAuthInitialized(true));
+        dispatch(populateDummyCart());
+        return;
+      }
+
       let result = null;
       try {
         result = await checkAuthStatus();
@@ -27,7 +36,7 @@ const MainLayout = () => {
         // Error refreshing token
         console.error("Error refreshing token", error);
       } finally {
-        if (result) {
+        if (result && typeof result !== "boolean") {
           dispatch(setCredentials({ user: result.user }));
         } else {
           dispatch(setCredentials({}));

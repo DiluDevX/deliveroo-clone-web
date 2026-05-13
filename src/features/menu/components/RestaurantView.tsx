@@ -2,20 +2,7 @@ import { Box, Container, Typography, Chip } from "@mui/material";
 import { Link } from "react-router-dom";
 import { Colors } from "../../../theme";
 import { useState } from "react";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import StarIcon from "@mui/icons-material/Star";
-
-interface Restaurant {
-  name: string;
-  image: string;
-  description: string;
-  tags: string[];
-  openingAt: string;
-  closingAt: string;
-  minimumValue: string;
-  deliveryCharge: string;
-}
+import { Restaurant } from "../../../types/restaurants";
 
 interface RestaurantViewProps {
   restaurant: Restaurant;

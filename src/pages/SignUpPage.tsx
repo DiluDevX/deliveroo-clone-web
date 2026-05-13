@@ -28,7 +28,17 @@ type SignUpForm = {
   confirmPassword: string;
 };
 
-const SignUpPage = () => {
+type SignUpPageProps = {
+  initialEmail?: string;
+  initialFirstName?: string;
+  initialLastName?: string;
+};
+
+const SignUpPage = ({
+  initialEmail,
+  initialFirstName,
+  initialLastName,
+}: SignUpPageProps) => {
   const { enqueueSnackbar } = useSnackbar();
   const [checked, setChecked] = useState(false);
 
@@ -56,13 +66,30 @@ const SignUpPage = () => {
   const form = useForm<SignUpForm>({
     resolver: zodResolver(schema),
     mode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+      firstName: "",
+      lastName: "",
+      confirmPassword: "",
+    },
   });
 
   useEffect(() => {
-    form.setValue("email", searchParams.get("email") ?? "");
-    form.setValue("firstName", searchParams.get("firstName") ?? "");
-    form.setValue("lastName", searchParams.get("lastName") ?? "");
-  }, [form, searchParams]);
+    form.setValue("email", initialEmail ?? searchParams.get("email") ?? "", {
+      shouldValidate: true,
+    });
+    form.setValue(
+      "firstName",
+      initialFirstName ?? searchParams.get("firstName") ?? "",
+      { shouldValidate: true },
+    );
+    form.setValue(
+      "lastName",
+      initialLastName ?? searchParams.get("lastName") ?? "",
+      { shouldValidate: true },
+    );
+  }, [form, initialEmail, initialFirstName, initialLastName, searchParams]);
 
   const handleSubmit = form.handleSubmit(async (values) => {
     const { email, password, firstName, lastName } = values;
@@ -108,7 +135,7 @@ const SignUpPage = () => {
     >
       <Box>
         <Button
-          onClick={() => navigate("/Account")}
+          onClick={() => navigate("/account")}
           PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
           sx={{
             border: "none",
