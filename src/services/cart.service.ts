@@ -2,10 +2,11 @@ import { isAxiosError } from "axios";
 import { CartItem } from "../store/cartSlice";
 import { CartItemData, CartResponse } from "../types/cart.types";
 import { getAuthHeader } from "./auth-headers";
+import { apiClient } from "./api.client";
 
 export const getCart = async (): Promise<CartItemData[]> => {
   try {
-    const response = await axios.get<CartResponse>("/api/cart/", {
+    const response = await apiClient.get<CartResponse>("/cart", {
       headers: getAuthHeader(),
     });
 
@@ -24,8 +25,8 @@ export const addItemToCart = async (
   restaurantId: string,
 ): Promise<boolean> => {
   try {
-    await axios.post(
-      "/api/cart",
+    await apiClient.post(
+      "/cart",
       {
         restaurantId,
         dishId: String(item._id),
@@ -54,8 +55,8 @@ export const syncCart = async (
   restaurantId: string,
 ): Promise<CartItemData[] | null> => {
   try {
-    const response = await axios.post<CartResponse>(
-      "/api/cart/sync",
+    const response = await apiClient.post<CartResponse>(
+      "/cart/sync",
       {
         restaurantId,
         items: items.map((item) => ({
@@ -85,8 +86,8 @@ export const updateCartItemQuantity = async (
   quantity: number,
 ): Promise<boolean> => {
   try {
-    await axios.put(
-      `/api/cart/items/${cartItemId}`,
+    await apiClient.put(
+      `/cart/items/${cartItemId}`,
       { quantity },
       { headers: getAuthHeader() },
     );
@@ -104,7 +105,7 @@ export const removeItemFromCart = async (
   cartItemId: string,
 ): Promise<boolean> => {
   try {
-    await axios.delete(`/api/cart/items/${cartItemId}`, {
+    await apiClient.delete(`/cart/items/${cartItemId}`, {
       headers: getAuthHeader(),
     });
 
@@ -116,7 +117,7 @@ export const removeItemFromCart = async (
 
 export const clearCartInDb = async (): Promise<boolean> => {
   try {
-    await axios.delete("/api/cart/", {
+    await apiClient.delete("/cart", {
       headers: getAuthHeader(),
     });
 

@@ -204,10 +204,10 @@ export const getAllRestaurants = async (
 
     const queryString = params.toString();
     const url = queryString
-      ? `/api/restaurants?${queryString}`
-      : "/api/restaurants";
+      ? `/restaurants?${queryString}`
+      : "/restaurants";
 
-    const response = await axios.get(url);
+    const response = await apiClient.get(url);
     if (!response.data) {
       throw new Error("Failed to fetch all Restaurants.");
     }
@@ -234,10 +234,10 @@ export const getFilteredRestaurants = async (
 
     const queryString = params.toString();
     const url = queryString
-      ? `/api/restaurants?${queryString}`
-      : "/api/restaurants";
+      ? `/restaurants?${queryString}`
+      : "/restaurants";
 
-    const response = await axios.get<ApiPaginatedResponse>(url);
+    const response = await apiClient.get<ApiPaginatedResponse>(url);
     if (!response.data) {
       throw new Error("Failed to fetch filtered Restaurants.");
     }
@@ -285,8 +285,8 @@ export const getFilteredRestaurants = async (
 };
 export const getSingleRestaurant = async (restaurantId: string) => {
   try {
-    const response = await axios.get(
-      `/api/restaurants/${encodeURIComponent(restaurantId)}`,
+    const response = await apiClient.get<GetASingleRestaurant>(
+      `/restaurants/${encodeURIComponent(restaurantId)}`,
     );
     return response.data.data;
   } catch {

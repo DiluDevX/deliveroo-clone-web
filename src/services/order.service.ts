@@ -1,4 +1,4 @@
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import {
   Order,
   CheckoutRequest,
@@ -6,6 +6,7 @@ import {
   CheckoutResponse,
 } from "../types/order.types";
 import { getAuthHeader } from "./auth-headers";
+import { apiClient } from "./api.client";
 
 const DUMMY_ORDERS: Order[] = [
   {
@@ -178,8 +179,8 @@ export const getOrderHistory = async (): Promise<Order[]> => {
   }
 
   try {
-    const response = await axios.get<{ success: boolean; data: Order[] }>(
-      "/api/orders",
+    const response = await apiClient.get<{ success: boolean; data: Order[] }>(
+      "/orders",
       { headers: getAuthHeader() },
     );
     return response.data.data || [];
@@ -193,8 +194,8 @@ export const getOrderHistory = async (): Promise<Order[]> => {
 
 export const getOrderById = async (orderId: string): Promise<Order | null> => {
   try {
-    const response = await axios.get<{ success: boolean; data: Order }>(
-      `/api/orders/${orderId}`,
+    const response = await apiClient.get<{ success: boolean; data: Order }>(
+      `/orders/${orderId}`,
       { headers: getAuthHeader() },
     );
     return response.data.data;
@@ -210,8 +211,8 @@ export const checkoutCart = async (
   checkoutData: CheckoutRequest,
 ): Promise<CheckoutResult | null> => {
   try {
-    const response = await axios.post<CheckoutResponse>(
-      "/api/cart/checkout",
+    const response = await apiClient.post<CheckoutResponse>(
+      "/cart/checkout",
       checkoutData,
       {
         headers: getAuthHeader(),

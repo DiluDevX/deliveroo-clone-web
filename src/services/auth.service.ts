@@ -1,4 +1,4 @@
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { jwtDecode } from "jwt-decode";
 import {
   CheckEmailRequestBodyDTO,
@@ -67,7 +67,7 @@ export const checkEmailOrPhone = async (
   try {
     const response = await apiClient.post<
       CommonResponseDTO<EmailOrPhoneResponseBodyDTO>
-    >("/api/auth/check-email", body);
+    >("/auth/check-email", body);
 
     return {
       type: "EXISTING",
@@ -93,6 +93,12 @@ type ILoginResponse = {
     refreshToken?: string;
   };
 };
+
+type LoginPayload = LoginApiResponseBodyDTO & {
+  refreshToken?: string;
+};
+
+type LoginApiResponse = CommonResponseDTO<LoginPayload> | LoginPayload;
 
 export const login = async (
   body: LoginRequestBodyDTO,
@@ -229,22 +235,20 @@ export const resetUserPassword = async ({
 };
 
 export const checkAuthStatus = async () => {
-  try {
-    const response = await apiClient.post("/me", {}, { withCredentials: true });
-    if (response.data?.valid === true && response.data?.user !== null) {
-      return response.data;
-    if (!getStoredAccessToken()) {
-      return false;
-    }
+  if (!getStoredAccessToken()) {
+    return false;
+  }
 
-    const response = await axios.get("/api/auth/me", {
+  try {
+    const response = await apiClient.get("/auth/me", {
       headers: getAuthHeader(),
     });
-
     const user = response.data?.data ?? response.data?.user;
+
     if (user) {
       return { valid: true, user };
     }
+
     return false;
   } catch {
     return false;
@@ -252,55 +256,31 @@ export const checkAuthStatus = async () => {
 };
 
 export const refreshToken = async () => {
-  try {
-    const response = await apiClient.post(
-      "/refresh",
-      {},
-      { withCredentials: true },
-    );
-    return response.status === 200;
-  } catch {
+  const storedRefreshToken = getStoredRefreshToken();
+  if (!storedRefreshToken) {
     return false;
-    const storedRefreshToken = getStoredRefreshToken();
-    if (!storedRefreshToken) {
-      return {
-        status: false,
-        accessToken: undefined,
-        refreshToken: undefined,
-      };
-    }
+  }
 
-    const response = await axios.post("/api/auth/refresh", {
+  try {
+    const response = await apiClient.post("/auth/refresh", {
       refreshToken: storedRefreshToken,
     });
-    const payload = response.data?.data ?? response.data;
 
-    return {
-      status: response.status === 200,
-      accessToken: payload?.accessToken,
-      refreshToken: payload?.refreshToken,
-    };
+    return response.status === 200;
   } catch (error) {
     console.error("Error refreshing token", error);
-    return {
-      status: false,
-      accessToken: undefined,
-      refreshToken: undefined,
-    };
+    return false;
   }
 };
 
 export const logout = async () => {
+  const storedRefreshToken = getStoredRefreshToken();
+
   try {
-    const response = await apiClient.post(
-      "/logout",
-      {},
-      { withCredentials: true },
-    );
-    const storedRefreshToken = getStoredRefreshToken();
-    const response = await axios.post("/api/auth/logout", {
+    const response = await apiClient.post("/auth/logout", {
       refreshToken: storedRefreshToken,
     });
+
     return response.status === 200;
   } catch {
     return false;

@@ -1,4 +1,4 @@
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import {
   PaymentIntentRequest,
   PaymentIntentResponse,
@@ -6,13 +6,14 @@ import {
   OrderResponse,
 } from "../types/payment.types";
 import { getAuthHeader } from "./auth-headers";
+import { apiClient } from "./api.client";
 
 export const createPaymentIntent = async (
   data: PaymentIntentRequest,
 ): Promise<PaymentIntentResponse | null> => {
   try {
-    const response = await axios.post<PaymentIntentResponse>(
-      "/api/payments/create-intent",
+    const response = await apiClient.post<PaymentIntentResponse>(
+      "/payments/create-intent",
       data,
       { headers: getAuthHeader() },
     );
@@ -29,8 +30,8 @@ export const getPayment = async (
   paymentId: string,
 ): Promise<PaymentResponse | null> => {
   try {
-    const response = await axios.get<PaymentResponse>(
-      `/api/payments/${paymentId}`,
+    const response = await apiClient.get<PaymentResponse>(
+      `/payments/${paymentId}`,
       { headers: getAuthHeader() },
     );
     return response.data;
@@ -46,8 +47,8 @@ export const getPaymentByOrderId = async (
   orderId: string,
 ): Promise<OrderResponse | null> => {
   try {
-    const response = await axios.get<OrderResponse>(
-      `/api/payments/order/${orderId}`,
+    const response = await apiClient.get<OrderResponse>(
+      `/payments/order/${orderId}`,
       { headers: getAuthHeader() },
     );
     return response.data;
@@ -63,8 +64,8 @@ export const confirmPayment = async (
   paymentId: string,
 ): Promise<PaymentResponse | null> => {
   try {
-    const response = await axios.post<PaymentResponse>(
-      `/api/payments/${paymentId}/confirm`,
+    const response = await apiClient.post<PaymentResponse>(
+      `/payments/${paymentId}/confirm`,
       {},
       { headers: getAuthHeader() },
     );
@@ -82,8 +83,8 @@ export const cancelPayment = async (
   refundReason?: string,
 ): Promise<PaymentResponse | null> => {
   try {
-    const response = await axios.post<PaymentResponse>(
-      `/api/payments/${paymentId}/cancel`,
+    const response = await apiClient.post<PaymentResponse>(
+      `/payments/${paymentId}/cancel`,
       { refundReason },
       { headers: getAuthHeader() },
     );
