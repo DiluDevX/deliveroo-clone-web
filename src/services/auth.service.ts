@@ -1,4 +1,4 @@
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { jwtDecode } from "jwt-decode";
 import {
   CheckEmailRequestBodyDTO,
@@ -12,6 +12,7 @@ import {
   SignupResponseBodyDTO,
 } from "../types/auth.types";
 import { CommonResponseDTO } from "../types/common";
+import apiClient from "./api.client";
 import {
   getAuthHeader,
   getStoredAccessToken,
@@ -33,8 +34,8 @@ export const checkEmail = async (
   body: CheckEmailRequestBodyDTO,
 ): Promise<ICheckEmailResponse> => {
   try {
-    const response = await axios.post<CheckEmailResponseBodyDTO>(
-      "/api/auth/check-email",
+    const response = await apiClient.post<CheckEmailResponseBodyDTO>(
+      "/auth/check-email",
       body,
     );
 
@@ -44,18 +45,12 @@ export const checkEmail = async (
       token: response.data.token,
     };
   } catch (error) {
-    console.error("checkEmail error:", error);
-    if (isAxiosError(error)) {
-      console.error("checkEmail error response:", error.response?.data);
-      console.error("checkEmail error status:", error.response?.status);
-    }
     if (isAxiosError(error) && error.response?.status === 404) {
       return {
         type: "NEW",
       };
     }
 
-    console.error("checkEmail", error);
     return {
       type: "UNKNOWN",
     };
@@ -70,9 +65,9 @@ export const checkEmailOrPhone = async (
   body: EmailOrPhoneRequestBodyDTO,
 ): Promise<IEmailOrPhoneResponse> => {
   try {
-    const response = await axios.post<
+    const response = await apiClient.post<
       CommonResponseDTO<EmailOrPhoneResponseBodyDTO>
-    >("/api/auth/check-email", body);
+    >("/auth/check-email", body);
 
     return {
       type: "EXISTING",
@@ -85,7 +80,6 @@ export const checkEmailOrPhone = async (
       };
     }
 
-    console.error("checkEmail", error);
     return {
       type: "UNKNOWN",
     };
@@ -100,18 +94,20 @@ type ILoginResponse = {
   };
 };
 
+type LoginPayload = LoginApiResponseBodyDTO & {
+  refreshToken?: string;
+};
+
+type LoginApiResponse = CommonResponseDTO<LoginPayload> | LoginPayload;
+
 export const login = async (
   body: LoginRequestBodyDTO,
 ): Promise<ILoginResponse> => {
   try {
-    const response = await axios.post<
-      | CommonResponseDTO<{
-          accessToken: string;
-          refreshToken?: string;
-          user?: LoginApiResponseBodyDTO["user"];
-        }>
-      | LoginApiResponseBodyDTO
-    >("/api/auth/login", body);
+    const response = await apiClient.post<LoginApiResponse>(
+      "/auth/login",
+      body,
+    );
 
     if (response.data) {
       const payload =
@@ -173,18 +169,12 @@ export const login = async (
       type: "UNKNOWN",
     };
   } catch (error) {
-    console.error("login error:", error);
-    if (isAxiosError(error)) {
-      console.error("login error response:", error.response?.data);
-      console.error("login error status:", error.response?.status);
-      if (error.response?.status === 401) {
-        return {
-          type: "INVALID",
-        };
-      }
+    if (isAxiosError(error) && error.response?.status === 401) {
+      return {
+        type: "INVALID",
+      };
     }
 
-    console.error("login", error);
     return {
       type: "UNKNOWN",
     };
@@ -199,8 +189,8 @@ export const signup = async (
   body: SignupRequestBodyDTO,
 ): Promise<ISignupResponse> => {
   try {
-    const response = await axios.post<SignupResponseBodyDTO>(
-      "/api/auth/signup",
+    const response = await apiClient.post<SignupResponseBodyDTO>(
+      "/auth/signup",
       body,
     );
 
@@ -231,7 +221,7 @@ export const resetUserPassword = async ({
   password: string;
 }) => {
   try {
-    const response = await axios.post("/api/auth/reset-password", {
+    const response = await apiClient.post("/auth/reset-password", {
       token,
       password,
     });
@@ -239,73 +229,60 @@ export const resetUserPassword = async ({
       return false;
     }
     return true;
-  } catch (error) {
-    console.error("Error validating token", error);
+  } catch {
     return false;
   }
 };
 
 export const checkAuthStatus = async () => {
-  try {
-    if (!getStoredAccessToken()) {
-      return false;
-    }
+  if (!getStoredAccessToken()) {
+    return false;
+  }
 
-    const response = await axios.get("/api/auth/me", {
+  try {
+    const response = await apiClient.get("/auth/me", {
       headers: getAuthHeader(),
     });
-
     const user = response.data?.data ?? response.data?.user;
+
     if (user) {
       return { valid: true, user };
     }
+
     return false;
-  } catch (error) {
-    console.error("Error checking auth status", error);
+  } catch {
     return false;
   }
 };
 
 export const refreshToken = async () => {
-  try {
-    const storedRefreshToken = getStoredRefreshToken();
-    if (!storedRefreshToken) {
-      return {
-        status: false,
-        accessToken: undefined,
-        refreshToken: undefined,
-      };
-    }
+  const storedRefreshToken = getStoredRefreshToken();
+  if (!storedRefreshToken) {
+    return false;
+  }
 
-    const response = await axios.post("/api/auth/refresh", {
+  try {
+    const response = await apiClient.post("/auth/refresh", {
       refreshToken: storedRefreshToken,
     });
-    const payload = response.data?.data ?? response.data;
 
-    return {
-      status: response.status === 200,
-      accessToken: payload?.accessToken,
-      refreshToken: payload?.refreshToken,
-    };
+    return response.status === 200;
   } catch (error) {
     console.error("Error refreshing token", error);
-    return {
-      status: false,
-      accessToken: undefined,
-      refreshToken: undefined,
-    };
+    return false;
   }
 };
 
 export const logout = async () => {
+  const storedRefreshToken = getStoredRefreshToken();
+
   try {
-    const storedRefreshToken = getStoredRefreshToken();
-    const response = await axios.post("/api/auth/logout", {
+    const response = await apiClient.post("/auth/logout", {
       refreshToken: storedRefreshToken,
     });
+
     return response.status === 200;
-  } catch (error) {
-    console.error("Error logging out", error);
+  } catch {
     return false;
   }
 };

@@ -1,4 +1,5 @@
-import axios, { isAxiosError } from "axios";
+import { apiClient } from "./api.client";
+import { isAxiosError } from "axios";
 import { UserProfile, Address } from "../types/user.types";
 import { getAuthHeader } from "./auth-headers";
 
@@ -19,8 +20,8 @@ export const getUserProfile = async (): Promise<UserProfile | null> => {
   }
 
   try {
-    const response = await axios.get<{ success: boolean; data: UserProfile }>(
-      "/api/users/me",
+    const response = await apiClient.get<{ success: boolean; data: UserProfile }>(
+      "/users/me",
       { headers: getAuthHeader() },
     );
     if (response.data.data?.id) {
@@ -43,8 +44,8 @@ export const updateUserProfile = async (
   }
 
   try {
-    const response = await axios.patch<{ success: boolean; data: UserProfile }>(
-      "/api/users/me",
+    const response = await apiClient.patch<{ success: boolean; data: UserProfile }>(
+      "/users/me",
       data,
       { headers: getAuthHeader() },
     );
@@ -68,7 +69,7 @@ export const deleteUserAccount = async (): Promise<boolean> => {
   }
 
   try {
-    await axios.delete(`/api/users/${userId}`, { headers: getAuthHeader() });
+    await apiClient.delete(`/users/${userId}`, { headers: getAuthHeader() });
     return true;
   } catch (error) {
     if (isAxiosError(error)) {
@@ -86,8 +87,8 @@ export const updatePassword = async ({
   newPassword: string;
 }): Promise<boolean> => {
   try {
-    await axios.post(
-      "/api/auth/change-password",
+    await apiClient.post(
+      "/auth/change-password",
       { currentPassword, newPassword },
       { headers: getAuthHeader() },
     );
@@ -102,8 +103,8 @@ export const updatePassword = async ({
 
 export const getUserAddresses = async (): Promise<Address[]> => {
   try {
-    const response = await axios.get<{ success: boolean; data: Address[] }>(
-      "/api/addresses",
+    const response = await apiClient.get<{ success: boolean; data: Address[] }>(
+      "/addresses",
       { headers: getAuthHeader() },
     );
     return response.data.data || [];
@@ -119,8 +120,8 @@ export const addAddress = async (
   address: Omit<Address, "id">,
 ): Promise<Address | null> => {
   try {
-    const response = await axios.post<{ success: boolean; data: Address }>(
-      "/api/addresses",
+    const response = await apiClient.post<{ success: boolean; data: Address }>(
+      "/addresses",
       address,
       { headers: getAuthHeader() },
     );
@@ -138,8 +139,8 @@ export const updateAddress = async (
   address: Partial<Address>,
 ): Promise<Address | null> => {
   try {
-    const response = await axios.patch<{ success: boolean; data: Address }>(
-      `/api/addresses/${id}`,
+    const response = await apiClient.patch<{ success: boolean; data: Address }>(
+      `/addresses/${id}`,
       address,
       { headers: getAuthHeader() },
     );
@@ -154,7 +155,7 @@ export const updateAddress = async (
 
 export const deleteAddress = async (id: string): Promise<boolean> => {
   try {
-    await axios.delete(`/api/addresses/${id}`, { headers: getAuthHeader() });
+    await apiClient.delete(`/addresses/${id}`, { headers: getAuthHeader() });
     return true;
   } catch (error) {
     if (isAxiosError(error)) {
@@ -170,17 +171,20 @@ export const UpdateUserPassword = async ({
 }: {
   password: string;
   user_id: string;
-}) => {
+}): Promise<boolean> => {
   try {
-    const response = await axios.patch(`/api/users/${user_id}`, {
-      password,
-    });
-    if (!response) {
-      return new Error("Failed to update password");
-    }
-    return { message: "Password updated successfully" };
+    await apiClient.patch(
+      `/users/${user_id}`,
+      { password },
+      { headers: getAuthHeader() },
+    );
+    return true;
   } catch (error) {
-    console.error("Error updating password", error);
-    return new Error("Failed to update password");
+    if (isAxiosError(error)) {
+      console.error("Error updating user password:", error.response?.data);
+    } else {
+      console.error("Error updating user password:", error);
+    }
+    return false;
   }
 };

@@ -1,4 +1,4 @@
-import axios from "axios";
+import { apiClient } from "./api.client";
 import { GetASingleRestaurant, Restaurant } from "../types/restaurants";
 import { DUMMY_RESTAURANTS } from "../data/dummyRestaurants";
 import { filterRestaurants, normalizeCuisineValue } from "../utils/filterUtils";
@@ -204,10 +204,10 @@ export const getAllRestaurants = async (
 
     const queryString = params.toString();
     const url = queryString
-      ? `/api/restaurants?${queryString}`
-      : "/api/restaurants";
+      ? `/restaurants?${queryString}`
+      : "/restaurants";
 
-    const response = await axios.get(url);
+    const response = await apiClient.get(url);
     if (!response.data) {
       throw new Error("Failed to fetch all Restaurants.");
     }
@@ -234,10 +234,10 @@ export const getFilteredRestaurants = async (
 
     const queryString = params.toString();
     const url = queryString
-      ? `/api/restaurants?${queryString}`
-      : "/api/restaurants";
+      ? `/restaurants?${queryString}`
+      : "/restaurants";
 
-    const response = await axios.get<ApiPaginatedResponse>(url);
+    const response = await apiClient.get<ApiPaginatedResponse>(url);
     if (!response.data) {
       throw new Error("Failed to fetch filtered Restaurants.");
     }
@@ -285,17 +285,14 @@ export const getFilteredRestaurants = async (
 };
 export const getSingleRestaurant = async (restaurantId: string) => {
   try {
-    const response = await axios.get(
-      `/api/restaurants/${encodeURIComponent(restaurantId)}`,
+    const response = await apiClient.get<GetASingleRestaurant>(
+      `/restaurants/${encodeURIComponent(restaurantId)}`,
     );
-
-    if (!response.data) {
-      throw new Error("Restaurant not found");
-    }
-    const data: GetASingleRestaurant = await response.data;
-    return data.data;
+    return response.data.data;
   } catch (error) {
-    console.error("Error fetching Restaurant", error);
+    if (!import.meta.env.PROD) {
+      console.error("Error fetching Restaurant", error);
+    }
     return null;
   }
 };
