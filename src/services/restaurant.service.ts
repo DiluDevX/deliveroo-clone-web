@@ -1,6 +1,8 @@
 import axios from "axios";
 import { GetASingleRestaurant, Restaurant } from "../types/restaurants";
 import { DUMMY_RESTAURANTS } from "../data/dummyRestaurants";
+import { filterRestaurants, normalizeCuisineValue } from "../utils/filterUtils";
+import { FilterState } from "../types/filters";
 
 export interface RestaurantFilters {
   search?: string;
@@ -11,6 +13,7 @@ export interface RestaurantFilters {
   minDeliveryFee?: number;
   maxDeliveryFee?: number;
   minOrderValue?: number;
+  maxOrderValue?: number;
   isOpen?: boolean;
   page?: number;
   limit?: number;
@@ -37,12 +40,6 @@ export interface ApiPaginatedResponse {
   };
 }
 
-const normalizeCuisineValue = (value: string) =>
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/[\s_-]+/g, " ");
-
 const appendRestaurantFilters = (
   params: URLSearchParams,
   filters?: RestaurantFilters,
@@ -65,6 +62,9 @@ const appendRestaurantFilters = (
   if (filters.minOrderValue !== undefined) {
     params.append("minOrderValue", filters.minOrderValue.toString());
   }
+  if (filters.maxOrderValue !== undefined) {
+    params.append("maxOrderValue", filters.maxOrderValue.toString());
+  }
   if (filters.isOpen !== undefined) {
     params.append("isOpen", filters.isOpen.toString());
   }
@@ -76,51 +76,72 @@ const appendRestaurantFilters = (
   if (filters.sort) params.append("sort", filters.sort);
 };
 
-const parseMoneyValue = (value: string) => {
-  const parsedValue = Number.parseFloat(value);
+const parseMoneyValue = (value: number | string) => {
+  const parsedValue = Number.parseFloat(String(value));
   return Number.isFinite(parsedValue) ? parsedValue : null;
 };
 
+const parseTimeToMinutes = (time: string) => {
+  const [hours, minutes] = time.split(":").map(Number);
+
+  if (
+    hours === undefined ||
+    minutes === undefined ||
+    !Number.isInteger(hours) ||
+    !Number.isInteger(minutes)
+  ) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+};
+
 const isRestaurantOpen = (restaurant: Restaurant) => {
-  const currentTime = new Date().toTimeString().slice(0, 5);
-  return (
-    restaurant.openingAt <= currentTime && restaurant.closingAt >= currentTime
-  );
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const openingMinutes = parseTimeToMinutes(restaurant.openingAt);
+  const closingMinutes = parseTimeToMinutes(restaurant.closingAt);
+
+  if (openingMinutes === null || closingMinutes === null) {
+    return false;
+  }
+
+  if (openingMinutes <= closingMinutes) {
+    return currentMinutes >= openingMinutes && currentMinutes <= closingMinutes;
+  }
+
+  return currentMinutes >= openingMinutes || currentMinutes <= closingMinutes;
+};
+
+const toFallbackFilterState = (filters?: RestaurantFilters): FilterState => {
+  let priceRange: FilterState["priceRange"] = "all";
+
+  if (
+    filters?.minOrderValue !== undefined &&
+    filters.maxOrderValue !== undefined
+  ) {
+    priceRange = "mid";
+  } else if (filters?.maxOrderValue !== undefined) {
+    priceRange = "budget";
+  } else if (filters?.minOrderValue !== undefined) {
+    priceRange = "premium";
+  }
+
+  return {
+    cuisines: filters?.cuisine ? [filters.cuisine] : [],
+    priceRange,
+    minRating: filters?.rating ?? null,
+    deliveryTime: null,
+    offers: false,
+    searchQuery: filters?.search,
+  };
 };
 
 const applyFallbackFilters = (
   restaurants: Restaurant[],
   filters?: RestaurantFilters,
 ) => {
-  let filtered = [...restaurants];
-
-  if (filters?.search) {
-    const searchLower = filters.search.toLowerCase();
-    filtered = filtered.filter(
-      (restaurant) =>
-        restaurant.name.toLowerCase().includes(searchLower) ||
-        restaurant.tags.some((tag) =>
-          tag.toLowerCase().includes(searchLower),
-        ) ||
-        restaurant.description.toLowerCase().includes(searchLower),
-    );
-  }
-
-  if (filters?.cuisine) {
-    const selectedCuisine = normalizeCuisineValue(filters.cuisine);
-    filtered = filtered.filter((restaurant) =>
-      restaurant.tags.some(
-        (tag) => normalizeCuisineValue(tag) === selectedCuisine,
-      ),
-    );
-  }
-
-  if (filters?.rating !== undefined) {
-    const minimumRating = filters.rating;
-    filtered = filtered.filter(
-      (restaurant) => (restaurant.rating ?? 0) >= minimumRating,
-    );
-  }
+  let filtered = filterRestaurants(restaurants, toFallbackFilterState(filters));
 
   if (filters?.minDeliveryFee !== undefined) {
     const minimumDeliveryFee = filters.minDeliveryFee;
@@ -143,6 +164,14 @@ const applyFallbackFilters = (
     filtered = filtered.filter((restaurant) => {
       const minimumValue = parseMoneyValue(restaurant.minimumValue);
       return minimumValue !== null && minimumValue >= minimumOrderValue;
+    });
+  }
+
+  if (filters?.maxOrderValue !== undefined) {
+    const maximumOrderValue = filters.maxOrderValue;
+    filtered = filtered.filter((restaurant) => {
+      const minimumValue = parseMoneyValue(restaurant.minimumValue);
+      return minimumValue !== null && minimumValue <= maximumOrderValue;
     });
   }
 
@@ -206,7 +235,7 @@ export const getFilteredRestaurants = async (
     const queryString = params.toString();
     const url = queryString
       ? `/api/restaurants?${queryString}`
-      : "/api/restaurants/";
+      : "/api/restaurants";
 
     const response = await axios.get<ApiPaginatedResponse>(url);
     if (!response.data) {

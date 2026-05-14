@@ -156,6 +156,7 @@ export default function Login() {
     >
       <Box>
         <Button
+          variant="border"
           onClick={() => navigate("/account")}
           PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
           sx={{

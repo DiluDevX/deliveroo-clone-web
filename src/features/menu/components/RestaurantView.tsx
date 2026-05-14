@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { Colors } from "../../../theme";
 import { useState } from "react";
 import { Restaurant } from "../../../types/restaurants";
+import StarIcon from "@mui/icons-material/Star";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 interface RestaurantViewProps {
   restaurant: Restaurant;

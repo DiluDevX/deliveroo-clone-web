@@ -1,10 +1,7 @@
 import { Restaurant } from "../types/restaurants";
-import { FilterState } from "../types/filters";
+import { MINIMUM_ORDER_VALUE_THRESHOLDS, FilterState } from "../types/filters";
 
-const BUDGET_MAXIMUM_ORDER_VALUE = 15;
-const MID_RANGE_MAXIMUM_ORDER_VALUE = 30;
-
-const normalizeCuisineValue = (value: string): string =>
+export const normalizeCuisineValue = (value: string): string =>
   value
     .trim()
     .toLowerCase()
@@ -28,19 +25,19 @@ const matchesPrice = (
 ): boolean => {
   if (filters.priceRange === "all") return true;
 
-  const minimumValue = Number.parseInt(restaurant.minimumValue, 10);
+  const minimumValue = Number.parseFloat(String(restaurant.minimumValue));
   if (!Number.isFinite(minimumValue)) return false;
 
   switch (filters.priceRange) {
     case "budget":
-      return minimumValue <= BUDGET_MAXIMUM_ORDER_VALUE;
+      return minimumValue <= MINIMUM_ORDER_VALUE_THRESHOLDS.budgetMax;
     case "mid":
       return (
-        minimumValue > BUDGET_MAXIMUM_ORDER_VALUE &&
-        minimumValue <= MID_RANGE_MAXIMUM_ORDER_VALUE
+        minimumValue >= MINIMUM_ORDER_VALUE_THRESHOLDS.midMin &&
+        minimumValue <= MINIMUM_ORDER_VALUE_THRESHOLDS.midMax
       );
     case "premium":
-      return minimumValue > MID_RANGE_MAXIMUM_ORDER_VALUE;
+      return minimumValue >= MINIMUM_ORDER_VALUE_THRESHOLDS.premiumMin;
     default:
       return true;
   }

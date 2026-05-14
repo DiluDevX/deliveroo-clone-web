@@ -23,7 +23,7 @@ import {
   PaginatedResponse,
 } from "../services/restaurant.service";
 import { Restaurant } from "../types/restaurants";
-import { FilterState } from "../types/filters";
+import { MINIMUM_ORDER_VALUE_THRESHOLDS, FilterState } from "../types/filters";
 import NotFoundScreen from "../features/menu/components/NotFoundScreen";
 
 const FilteredRestaurantsPage = () => {
@@ -48,7 +48,6 @@ const FilteredRestaurantsPage = () => {
     minRating: null,
     deliveryTime: null,
     offers: false,
-    searchQuery: searchQuery,
   });
 
   const ITEMS_PER_PAGE = 10;
@@ -72,12 +71,12 @@ const FilteredRestaurantsPage = () => {
           filterParams.rating = filters.minRating;
         }
         if (filters.priceRange === "budget") {
-          filterParams.maxDeliveryFee = 50;
+          filterParams.maxOrderValue = MINIMUM_ORDER_VALUE_THRESHOLDS.budgetMax;
         } else if (filters.priceRange === "mid") {
-          filterParams.minDeliveryFee = 51;
-          filterParams.maxDeliveryFee = 150;
+          filterParams.minOrderValue = MINIMUM_ORDER_VALUE_THRESHOLDS.midMin;
+          filterParams.maxOrderValue = MINIMUM_ORDER_VALUE_THRESHOLDS.midMax;
         } else if (filters.priceRange === "premium") {
-          filterParams.minDeliveryFee = 151;
+          filterParams.minOrderValue = MINIMUM_ORDER_VALUE_THRESHOLDS.premiumMin;
         }
         if (filters.offers) {
           filterParams.tags = "popular";
