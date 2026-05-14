@@ -41,6 +41,12 @@ const MenuPage = () => {
         setRestaurant(restaurantData);
         localStorage.setItem("id", restaurantData.id);
         localStorage.setItem("restaurantName", restaurantData.name);
+        localStorage.setItem("selected-restaurant-id", restaurantData.id);
+        localStorage.setItem("selected-restaurant-name", restaurantData.name);
+        localStorage.setItem(
+          "selected-restaurant-address",
+          restaurantData.description || "",
+        );
 
         const categoryData = await getCategories();
         if (!categoryData) {

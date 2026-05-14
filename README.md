@@ -11,6 +11,8 @@ A full-stack food delivery application clone inspired by Deliveroo, built with m
 
 </div>
 
+<img width="3360" height="5168" alt="screencapture-localhost-5173-2026-02-11-18_39_12" src="https://github.com/user-attachments/assets/ff671fca-6545-48c6-9a9c-a95f298e886c" />
+
 ## ✨ Features
 
 ### 🎨 Frontend Features

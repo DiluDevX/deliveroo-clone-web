@@ -2,9 +2,17 @@ import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { IDish } from "../data/Sides";
 import * as cartService from "../services/cart.service";
 import { RootState } from "./store";
+import { CartItemData } from "../types/cart.types";
 
 export interface CartItem extends IDish {
   quantity: number;
+  cartItemId?: string;
+  modifiers?: Array<{
+    id: string;
+    name: string;
+    option: string;
+    extraPrice: number;
+  }>;
 }
 
 export interface CartState {
@@ -18,6 +26,21 @@ const initialState: CartState = {
   isLoading: false,
   isSyncing: false,
 };
+
+const mapServerCartItem = (item: CartItemData): CartItem => ({
+  _id: item.dishId,
+  name: item.dishName,
+  description: "",
+  price: String(item.unitPrice),
+  image: item.dishImageUrl,
+  categoryId: 0,
+  quantity: item.quantity,
+  cartItemId: item.id,
+  modifiers: item.modifiers,
+});
+
+const matchesCartItem = (item: CartItem, id: string) =>
+  item.cartItemId === id || item._id === id;
 
 // Async thunk to fetch cart from server
 export const fetchCart = createAsyncThunk(
@@ -34,11 +57,22 @@ export const fetchCart = createAsyncThunk(
 // Async thunk to sync cart to server
 export const syncCartToServer = createAsyncThunk(
   "cart/syncCartToServer",
-  async (_, { getState }) => {
+  async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
     if (!state.auth.isAuthenticated) return false;
 
-    return await cartService.syncCart(state.cart.items);
+    const restaurantId = localStorage.getItem("selected-restaurant-id");
+    if (!restaurantId) return false;
+
+    const syncedItems = await cartService.syncCart(
+      state.cart.items,
+      restaurantId,
+    );
+    if (!syncedItems) return false;
+
+    dispatch(setCart(syncedItems.map(mapServerCartItem)));
+
+    return true;
   },
 );
 
@@ -50,8 +84,16 @@ export const addItemAndSync = createAsyncThunk(
 
     const state = getState() as RootState;
     if (state.auth.isAuthenticated) {
-      const cartItem: CartItem = { ...dish, quantity: 1 };
-      await cartService.addItemToCart(cartItem);
+      const restaurantId = localStorage.getItem("selected-restaurant-id");
+      if (restaurantId) {
+        const cartItem =
+          state.cart.items.find((item) => item._id === dish._id) ??
+          ({ ...dish, quantity: 1 } satisfies CartItem);
+        const didSync = await cartService.addItemToCart(cartItem, restaurantId);
+        if (didSync) {
+          dispatch(fetchCart());
+        }
+      }
     }
   },
 );
@@ -59,12 +101,12 @@ export const addItemAndSync = createAsyncThunk(
 // Async thunk to remove item and sync
 export const removeItemAndSync = createAsyncThunk(
   "cart/removeItemAndSync",
-  async (dishId: string, { getState, dispatch }) => {
-    dispatch(removeItem(dishId));
+  async (cartItemId: string, { getState, dispatch }) => {
+    dispatch(removeItem(cartItemId));
 
     const state = getState() as RootState;
     if (state.auth.isAuthenticated) {
-      await cartService.removeItemFromCart(dishId);
+      await cartService.removeItemFromCart(cartItemId);
     }
   },
 );
@@ -73,14 +115,17 @@ export const removeItemAndSync = createAsyncThunk(
 export const updateQuantityAndSync = createAsyncThunk(
   "cart/updateQuantityAndSync",
   async (
-    payload: { _id: string; quantity: number },
+    payload: { cartItemId: string; quantity: number },
     { getState, dispatch },
   ) => {
     dispatch(updateQuantity(payload));
 
     const state = getState() as RootState;
     if (state.auth.isAuthenticated) {
-      await cartService.updateCartItemQuantity(payload._id, payload.quantity);
+      await cartService.updateCartItemQuantity(
+        payload.cartItemId,
+        payload.quantity,
+      );
     }
   },
 );
@@ -114,20 +159,24 @@ const cartSlice = createSlice({
     },
     removeItem: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter(
-        (item) => item._id !== action.payload.toString(),
+        (item) => !matchesCartItem(item, action.payload),
       );
     },
     updateQuantity: (
       state,
-      action: PayloadAction<{ _id: string; quantity: number }>,
+      action: PayloadAction<{ cartItemId: string; quantity: number }>,
     ) => {
-      const item = state.items.find((item) => item._id === action.payload._id);
-      if (item) {
-        if (action.payload.quantity === 0) {
-          item.quantity = 0;
-        } else {
-          item.quantity = action.payload.quantity;
-        }
+      const itemIndex = state.items.findIndex((item) =>
+        matchesCartItem(item, action.payload.cartItemId),
+      );
+      if (itemIndex === -1) {
+        return;
+      }
+
+      if (action.payload.quantity === 0) {
+        state.items.splice(itemIndex, 1);
+      } else {
+        state.items[itemIndex].quantity = action.payload.quantity;
       }
     },
     clearCart: (state) => {
@@ -135,6 +184,43 @@ const cartSlice = createSlice({
     },
     setCart: (state, action: PayloadAction<CartItem[]>) => {
       state.items = action.payload;
+    },
+    populateDummyCart: (state) => {
+      state.items = [
+        {
+          _id: "1",
+          name: "Margherita Pizza",
+          description: "Classic tomato and mozzarella",
+          price: "12.99",
+          image:
+            "https://images.unsplash.com/photo-1604382345074-af4b0eb60143?w=400",
+          categoryId: 1,
+          quantity: 2,
+          cartItemId: "cart1",
+        },
+        {
+          _id: "2",
+          name: "Pepperoni Pizza",
+          description: "Tomato, mozzarella, pepperoni",
+          price: "14.99",
+          image:
+            "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400",
+          categoryId: 1,
+          quantity: 1,
+          cartItemId: "cart2",
+        },
+        {
+          _id: "3",
+          name: "Garlic Bread",
+          description: "Toasted bread with garlic butter",
+          price: "4.99",
+          image:
+            "https://images.unsplash.com/photo-1619535860434-ba1d8fa12536?w=400",
+          categoryId: 2,
+          quantity: 1,
+          cartItemId: "cart3",
+        },
+      ];
     },
   },
   extraReducers: (builder) => {
@@ -148,17 +234,23 @@ const cartSlice = createSlice({
         if (action.payload.length > 0) {
           // Merge server cart with local cart
           action.payload.forEach((serverItem) => {
+            const normalizedItem = mapServerCartItem(serverItem);
             const existingItem = state.items.find(
-              (item) => String(item._id) === String(serverItem._id),
+              (item) => String(item._id) === String(normalizedItem._id),
             );
             if (existingItem) {
               // Keep the higher quantity
               existingItem.quantity = Math.max(
                 existingItem.quantity,
-                serverItem.quantity,
+                normalizedItem.quantity,
               );
+              existingItem.cartItemId = normalizedItem.cartItemId;
+              existingItem.name = normalizedItem.name;
+              existingItem.image = normalizedItem.image;
+              existingItem.price = normalizedItem.price;
+              existingItem.modifiers = normalizedItem.modifiers;
             } else {
-              state.items.push(serverItem);
+              state.items.push(normalizedItem);
             }
           });
         }
@@ -179,6 +271,12 @@ const cartSlice = createSlice({
   },
 });
 
-export const { addItem, removeItem, updateQuantity, clearCart, setCart } =
-  cartSlice.actions;
+export const {
+  addItem,
+  removeItem,
+  updateQuantity,
+  clearCart,
+  setCart,
+  populateDummyCart,
+} = cartSlice.actions;
 export default cartSlice.reducer;

@@ -12,25 +12,29 @@ import TextInput from "../features/menu/components/TextInput";
 import { emailSchema } from "../features/menu/validations/email.validation";
 import { checkPasswordSchema } from "../features/menu/validations/password.validation";
 import { checkEmail, login } from "../services/auth.service";
-import { CheckEmailResponseBodyDTO } from "../types/auth.types";
-import { useSnackbar } from "notistack";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { setCredentials } from "../store/authSlice";
 import { useAppDispatch } from "../store/hooks/cartHooks";
+import { useSnackbar } from "notistack";
+import SignUpPage from "./SignUpPage";
 
 type LoginForm = {
   email: string;
   password?: string;
 };
 
+type AuthStep = "email" | "password" | "signup";
+
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
-  const [existingUser, setExistingUser] = useState<CheckEmailResponseBodyDTO>();
+  const [authStep, setAuthStep] = useState<AuthStep>("email");
+  const [verifiedEmail, setVerifiedEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const isPasswordStep = authStep === "password";
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -50,68 +54,91 @@ export default function Login() {
     () =>
       z.object({
         email: emailSchema,
-        password: existingUser
+        password: isPasswordStep
           ? checkPasswordSchema
           : checkPasswordSchema.optional(),
       }),
-    [existingUser],
+    [isPasswordStep],
   );
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(schema),
+    mode: "onChange",
+    reValidateMode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
+
+  const handleLogin = async (email: string, password?: string) => {
+    if (!password) {
+      return;
+    }
+
+    const loginResponse = await login({ email, password });
+
+    if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
+      dispatch(
+        setCredentials({
+          accessToken: loginResponse.successResponse.accessToken,
+          refreshToken: loginResponse.successResponse.refreshToken,
+          user: {
+            id: loginResponse.successResponse.user.id,
+            email: loginResponse.successResponse.user.email,
+            firstName: loginResponse.successResponse.user.firstName,
+            lastName: loginResponse.successResponse.user.lastName,
+            phone: loginResponse.successResponse.user.phone,
+            role: loginResponse.successResponse.user.role,
+          },
+        }),
+      );
+
+      localStorage.removeItem("existingUser");
+
+      enqueueSnackbar("Logged In!", { variant: "success" });
+
+      const redirectAfterLogin = sessionStorage.getItem("redirectAfterLogin");
+      if (redirectAfterLogin) {
+        sessionStorage.removeItem("redirectAfterLogin");
+        navigate(redirectAfterLogin);
+      } else {
+        navigate("/");
+      }
+    } else if (loginResponse.type === "INVALID") {
+      enqueueSnackbar("Invalid Credentials", { variant: "error" });
+    } else {
+      enqueueSnackbar("Something went wrong", { variant: "error" });
+    }
+  };
 
   const handleSubmit = form.handleSubmit(async (values) => {
     const { email, password } = values;
 
-    if (!password) {
-      const checkEmailResponse = await checkEmail({ email });
+    if (isPasswordStep) {
+      await handleLogin(email, password);
+      return;
+    }
 
-      if (checkEmailResponse.type === "EXISTING") {
-        localStorage.setItem("existingUser", true.toString());
-        setExistingUser(checkEmailResponse.existingUser);
-      } else if (checkEmailResponse.type === "NEW") {
-        navigate(`/Account/SignUp?email=${encodeURIComponent(email)}`);
-      } else {
-        enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
-      }
+    const checkEmailResponse = await checkEmail({ email });
+
+    if (checkEmailResponse.type === "EXISTING") {
+      setVerifiedEmail(email);
+      setAuthStep("password");
+      globalThis.setTimeout(() => form.setFocus("password"), 0);
+    } else if (checkEmailResponse.type === "NEW") {
+      setVerifiedEmail(email);
+      setAuthStep("signup");
+      return;
     } else {
-      const loginResponse = await login({ email, password });
-      console.log("Login response:", loginResponse); // Debug log
-
-      if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
-        console.log("Login successful, dispatching credentials..."); // Debug log
-        dispatch(
-          setCredentials({
-            user: {
-              email: loginResponse.successResponse.user.email,
-              firstName: loginResponse.successResponse.user.firstName,
-              lastName: loginResponse.successResponse.user.lastName,
-              phone: loginResponse.successResponse.user.phone,
-              role: loginResponse.successResponse.user.role,
-            },
-          }),
-        );
-
-        // The server should set the session via HttpOnly cookie. Do not persist tokens in client JS.
-        localStorage.removeItem("existingUser");
-
-        // Check for redirect after login
-        const redirectPath = sessionStorage.getItem("redirectAfterLogin");
-        console.log("Navigating to:", redirectPath || "/"); // Debug log
-        if (redirectPath) {
-          sessionStorage.removeItem("redirectAfterLogin");
-          navigate(redirectPath);
-        } else {
-          navigate("/");
-        }
-      } else if (loginResponse.type === "INVALID") {
-        enqueueSnackbar({ variant: "error", message: "Invalid Credentials" });
-      } else {
-        enqueueSnackbar({ variant: "error", message: "Something Went Wrong" });
-      }
+      enqueueSnackbar("Something went wrong.", { variant: "error" });
+      return;
     }
   });
+
+  if (authStep === "signup") {
+    return <SignUpPage initialEmail={verifiedEmail} />;
+  }
 
   return (
     <Box
@@ -129,7 +156,8 @@ export default function Login() {
     >
       <Box>
         <Button
-          onClick={() => navigate("/Account")}
+          variant="border"
+          onClick={() => navigate("/account")}
           PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
           sx={{
             border: "none",
@@ -158,7 +186,7 @@ export default function Login() {
               fontSmoothing: "antialiased",
             }}
           >
-            {existingUser ? "Log In" : "Log In or Sign Up"}
+            {isPasswordStep ? "Log In" : "Log In or Sign Up"}
           </Typography>
           <Controller
             control={form.control}
@@ -174,12 +202,12 @@ export default function Login() {
                 type="email"
                 autoComplete="email"
                 required
-                disabled={!!existingUser}
+                disabled={isPasswordStep}
               />
             )}
           />
 
-          {existingUser && (
+          {isPasswordStep && (
             <Controller
               control={form.control}
               name="password"
@@ -231,15 +259,14 @@ export default function Login() {
               width: "100%",
             }}
           >
-            {existingUser ? "Login" : "Continue"}
+            {isPasswordStep ? "Login" : "Continue"}
           </Button>
-
           <Button
             type="button"
             onClick={() =>
               navigate("/account/recovery", {
                 state: {
-                  type: existingUser ? "forgotPassword" : "forgotEmail",
+                  type: isPasswordStep ? "forgotPassword" : "forgotEmail",
                 },
               })
             }
@@ -249,7 +276,7 @@ export default function Login() {
               color: Colors.background.brand,
             }}
           >
-            {existingUser ? "Forgot Password?" : "Forgot Email?"}
+            {isPasswordStep ? "Forgot Password?" : "Forgot Email?"}
           </Button>
         </form>
       </Box>

@@ -1,9 +1,11 @@
-import { isAxiosError } from "axios";
+import axios, { isAxiosError } from "axios";
+import { jwtDecode } from "jwt-decode";
 import {
   CheckEmailRequestBodyDTO,
   CheckEmailResponseBodyDTO,
   EmailOrPhoneRequestBodyDTO,
   EmailOrPhoneResponseBodyDTO,
+  LoginApiResponseBodyDTO,
   LoginRequestBodyDTO,
   LoginResponseBodyDTO,
   SignupRequestBodyDTO,
@@ -11,6 +13,17 @@ import {
 } from "../types/auth.types";
 import { CommonResponseDTO } from "../types/common";
 import apiClient from "./api.client";
+import {
+  getAuthHeader,
+  getStoredAccessToken,
+  getStoredRefreshToken,
+} from "./auth-headers";
+
+type AccessTokenPayload = {
+  userId?: string;
+  email?: string;
+  role?: "user" | "platform_admin" | "restaurant_admin";
+};
 
 type ICheckEmailResponse = {
   token?: string;
@@ -54,7 +67,7 @@ export const checkEmailOrPhone = async (
   try {
     const response = await apiClient.post<
       CommonResponseDTO<EmailOrPhoneResponseBodyDTO>
-    >("/auth/check-email-or-password", body);
+    >("/api/auth/check-email", body);
 
     return {
       type: "EXISTING",
@@ -75,22 +88,11 @@ export const checkEmailOrPhone = async (
 
 type ILoginResponse = {
   type: "SUCCESS" | "INVALID" | "UNKNOWN";
-  successResponse?: LoginResponseBodyDTO;
-};
-
-interface LoginApiResponse {
-  user: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string | null;
-    role: string;
-    createdAt: string;
-    updatedAt: string;
+  successResponse?: LoginResponseBodyDTO & {
+    accessToken?: string;
+    refreshToken?: string;
   };
-  accessToken: string;
-}
+};
 
 export const login = async (
   body: LoginRequestBodyDTO,
@@ -102,20 +104,59 @@ export const login = async (
     );
 
     if (response.data) {
-      const { user } = response.data;
+      const payload =
+        "data" in response.data ? response.data.data : response.data;
+      const accessToken = payload.accessToken;
+      const refreshToken =
+        "refreshToken" in payload ? payload.refreshToken : undefined;
 
-      return {
-        type: "SUCCESS",
-        successResponse: {
-          user: {
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            phone: user.phone ?? undefined,
-            role: user.role,
+      if (!accessToken) {
+        return {
+          type: "UNKNOWN",
+        };
+      }
+
+      try {
+        const decoded = jwtDecode<AccessTokenPayload>(accessToken);
+
+        const user = payload.user ?? {
+          id: decoded.userId || "",
+          email: decoded.email || body.email,
+          firstName: "",
+          lastName: "",
+          phone: undefined,
+          role: decoded.role || "user",
+          status: "Active" as const,
+          orderCount: 0,
+          createdAt: "",
+          updatedAt: "",
+        };
+
+        return {
+          type: "SUCCESS",
+          successResponse: {
+            accessToken,
+            refreshToken,
+            user: {
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              phone: user.phone ?? undefined,
+              role: user.role,
+              status: "Active",
+              orderCount: 0,
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
+            },
           },
-        },
-      };
+        };
+      } catch (error) {
+        console.error("Error decoding access token:", error);
+        return {
+          type: "INVALID",
+        };
+      }
     }
 
     return {
@@ -192,6 +233,17 @@ export const checkAuthStatus = async () => {
     const response = await apiClient.post("/me", {}, { withCredentials: true });
     if (response.data?.valid === true && response.data?.user !== null) {
       return response.data;
+    if (!getStoredAccessToken()) {
+      return false;
+    }
+
+    const response = await axios.get("/api/auth/me", {
+      headers: getAuthHeader(),
+    });
+
+    const user = response.data?.data ?? response.data?.user;
+    if (user) {
+      return { valid: true, user };
     }
     return false;
   } catch {
@@ -209,6 +261,32 @@ export const refreshToken = async () => {
     return response.status === 200;
   } catch {
     return false;
+    const storedRefreshToken = getStoredRefreshToken();
+    if (!storedRefreshToken) {
+      return {
+        status: false,
+        accessToken: undefined,
+        refreshToken: undefined,
+      };
+    }
+
+    const response = await axios.post("/api/auth/refresh", {
+      refreshToken: storedRefreshToken,
+    });
+    const payload = response.data?.data ?? response.data;
+
+    return {
+      status: response.status === 200,
+      accessToken: payload?.accessToken,
+      refreshToken: payload?.refreshToken,
+    };
+  } catch (error) {
+    console.error("Error refreshing token", error);
+    return {
+      status: false,
+      accessToken: undefined,
+      refreshToken: undefined,
+    };
   }
 };
 
@@ -219,6 +297,10 @@ export const logout = async () => {
       {},
       { withCredentials: true },
     );
+    const storedRefreshToken = getStoredRefreshToken();
+    const response = await axios.post("/api/auth/logout", {
+      refreshToken: storedRefreshToken,
+    });
     return response.status === 200;
   } catch {
     return false;

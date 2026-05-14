@@ -9,11 +9,12 @@ import NearMeOutlinedIcon from "@mui/icons-material/NearMeOutlined";
 import { Link, useNavigate } from "react-router-dom";
 import { Colors } from "../../../theme";
 import { useState } from "react";
+import { useAppSelector } from "../../../store/hooks/cartHooks";
 
 const MainViewSearchBox = () => {
   const [searchInput, setSearchInput] = useState("");
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   const handleSearchInput = () => {
     if (searchInput.trim() !== "") {
@@ -136,7 +137,7 @@ const MainViewSearchBox = () => {
           }}
         />
 
-        {!token && (
+        {!isAuthenticated && (
           <Typography
             sx={{
               fontSize: "13px",

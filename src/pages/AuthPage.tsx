@@ -11,9 +11,12 @@ import {
   handleGoogleSignIn,
 } from "../services/firebase.service";
 import { checkEmail } from "../services/auth.service";
+import { useAppDispatch } from "../store/hooks/cartHooks";
+import { setCredentials } from "../store/authSlice";
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const FacebookButtonOnClick = async () => {
     try {
@@ -35,7 +38,18 @@ const AuthPage = () => {
         email: response.email ?? "",
       });
       if (isThereAnUser.type === "EXISTING") {
-        localStorage.setItem("token", isThereAnUser.token ?? "");
+        if (isThereAnUser.existingUser) {
+          dispatch(
+            setCredentials({
+              user: {
+                firstName: isThereAnUser.existingUser.firstName,
+                lastName: isThereAnUser.existingUser.lastName,
+                email: isThereAnUser.existingUser.email,
+                role: "user",
+              },
+            }),
+          );
+        }
         enqueueSnackbar("Signed in successfully", {
           variant: "success",
           autoHideDuration: 1500,
@@ -80,7 +94,18 @@ const AuthPage = () => {
         email: response.email ?? "",
       });
       if (isThereAnUser.type === "EXISTING") {
-        localStorage.setItem("token", isThereAnUser.token ?? "");
+        if (isThereAnUser.existingUser) {
+          dispatch(
+            setCredentials({
+              user: {
+                firstName: isThereAnUser.existingUser.firstName,
+                lastName: isThereAnUser.existingUser.lastName,
+                email: isThereAnUser.existingUser.email,
+                role: "user",
+              },
+            }),
+          );
+        }
         enqueueSnackbar("Signed in successfully", {
           variant: "success",
           autoHideDuration: 1500,

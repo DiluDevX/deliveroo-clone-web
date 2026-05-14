@@ -7,12 +7,52 @@ import { SnackbarProvider } from "notistack";
 import { Provider } from "react-redux";
 import { persistor, store } from "./store/store.tsx";
 import { PersistGate } from "redux-persist/integration/react";
+import axios from "axios";
+import { Colors } from "./theme/colors.ts";
+
+axios.defaults.withCredentials = true;
 
 const theme = createTheme({
   typography: {
     fontFamily: ["IBM Plex Sans", "serif"].join(","),
     allVariants: {
       fontFamily: ["IBM Plex Sans", "serif"].join(","),
+    },
+  },
+  components: {
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          "& .MuiOutlinedInput-root": {
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: Colors.background.brand,
+            },
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: Colors.background.brand,
+          },
+        },
+      },
+    },
+    MuiCheckbox: {
+      styleOverrides: {
+        root: {
+          color: Colors.background.brand,
+          "&.Mui-checked": {
+            color: Colors.background.brand,
+          },
+        },
+      },
+    },
+    MuiRadio: {
+      styleOverrides: {
+        root: {
+          color: Colors.background.brand,
+          "&.Mui-checked": {
+            color: Colors.background.brand,
+          },
+        },
+      },
     },
   },
 });
