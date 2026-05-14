@@ -12,6 +12,7 @@ import {
   SignupResponseBodyDTO,
 } from "../types/auth.types";
 import { CommonResponseDTO } from "../types/common";
+import { IUser } from "../types/user.types";
 import apiClient from "./api.client";
 import {
   getAuthHeader,
@@ -30,6 +31,8 @@ type ICheckEmailResponse = {
   type: "NEW" | "EXISTING" | "UNKNOWN";
   existingUser?: CheckEmailResponseBodyDTO;
 };
+
+type AuthStatus = false | { valid: true; user: IUser };
 export const checkEmail = async (
   body: CheckEmailRequestBodyDTO,
 ): Promise<ICheckEmailResponse> => {
@@ -234,7 +237,7 @@ export const resetUserPassword = async ({
   }
 };
 
-export const checkAuthStatus = async () => {
+export const checkAuthStatus = async (): Promise<AuthStatus> => {
   if (!getStoredAccessToken()) {
     return false;
   }
@@ -285,4 +288,19 @@ export const logout = async () => {
   } catch {
     return false;
   }
+};
+
+export const getValidAdminAuth = async (): Promise<AuthStatus> => {
+  const authStatus = await checkAuthStatus();
+
+  if (
+    authStatus &&
+      typeof authStatus !== "boolean" &&
+      (authStatus.user?.role === "platform_admin" ||
+        authStatus.user?.role === "restaurant_admin")
+  ) {
+    return authStatus;
+  }
+
+  return false;
 };

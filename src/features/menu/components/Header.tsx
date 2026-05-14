@@ -38,6 +38,7 @@ const Header = () => {
         width: "100%",
         height: "60px",
         display: "flex",
+        p: "0 1rem",
         alignItems: "center",
         justifyContent: "center",
         position: isTransparent ? "absolute" : "fixed",

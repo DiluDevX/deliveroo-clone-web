@@ -3,6 +3,7 @@ import { GetASingleRestaurant, Restaurant } from "../types/restaurants";
 import { DUMMY_RESTAURANTS } from "../data/dummyRestaurants";
 import { filterRestaurants, normalizeCuisineValue } from "../utils/filterUtils";
 import { FilterState } from "../types/filters";
+import { getAuthHeader } from "./auth-headers";
 
 export interface RestaurantFilters {
   search?: string;
@@ -207,7 +208,7 @@ export const getAllRestaurants = async (
       ? `/restaurants?${queryString}`
       : "/restaurants";
 
-    const response = await apiClient.get(url);
+    const response = await apiClient.get(url, { headers: getAuthHeader() });
     if (!response.data) {
       throw new Error("Failed to fetch all Restaurants.");
     }
@@ -237,7 +238,9 @@ export const getFilteredRestaurants = async (
       ? `/restaurants?${queryString}`
       : "/restaurants";
 
-    const response = await apiClient.get<ApiPaginatedResponse>(url);
+    const response = await apiClient.get<ApiPaginatedResponse>(url, {
+      headers: getAuthHeader(),
+    });
     if (!response.data) {
       throw new Error("Failed to fetch filtered Restaurants.");
     }
@@ -287,11 +290,37 @@ export const getSingleRestaurant = async (restaurantId: string) => {
   try {
     const response = await apiClient.get<GetASingleRestaurant>(
       `/restaurants/${encodeURIComponent(restaurantId)}`,
+      { headers: getAuthHeader() },
     );
     return response.data.data;
   } catch (error) {
     if (!import.meta.env.PROD) {
       console.error("Error fetching Restaurant", error);
+    }
+    return null;
+  }
+};
+
+export const createRestaurant = async (
+  restaurant: Partial<Restaurant>,
+): Promise<Restaurant | null> => {
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      data: Restaurant;
+    }>("/restaurants", restaurant, { headers: getAuthHeader() });
+
+    if (!response.data.data) {
+      if (!import.meta.env.PROD) {
+        console.error("Create Restaurant returned an empty response");
+      }
+      return null;
+    }
+
+    return response.data.data;
+  } catch (error) {
+    if (!import.meta.env.PROD) {
+      console.error("Error creating Restaurant", error);
     }
     return null;
   }

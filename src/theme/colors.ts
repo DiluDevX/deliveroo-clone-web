@@ -19,6 +19,9 @@ export const Colors = {
     inverse: "#ffffff",
     dark: "#444",
     placeholder: "#76777FFF",
+    error: "#ff0000",
+    disabled: "#1c39be",
+    success: "#4d7c1b",
   },
   border: {
     default: "#e8ebeb",
@@ -36,6 +39,8 @@ export const Colors = {
     facebook: "#4c69ba",
   },
   status: {
+    success: "#10B981",
+    warning: "#F59E0B",
     delivered: {
       bg: "#e8f5e9",
       text: "#2e7d32",

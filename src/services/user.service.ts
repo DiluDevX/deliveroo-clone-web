@@ -1,6 +1,6 @@
 import { apiClient } from "./api.client";
 import { isAxiosError } from "axios";
-import { UserProfile, Address } from "../types/user.types";
+import { UserProfile, Address, IUser } from "../types/user.types";
 import { getAuthHeader } from "./auth-headers";
 
 const DUMMY_USER: UserProfile = {
@@ -33,6 +33,24 @@ export const getUserProfile = async (): Promise<UserProfile | null> => {
       console.error("Error fetching profile:", error.response?.data);
     }
     return null;
+  }
+};
+
+export const getAllUsers = async (): Promise<IUser[]> => {
+  try {
+    const response = await apiClient.get<{ success: boolean; data: IUser[] }>(
+      "/users",
+      { headers: getAuthHeader() },
+    );
+    return response.data.data || [];
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error fetching users", {
+        status: error.response?.status,
+        message: error.message,
+      });
+    }
+    throw new Error("Failed to fetch users");
   }
 };
 

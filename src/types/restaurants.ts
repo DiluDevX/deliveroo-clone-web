@@ -12,6 +12,9 @@ export interface Restaurant {
   commissionPercentage?: number;
   cuisine?: string | null;
   rating?: number;
+  totalOrders?: number;
+  totalRevenue?: number;
+  adminId?: string;
   status?: "ACTIVE" | "DISABLED";
   createdAt?: string;
   updatedAt?: string;

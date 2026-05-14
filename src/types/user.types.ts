@@ -5,6 +5,10 @@ export type IUser = {
   email: string;
   phone?: string;
   role?: string;
+  restaurantId?: string;
+  orderCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export interface UserProfile {

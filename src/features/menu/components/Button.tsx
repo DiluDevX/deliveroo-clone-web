@@ -11,6 +11,7 @@ type ButtonProps = ButtonBaseProps & {
   SuffixComponent?: React.ReactNode;
   linkTo?: To;
   variant?: "border" | "filled" | "outlined" | undefined;
+  borderOff?: boolean;
 };
 
 const getBackgroundColor = (disabled: boolean | undefined, variant: string) => {
@@ -43,6 +44,7 @@ function Button({
   variant,
   linkTo,
   disabled,
+  borderOff = false,
   ...props
 }: ButtonProps) {
   const borderColor =
@@ -57,9 +59,10 @@ function Button({
         borderRadius: 1,
         fontFamily: "IBM Plex Sans, serif;",
         whiteSpace: "nowrap",
-        border: `0.5px solid ${Colors.border.subtle}`,
+        border: borderOff ? "none" : `0.5px solid ${Colors.border.subtle}`,
         "&:hover": {
-          border: disabled ? "none" : `0.5px solid ${borderColor}`,
+          border:
+            disabled || borderOff ? "none" : `0.5px solid ${borderColor}`,
         },
         borderColor,
         "&:active": {

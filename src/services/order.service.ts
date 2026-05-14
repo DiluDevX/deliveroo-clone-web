@@ -5,6 +5,7 @@ import {
   CheckoutResult,
   CheckoutResponse,
 } from "../types/order.types";
+import { FetchedAllOrders } from "../types/orders";
 import { getAuthHeader } from "./auth-headers";
 import { apiClient } from "./api.client";
 
@@ -190,6 +191,42 @@ export const getOrderHistory = async (): Promise<Order[]> => {
     }
     return [];
   }
+};
+
+const getAdminOrdersSource = async (): Promise<Order[]> => {
+  if (import.meta.env.VITE_BYPASS_AUTH === "true") {
+    return DUMMY_ORDERS;
+  }
+
+  const response = await apiClient.get<{ success: boolean; data: Order[] }>(
+    "/orders?limit=100",
+    { headers: getAuthHeader() },
+  );
+
+  return response.data.data || [];
+};
+
+export const getAllOrders = async (): Promise<FetchedAllOrders[]> => {
+  const orders = await getAdminOrdersSource();
+
+  return orders.map((order) => ({
+    _id: order.id,
+    id: order.id,
+    restaurantId: {
+      _id: order.restaurantId,
+      name: order.restaurantName,
+    },
+    userId: order.userId,
+    items: order.items.map((item) => ({
+      _id: item.id,
+      dish: item.dishName,
+      quantity: item.quantity,
+    })),
+    totalAmount: order.totalAmount,
+    status: order.status,
+    createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
+  }));
 };
 
 export const getOrderById = async (orderId: string): Promise<Order | null> => {

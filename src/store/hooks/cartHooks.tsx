@@ -3,3 +3,8 @@ import type { RootState, AppDispatch } from "../store";
 
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+export const useRestaurantId = () => {
+  const user = useAppSelector((state) => state.auth.user);
+  return user?.restaurantId || null;
+};
