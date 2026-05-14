@@ -13,6 +13,7 @@ import FilteredRestaurantsPage from "./pages/FilteredRestaurantsPage";
 import SignUpPage from "./pages/SignUpPage";
 import SignPageLayout from "./layout/SignPageLayout";
 import LoginPage from "./pages/LoginPage";
+import ProfilePage from "./pages/ProfilePage";
 import AccountCompletionPage from "./pages/AccountCompletionPage";
 import RecoveryPage from "./pages/RecoveryPage";
 import RecoveryConfirmationPage from "./pages/RecoveryConfirmationPage";
@@ -21,6 +22,8 @@ import MenuPage from "./pages/MenuPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import DataDeletionPage from "./pages/DataDeletionPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import PaymentPage from "./pages/PaymentPage";
+import OrderConfirmationPage from "./pages/OrderConfirmationPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminLayout from "./layout/AdminLayout";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
@@ -62,10 +65,34 @@ const App = () => {
           />
           <Route element={<ProtectedRoute />}>
             <Route
+              path="/profile"
+              element={
+                <WithPageTitle title="My Profile">
+                  <ProfilePage />
+                </WithPageTitle>
+              }
+            />
+            <Route
               path="/checkout"
               element={
                 <WithPageTitle title="Checkout">
                   <CheckoutPage />
+                </WithPageTitle>
+              }
+            />
+            <Route
+              path="/payment"
+              element={
+                <WithPageTitle title="Payment">
+                  <PaymentPage />
+                </WithPageTitle>
+              }
+            />
+            <Route
+              path="/order-confirmation"
+              element={
+                <WithPageTitle title="Order Confirmation">
+                  <OrderConfirmationPage />
                 </WithPageTitle>
               }
             />
@@ -161,11 +188,9 @@ const App = () => {
             }
           />
         </Route>
-        ,
         <Route element={<AdminLayout />}>
           <Route element={<AdminProtectedRoute />}>
             <Route
-              index
               path="/admin/dashboard"
               element={
                 <WithPageTitle title="Admin Dashboard">
@@ -215,11 +240,9 @@ const App = () => {
             />
           </Route>
         </Route>
-        ,
         <Route element={<RestaurantAdminLayout />}>
           <Route element={<RestaurantAdminProtectedRoute />}>
             <Route
-              index
               path="/restaurant/dashboard"
               element={
                 <WithPageTitle title="Restaurant Dashboard">

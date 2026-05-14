@@ -158,9 +158,9 @@ const AdminRestaurantsPage = () => {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={restaurant.status || "inactive"}
+                      label={restaurant.status || "DISABLED"}
                       color={
-                        restaurant.status === "active" ? "success" : "error"
+                        restaurant.status === "ACTIVE" ? "success" : "error"
                       }
                       size="small"
                       sx={{

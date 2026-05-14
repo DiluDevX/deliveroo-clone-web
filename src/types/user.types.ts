@@ -1,13 +1,37 @@
 export type IUser = {
+  id?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  role?: string;
+  restaurantId?: string;
+  orderCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export interface UserProfile {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
-  role: "user" | "platform_admin" | "restaurant_admin";
-  status: "Active" | "Suspended";
-  orderCount: number;
+  phone?: string;
+  role: string;
   createdAt: string;
   updatedAt: string;
-  restaurantId?: string;
-};
+}
+
+export interface Address {
+  id: string;
+  label: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  postcode: string;
+  country: string;
+  latitude?: number;
+  longitude?: number;
+  instructions?: string;
+  isDefault: boolean;
+}

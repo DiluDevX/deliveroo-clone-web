@@ -12,31 +12,29 @@ import TextInput from "../features/menu/components/TextInput";
 import { emailSchema } from "../features/menu/validations/email.validation";
 import { checkPasswordSchema } from "../features/menu/validations/password.validation";
 import { checkEmail, login } from "../services/auth.service";
-import { toast } from "sonner";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { setCredentials } from "../store/authSlice";
 import { useAppDispatch } from "../store/hooks/cartHooks";
-import { verifyApiKey } from "../services/admin.service";
-import { setAdminStatus } from "../store/adminSlice";
-import { showErrorSnackbar, showSuccessSnackbar } from "../utils/notifications";
+import { useSnackbar } from "notistack";
+import SignUpPage from "./SignUpPage";
 
 type LoginForm = {
   email: string;
   password?: string;
-  apiKey?: string;
 };
+
+type AuthStep = "email" | "password" | "signup";
 
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { enqueueSnackbar } = useSnackbar();
 
-  const [existingUser, setExistingUser] = useState(false);
-  const [showApiKeyField, setShowApiKeyField] = useState(false);
+  const [authStep, setAuthStep] = useState<AuthStep>("email");
+  const [verifiedEmail, setVerifiedEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showApiKey, setShowApiKey] = useState(false);
-
-  const handleClickShowApiKey = () => setShowApiKey((show) => !show);
+  const isPasswordStep = authStep === "password";
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -56,116 +54,91 @@ export default function Login() {
     () =>
       z.object({
         email: emailSchema,
-        password: existingUser
+        password: isPasswordStep
           ? checkPasswordSchema
           : checkPasswordSchema.optional(),
-        apiKey:
-          existingUser && showApiKeyField
-            ? z.string().min(1, "API Key is required")
-            : z.string().optional(),
       }),
-    [existingUser, showApiKeyField],
+    [isPasswordStep],
   );
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(schema),
+    mode: "onChange",
+    reValidateMode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
+  const handleLogin = async (email: string, password?: string) => {
+    if (!password) {
+      return;
+    }
+
+    const loginResponse = await login({ email, password });
+
+    if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
+      dispatch(
+        setCredentials({
+          accessToken: loginResponse.successResponse.accessToken,
+          refreshToken: loginResponse.successResponse.refreshToken,
+          user: {
+            id: loginResponse.successResponse.user.id,
+            email: loginResponse.successResponse.user.email,
+            firstName: loginResponse.successResponse.user.firstName,
+            lastName: loginResponse.successResponse.user.lastName,
+            phone: loginResponse.successResponse.user.phone,
+            role: loginResponse.successResponse.user.role,
+          },
+        }),
+      );
+
+      localStorage.removeItem("existingUser");
+
+      enqueueSnackbar("Logged In!", { variant: "success" });
+
+      const redirectAfterLogin = sessionStorage.getItem("redirectAfterLogin");
+      if (redirectAfterLogin) {
+        sessionStorage.removeItem("redirectAfterLogin");
+        navigate(redirectAfterLogin);
+      } else {
+        navigate("/");
+      }
+    } else if (loginResponse.type === "INVALID") {
+      enqueueSnackbar("Invalid Credentials", { variant: "error" });
+    } else {
+      enqueueSnackbar("Something went wrong", { variant: "error" });
+    }
+  };
+
   const handleSubmit = form.handleSubmit(async (values) => {
-    const { email, password, apiKey } = values;
+    const { email, password } = values;
+
+    if (isPasswordStep) {
+      await handleLogin(email, password);
+      return;
+    }
 
     const checkEmailResponse = await checkEmail({ email });
 
     if (checkEmailResponse.type === "EXISTING") {
-      setExistingUser(true);
+      setVerifiedEmail(email);
+      setAuthStep("password");
+      globalThis.setTimeout(() => form.setFocus("password"), 0);
     } else if (checkEmailResponse.type === "NEW") {
-      return navigate(`/Account/SignUp?email=${encodeURIComponent(email)}`);
+      setVerifiedEmail(email);
+      setAuthStep("signup");
+      return;
     } else {
-      toast.error("Something Went Wrong");
+      enqueueSnackbar("Something went wrong.", { variant: "error" });
       return;
     }
-    if (email && password && !showApiKeyField) {
-      const loginResponse = await login({ email, password });
-
-      if (
-        loginResponse.type === "SUCCESS" &&
-        loginResponse.successResponse?.user.role === "platform_admin"
-      ) {
-        setShowApiKeyField(true);
-        return;
-      }
-
-      if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
-        console.log("Login successful", loginResponse.successResponse);
-        dispatch(
-          setCredentials({
-            user: {
-              id: loginResponse.successResponse.user.id,
-              restaurantId: loginResponse.successResponse.user.restaurantId,
-              orderCount: loginResponse.successResponse.user.orderCount ?? 0,
-              status: loginResponse.successResponse.user.status,
-              email: loginResponse.successResponse.user.email,
-              firstName: loginResponse.successResponse.user.firstName,
-              lastName: loginResponse.successResponse.user.lastName,
-              phone: loginResponse.successResponse.user.phone,
-              role: loginResponse.successResponse.user.role,
-              createdAt: loginResponse.successResponse.user.createdAt,
-              updatedAt: loginResponse.successResponse.user.updatedAt,
-            },
-          }),
-        );
-
-        // Check for redirect after login
-        const redirectPath = sessionStorage.getItem("redirectAfterLogin");
-        if (redirectPath) {
-          sessionStorage.removeItem("redirectAfterLogin");
-          navigate(redirectPath);
-        } else if (
-          loginResponse.successResponse.user.role === "restaurant_admin" &&
-          loginResponse.successResponse.user.restaurantId !== null
-        ) {
-          showSuccessSnackbar("Logged In!");
-          navigate("/restaurant/dashboard");
-        } else {
-          showSuccessSnackbar("Logged In!");
-          navigate("/");
-        }
-      } else if (loginResponse.type === "INVALID") {
-        toast.error("Invalid Credentials");
-      } else {
-        toast.error("Something Went Wrong");
-      }
-    } else if (showApiKeyField && apiKey && password && email) {
-      try {
-        const loginResponse = await verifyApiKey(apiKey, email, password);
-        if (!loginResponse || !loginResponse.user) {
-          throw new Error("Invalid API Key");
-        }
-        dispatch(setAdminStatus({ isPlatformAdmin: true }));
-        dispatch(
-          setCredentials({
-            user: {
-              id: loginResponse.user.id,
-              restaurantId: loginResponse.user.restaurantId,
-              orderCount: loginResponse.user.orderCount ?? 0,
-              status: loginResponse.user.status,
-              email: loginResponse.user.email,
-              firstName: loginResponse.user.firstName,
-              lastName: loginResponse.user.lastName,
-              phone: loginResponse.user.phone,
-              role: loginResponse.user.role,
-              createdAt: loginResponse.user.createdAt,
-              updatedAt: loginResponse.user.updatedAt,
-            },
-          }),
-        );
-        showSuccessSnackbar("Logged In!");
-        navigate("/admin/dashboard");
-      } catch {
-        showErrorSnackbar("Invalid API Key");
-      }
-    }
   });
+
+  if (authStep === "signup") {
+    return <SignUpPage initialEmail={verifiedEmail} />;
+  }
 
   return (
     <Box
@@ -183,7 +156,8 @@ export default function Login() {
     >
       <Box>
         <Button
-          onClick={() => navigate("/Account")}
+          variant="border"
+          onClick={() => navigate("/account")}
           PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
           sx={{
             border: "none",
@@ -212,7 +186,7 @@ export default function Login() {
               fontSmoothing: "antialiased",
             }}
           >
-            Log In
+            {isPasswordStep ? "Log In" : "Log In or Sign Up"}
           </Typography>
           <Controller
             control={form.control}
@@ -228,12 +202,12 @@ export default function Login() {
                 type="email"
                 autoComplete="email"
                 required
-                disabled={existingUser}
+                disabled={isPasswordStep}
               />
             )}
           />
 
-          {existingUser && (
+          {isPasswordStep && (
             <Controller
               control={form.control}
               name="password"
@@ -274,44 +248,6 @@ export default function Login() {
             />
           )}
 
-          {showApiKeyField && existingUser && (
-            <Controller
-              control={form.control}
-              name="apiKey"
-              render={({ field, fieldState }) => (
-                <TextInput
-                  fullWidth
-                  label="API Key"
-                  value={field.value ?? ""}
-                  onChange={field.onChange}
-                  error={fieldState.error?.message}
-                  placeholder="e.g. api-key-here"
-                  type={showApiKey ? "text" : "password"}
-                  autoComplete="off"
-                  required
-                  disabled={!existingUser || !showApiKeyField}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment position="end" sx={{ mr: 2 }}>
-                          <IconButton
-                            aria-label={
-                              showApiKey ? "hide api-key" : "show api-key"
-                            }
-                            onClick={handleClickShowApiKey}
-                            edge="end"
-                          >
-                            {showApiKey ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                />
-              )}
-            />
-          )}
-
           <Button
             disabled={!form.formState.isValid}
             type="submit"
@@ -323,27 +259,25 @@ export default function Login() {
               width: "100%",
             }}
           >
-            {existingUser && !showApiKeyField ? "Login" : "Continue"}
+            {isPasswordStep ? "Login" : "Continue"}
           </Button>
-          {existingUser && !showApiKeyField && (
-            <Button
-              type="button"
-              onClick={() =>
-                navigate("/account/recovery", {
-                  state: {
-                    type: existingUser ? "forgotPassword" : "forgotEmail",
-                  },
-                })
-              }
-              variant="border"
-              sx={{
-                width: "100%",
-                color: Colors.background.brand,
-              }}
-            >
-              {existingUser ? "Forgot Password?" : "Forgot Email?"}
-            </Button>
-          )}
+          <Button
+            type="button"
+            onClick={() =>
+              navigate("/account/recovery", {
+                state: {
+                  type: isPasswordStep ? "forgotPassword" : "forgotEmail",
+                },
+              })
+            }
+            variant="border"
+            sx={{
+              width: "100%",
+              color: Colors.background.brand,
+            }}
+          >
+            {isPasswordStep ? "Forgot Password?" : "Forgot Email?"}
+          </Button>
         </form>
       </Box>
     </Box>

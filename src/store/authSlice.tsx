@@ -8,6 +8,7 @@ export interface AuthState {
   isAuthInitialized: boolean;
   user: IUser | null;
   token: string | null;
+  refreshToken: string | null;
 }
 
 const initialState: AuthState = {
@@ -15,21 +16,46 @@ const initialState: AuthState = {
   isAuthInitialized: false,
   user: null,
   token: null,
+  refreshToken: null,
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setCredentials: (state, action: PayloadAction<{ user?: IUser }>) => {
-      if (action.payload.user) {
+    setCredentials: (
+      state,
+      action: PayloadAction<{
+        user?: IUser;
+        accessToken?: string;
+        refreshToken?: string;
+      }>,
+    ) => {
+      const { user, accessToken, refreshToken } = action.payload;
+
+      if (user) {
+        state.user = user;
         state.isAuthenticated = true;
-        state.user = action.payload.user;
-      } else {
+      }
+
+      if (accessToken !== undefined) {
+        state.token = accessToken;
+        state.isAuthenticated = true;
+      }
+
+      if (refreshToken !== undefined) {
+        state.refreshToken = refreshToken;
+        state.isAuthenticated = true;
+      }
+
+      if (!user && accessToken === undefined && refreshToken === undefined) {
         state.isAuthenticated = false;
         state.user = null;
+        state.token = null;
+        state.refreshToken = null;
       }
     },
+
     setAuthInitialized: (state, action: PayloadAction<boolean>) => {
       state.isAuthInitialized = action.payload;
     },
@@ -38,6 +64,7 @@ const authSlice = createSlice({
       state.isAuthInitialized = false;
       state.user = null;
       state.token = null;
+      state.refreshToken = null;
       logout();
       showSuccessSnackbar("Logged Out!");
     },

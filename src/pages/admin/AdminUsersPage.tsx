@@ -50,22 +50,21 @@ const AdminUsersPage = () => {
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter((u) =>
-    `${u.firstName} ${u.lastName}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.phone === null
-      ? "-"
-      : u.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.orderCount === null
-        ? "-"
-        : u.orderCount.toString().includes(searchTerm.toLowerCase()) ||
-          "active".includes(searchTerm.toLowerCase()) ||
-          new Date(u.createdAt)
-            .toLocaleDateString()
-            .includes(searchTerm.toLowerCase()),
-  );
+  const filteredUsers = users.filter((u) => {
+    const normalizedSearchTerm = searchTerm.toLowerCase();
+    const searchableText = [
+      `${u.firstName} ${u.lastName}`,
+      u.email,
+      u.phone ?? "",
+      u.orderCount?.toString() ?? "",
+      "active",
+      u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "",
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return searchableText.includes(normalizedSearchTerm);
+  });
 
   return (
     <Box>
@@ -130,12 +129,8 @@ const AdminUsersPage = () => {
                     {user.firstName} {user.lastName}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    {user.phone === null ? "-" : user.phone}
-                  </TableCell>
-                  <TableCell>
-                    {user.orderCount === null ? "-" : user.orderCount}
-                  </TableCell>
+                  <TableCell>{user.phone ?? "-"}</TableCell>
+                  <TableCell>{user.orderCount ?? "-"}</TableCell>
                   <TableCell>
                     <Chip
                       label="Active"
@@ -149,7 +144,9 @@ const AdminUsersPage = () => {
                     />
                   </TableCell>
                   <TableCell>
-                    {new Date(user.createdAt).toISOString().split("T")[0]}
+                    {user.createdAt
+                      ? new Date(user.createdAt).toISOString().split("T")[0]
+                      : "-"}
                   </TableCell>
                   <TableCell
                     sx={{

@@ -1,16 +1,15 @@
-import axios from "axios";
+import { apiClient } from "./api.client";
 import { IDish } from "../data/Sides";
+
 export const getDishes = async (categoryId: string): Promise<IDish[]> => {
   try {
-    const response = await axios.get(`/api/dishes?category=${categoryId}`);
-    if (!response.data) {
-      throw new Error("Failed to fetch categories.");
-    }
-    const result = await response.data;
+    const response = await apiClient.get<{ data: IDish[] }>(
+      `/dishes?category=${categoryId}`,
+    );
+    const result = response.data;
 
     return Array.isArray(result.data) ? result.data : [];
-  } catch (error) {
-    console.error("Error fetching categories.", error);
+  } catch {
     return [];
   }
 };

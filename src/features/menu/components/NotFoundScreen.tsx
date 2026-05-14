@@ -11,10 +11,9 @@ const NotFoundScreen = ({ text }: { text: string }) => {
         marginTop: "6rem",
         width: "100%",
         maxWidth: { xs: "100vw", md: "70vw", lg: "70vw" },
-        paddingLeft: { md: "6rem", lg: "-8rem" },
+        paddingLeft: { md: "6rem", lg: "8rem" },
         mt: 4,
         mb: 10,
-        ml: { lg: "5rem" },
       }}
     >
       <Typography

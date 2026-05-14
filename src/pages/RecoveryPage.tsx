@@ -11,7 +11,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import LoadingIndicator from "../features/menu/components/LoadingIndicator";
 import { useState } from "react";
 import { sendEmail } from "../services/mail.service";
-import { toast } from "sonner";
+import { enqueueSnackbar } from "notistack";
+import { useAppSelector } from "../store/hooks/cartHooks";
 
 type RecoveryForm = {
   emailOrPhone: string;
@@ -23,6 +24,7 @@ const RecoveryPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const user = useAppSelector((state) => state.auth.user);
 
   const isForgotEmail = location.state?.type === "forgotEmail";
 
@@ -35,6 +37,9 @@ const RecoveryPage = () => {
   const form = useForm<RecoveryForm>({
     mode: "onChange",
     resolver: zodResolver(schema),
+    defaultValues: {
+      emailOrPhone: user?.email || "",
+    },
   });
 
   const handleSubmit = form.handleSubmit(async (values) => {
@@ -48,13 +53,22 @@ const RecoveryPage = () => {
         values.email = values.emailOrPhone;
         const result = await sendEmail(values.email);
         if (result) {
-          toast.success("Email sent successfully");
+          enqueueSnackbar("Email sent successfully", {
+            variant: "success",
+            autoHideDuration: 1500,
+          });
         } else {
-          toast.error("Email not sent. Please try again.");
+          enqueueSnackbar("Email not sent. Please try again.", {
+            variant: "error",
+            autoHideDuration: 1500,
+          });
         }
         setIsSubmitting(false);
       } else {
-        toast.warning("Phone recovery not yet available. Please use email.");
+        enqueueSnackbar("Phone recovery not yet available. Please use email.", {
+          variant: "warning",
+          autoHideDuration: 1500,
+        });
       }
       localStorage.setItem("emailOrPhone", values.emailOrPhone);
       navigate("/account/recovery-confirmation", {
@@ -64,7 +78,10 @@ const RecoveryPage = () => {
         },
       });
     } catch (error) {
-      toast.error("An error occurred. Please try again.");
+      enqueueSnackbar("An error occurred. Please try again.", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
       console.error("Submission failed:", error);
     } finally {
       setIsSubmitting(false);

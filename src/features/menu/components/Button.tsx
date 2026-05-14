@@ -10,7 +10,7 @@ type ButtonProps = ButtonBaseProps & {
   PrefixComponent?: React.ReactNode;
   SuffixComponent?: React.ReactNode;
   linkTo?: To;
-  variant?: "border" | "filled";
+  variant?: "border" | "filled" | "outlined" | undefined;
   borderOff?: boolean;
 };
 
@@ -20,6 +20,10 @@ const getBackgroundColor = (disabled: boolean | undefined, variant: string) => {
   }
 
   if (variant === "border") {
+    return Colors.background.light;
+  }
+
+  if (variant === "outlined") {
     return Colors.background.light;
   }
 
@@ -40,9 +44,13 @@ function Button({
   variant,
   linkTo,
   disabled,
-  borderOff,
+  borderOff = false,
   ...props
 }: ButtonProps) {
+  const borderColor =
+    variant === "outlined" ? Colors.border.brand : Colors.border.subtle;
+  const usesLightBackground = variant === "border" || variant === "outlined";
+
   return (
     <ButtonBase
       {...props}
@@ -54,22 +62,11 @@ function Button({
         border: borderOff ? "none" : `0.5px solid ${Colors.border.subtle}`,
         "&:hover": {
           border:
-            disabled || borderOff
-              ? "none"
-              : `0.5px solid ${Colors.border.subtle}`,
+            disabled || borderOff ? "none" : `0.5px solid ${borderColor}`,
         },
-        "&:focus": {
-          outline:
-            disabled || borderOff
-              ? "none"
-              : `2.7px solid rgba(2, 189, 174, 0.5)`,
-          outlineOffset: "-2.7px",
-        },
+        borderColor,
         "&:active": {
-          outline:
-            disabled || borderOff
-              ? "none"
-              : `2.7px solid rgba(2, 189, 174, 0.5)`,
+          outline: disabled ? "none" : `2.7px solid rgba(2, 189, 174, 0.5)`,
           outlineOffset: "-2.7px",
         },
         display: { xs: "flex", sm: "flex" },
@@ -81,7 +78,7 @@ function Button({
         paddingLeft: { xs: "0.5rem", sm: "1rem" },
         color: disabled
           ? Colors.text.placeholder
-          : variant === "border"
+          : usesLightBackground
             ? Colors.text.default
             : Colors.text.inverse,
         backgroundColor: getBackgroundColor(disabled, variant ?? "border"),
@@ -107,6 +104,7 @@ function Button({
         <Typography
           sx={{
             display: { xs: "none", sm: "flex" },
+            marginLeft: { md: "1rem", lg: "0.5rem" },
           }}
         >
           <Link
@@ -123,6 +121,7 @@ function Button({
         <Typography
           sx={{
             display: { xs: "none", sm: "flex" },
+            marginLeft: { md: "1rem", lg: "0.5rem" },
           }}
         >
           {title}

@@ -3,14 +3,11 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import { createTheme, ThemeProvider } from "@mui/material";
 import { HelmetProvider } from "react-helmet-async";
-import { Toaster } from "sonner";
+import { SnackbarProvider } from "notistack";
 import { Provider } from "react-redux";
 import { persistor, store } from "./store/store.tsx";
 import { PersistGate } from "redux-persist/integration/react";
-import axios from "axios";
 import { Colors } from "./theme/colors.ts";
-
-axios.defaults.withCredentials = true;
 
 const theme = createTheme({
   typography: {
@@ -19,30 +16,59 @@ const theme = createTheme({
       fontFamily: ["IBM Plex Sans", "serif"].join(","),
     },
   },
+  components: {
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          "& .MuiOutlinedInput-root": {
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: Colors.background.brand,
+            },
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: Colors.background.brand,
+          },
+        },
+      },
+    },
+    MuiCheckbox: {
+      styleOverrides: {
+        root: {
+          color: Colors.background.brand,
+          "&.Mui-checked": {
+            color: Colors.background.brand,
+          },
+        },
+      },
+    },
+    MuiRadio: {
+      styleOverrides: {
+        root: {
+          color: Colors.background.brand,
+          "&.Mui-checked": {
+            color: Colors.background.brand,
+          },
+        },
+      },
+    },
+  },
 });
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
     <ThemeProvider theme={theme}>
       <StrictMode>
-        <Toaster
-          duration={1000}
-          visibleToasts={1}
-          position="top-right"
-          toastOptions={{
-            style: {
-              backgroundColor: Colors.background.brand,
-              color: Colors.text.inverse,
-              marginTop: "4rem",
-              fontFamily: "IBM Plex Sans, serif",
-            },
-          }}
-        />
-        <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
-            <App />
-          </PersistGate>
-        </Provider>
+        <SnackbarProvider
+          maxSnack={2}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          style={{ marginTop: "4rem", fontFamily: "IBM Plex Sans, serif" }}
+        >
+          <Provider store={store}>
+            <PersistGate loading={null} persistor={persistor}>
+              <App />
+            </PersistGate>
+          </Provider>
+        </SnackbarProvider>
       </StrictMode>
     </ThemeProvider>
   </HelmetProvider>,

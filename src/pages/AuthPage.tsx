@@ -5,21 +5,27 @@ import AppleIcon from "@mui/icons-material/Apple";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import { Link, useNavigate } from "react-router-dom";
 import { Colors, Svgs } from "../theme";
-import { toast } from "sonner";
+import { enqueueSnackbar } from "notistack";
 import {
   handleFacebookSignIn,
   handleGoogleSignIn,
 } from "../services/firebase.service";
 import { checkEmail } from "../services/auth.service";
+import { useAppDispatch } from "../store/hooks/cartHooks";
+import { setCredentials } from "../store/authSlice";
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const FacebookButtonOnClick = async () => {
     try {
       const response = await handleFacebookSignIn();
       if (!response) {
-        toast.error("Something went wrong");
+        enqueueSnackbar("Something went wrong", {
+          variant: "error",
+          autoHideDuration: 1500,
+        });
         return;
       }
       const fullName = response.displayName ?? "";
@@ -32,18 +38,38 @@ const AuthPage = () => {
         email: response.email ?? "",
       });
       if (isThereAnUser.type === "EXISTING") {
-        localStorage.setItem("token", isThereAnUser.token ?? "");
-        toast.success("Signed in successfully");
+        if (isThereAnUser.existingUser) {
+          dispatch(
+            setCredentials({
+              user: {
+                firstName: isThereAnUser.existingUser.firstName,
+                lastName: isThereAnUser.existingUser.lastName,
+                email: isThereAnUser.existingUser.email,
+                role: "user",
+              },
+            }),
+          );
+        }
+        enqueueSnackbar("Signed in successfully", {
+          variant: "success",
+          autoHideDuration: 1500,
+        });
         navigate("/");
       } else if (isThereAnUser.type === "NEW") {
         navigate(
           `/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
         );
       } else {
-        toast.error("Something went wrong");
+        enqueueSnackbar("Something went wrong", {
+          variant: "error",
+          autoHideDuration: 1500,
+        });
       }
     } catch {
-      toast.error("Something went wrong");
+      enqueueSnackbar("Something went wrong", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
       return;
     }
   };
@@ -52,7 +78,10 @@ const AuthPage = () => {
     try {
       const response = await handleGoogleSignIn();
       if (!response) {
-        toast.error("Something went wrong");
+        enqueueSnackbar("Something went wrong", {
+          variant: "error",
+          autoHideDuration: 1500,
+        });
         return;
       }
       const fullName = response.displayName ?? "";
@@ -65,18 +94,38 @@ const AuthPage = () => {
         email: response.email ?? "",
       });
       if (isThereAnUser.type === "EXISTING") {
-        localStorage.setItem("token", isThereAnUser.token ?? "");
-        toast.success("Signed in successfully");
+        if (isThereAnUser.existingUser) {
+          dispatch(
+            setCredentials({
+              user: {
+                firstName: isThereAnUser.existingUser.firstName,
+                lastName: isThereAnUser.existingUser.lastName,
+                email: isThereAnUser.existingUser.email,
+                role: "user",
+              },
+            }),
+          );
+        }
+        enqueueSnackbar("Signed in successfully", {
+          variant: "success",
+          autoHideDuration: 1500,
+        });
         navigate("/");
       } else if (isThereAnUser.type === "NEW") {
         navigate(
           `/account/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
         );
       } else {
-        toast.error("Something went wrong");
+        enqueueSnackbar("Something went wrong", {
+          variant: "error",
+          autoHideDuration: 1500,
+        });
       }
     } catch {
-      toast.error("Something went wrong");
+      enqueueSnackbar("Something went wrong", {
+        variant: "error",
+        autoHideDuration: 1500,
+      });
       return;
     }
   };

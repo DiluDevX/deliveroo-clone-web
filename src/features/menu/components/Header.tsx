@@ -68,7 +68,7 @@ const Header = () => {
             display: "flex",
             alignItems: "center",
             width: { xs: "170px", sm: "auto", md: "auto", lg: "auto" },
-            ml: "-1.5rem",
+            ml: { xs: 0, sm: 0, md: 0, lg: "-1.5rem" },
             paddingTop: Paddings.Left.header.PaddingTop,
           }}
         >

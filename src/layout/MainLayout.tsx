@@ -6,22 +6,37 @@ import { useCartSync } from "../store/hooks/useCartSync";
 import { useEffect } from "react";
 import { useAppDispatch } from "../store/hooks/cartHooks";
 import { setAuthInitialized, setCredentials } from "../store/authSlice";
-import { getValidAuth } from "../services/auth.service";
+import { populateDummyCart } from "../store/cartSlice";
+import { checkAuthStatus, refreshToken } from "../services/auth.service";
 
 const MainLayout = () => {
   // Sync cart with server when user logs in
   useCartSync();
 
   const dispatch = useAppDispatch();
+
   useEffect(() => {
     const checkAuth = async () => {
+      if (import.meta.env.DEV && import.meta.env.VITE_BYPASS_AUTH === "true") {
+        localStorage.setItem("selected-restaurant-id", "dummy-restaurant");
+        dispatch(setAuthInitialized(true));
+        dispatch(populateDummyCart());
+        return;
+      }
+
       let result = null;
       try {
-        result = await getValidAuth();
-      } catch {
-        // Auth check failed
+        result = await checkAuthStatus();
+        if (!result) {
+          // Try refresh token if checkAuthStatus failed
+          await refreshToken();
+          result = await checkAuthStatus();
+        }
+      } catch (error) {
+        // Error refreshing token
+        console.error("Error refreshing token", error);
       } finally {
-        if (result) {
+        if (result && typeof result !== "boolean") {
           dispatch(setCredentials({ user: result.user }));
         } else {
           dispatch(setCredentials({}));

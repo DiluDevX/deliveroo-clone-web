@@ -14,7 +14,6 @@ import { useAppSelector } from "../../../store/hooks/cartHooks";
 const MainViewSearchBox = () => {
   const [searchInput, setSearchInput] = useState("");
   const navigate = useNavigate();
-  const user = useAppSelector((state) => state.auth.user);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
 
   const handleSearchInput = () => {
@@ -138,7 +137,7 @@ const MainViewSearchBox = () => {
           }}
         />
 
-        {!user && !isAuthenticated && (
+        {!isAuthenticated && (
           <Typography
             sx={{
               fontSize: "13px",

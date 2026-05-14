@@ -169,7 +169,7 @@ const AddRestaurantModal = ({
       totalRevenue: validatedData.totalRevenue
         ? Number.parseFloat(validatedData.totalRevenue)
         : 0,
-      status: validatedData.status === "active" ? "active" : "disabled",
+      status: validatedData.status === "active" ? "ACTIVE" : "DISABLED",
     };
 
     setLoading(true);
@@ -184,6 +184,12 @@ const AddRestaurantModal = ({
         showErrorSnackbar("Failed to create restaurant admin user");
         return;
       }
+
+      if (!user.id) {
+        showErrorSnackbar("Restaurant admin user is missing an id");
+        return;
+      }
+
       const restaurant = await createRestaurant({
         ...newRestaurant,
         adminId: user.id,

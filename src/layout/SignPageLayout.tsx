@@ -1,11 +1,14 @@
 import WithPageTitle from "../hocs/WithPageTitle";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAppSelector } from "../store/hooks/cartHooks";
 
 const SignPageLayout = () => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    window.location.href = "/";
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
   }
+
   return (
     <WithPageTitle title="SignPage">
       <Outlet />

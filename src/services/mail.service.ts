@@ -1,16 +1,12 @@
-import axios from "axios";
+import { apiClient } from "./api.client";
 
 export const sendEmail = async (email: string) => {
   try {
-    const response = await axios.post("/api/auth/forgot-password", {
+    await apiClient.post("/auth/forgot-password", {
       email,
     });
-    if (!response) {
-      return new Error("Failed to send email");
-    }
     return { message: "Email sent successfully" };
-  } catch (error) {
-    console.error("Error sending email", error);
+  } catch {
     return new Error("Failed to send email");
   }
 };
