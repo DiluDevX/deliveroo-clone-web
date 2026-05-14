@@ -10,7 +10,7 @@ type ButtonProps = ButtonBaseProps & {
   PrefixComponent?: React.ReactNode;
   SuffixComponent?: React.ReactNode;
   linkTo?: To;
-  variant?: "border" | "filled" | undefined;
+  variant?: "border" | "filled" | "outlined" | undefined;
 };
 
 const getBackgroundColor = (disabled: boolean | undefined, variant: string) => {
@@ -19,6 +19,10 @@ const getBackgroundColor = (disabled: boolean | undefined, variant: string) => {
   }
 
   if (variant === "border") {
+    return Colors.background.light;
+  }
+
+  if (variant === "outlined") {
     return Colors.background.light;
   }
 
@@ -41,6 +45,10 @@ function Button({
   disabled,
   ...props
 }: ButtonProps) {
+  const borderColor =
+    variant === "outlined" ? Colors.border.brand : Colors.border.subtle;
+  const usesLightBackground = variant === "border" || variant === "outlined";
+
   return (
     <ButtonBase
       {...props}
@@ -51,8 +59,9 @@ function Button({
         whiteSpace: "nowrap",
         border: `0.5px solid ${Colors.border.subtle}`,
         "&:hover": {
-          border: disabled ? "none" : `0.5px solid ${Colors.border.subtle}`,
+          border: disabled ? "none" : `0.5px solid ${borderColor}`,
         },
+        borderColor,
         "&:active": {
           outline: disabled ? "none" : `2.7px solid rgba(2, 189, 174, 0.5)`,
           outlineOffset: "-2.7px",
@@ -66,7 +75,7 @@ function Button({
         paddingLeft: { xs: "0.5rem", sm: "1rem" },
         color: disabled
           ? Colors.text.placeholder
-          : variant === "border"
+          : usesLightBackground
             ? Colors.text.default
             : Colors.text.inverse,
         backgroundColor: getBackgroundColor(disabled, variant ?? "border"),
