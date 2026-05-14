@@ -193,8 +193,21 @@ export const getOrderHistory = async (): Promise<Order[]> => {
   }
 };
 
+const getAdminOrdersSource = async (): Promise<Order[]> => {
+  if (import.meta.env.VITE_BYPASS_AUTH === "true") {
+    return DUMMY_ORDERS;
+  }
+
+  const response = await apiClient.get<{ success: boolean; data: Order[] }>(
+    "/orders?limit=100",
+    { headers: getAuthHeader() },
+  );
+
+  return response.data.data || [];
+};
+
 export const getAllOrders = async (): Promise<FetchedAllOrders[]> => {
-  const orders = await getOrderHistory();
+  const orders = await getAdminOrdersSource();
 
   return orders.map((order) => ({
     _id: order.id,

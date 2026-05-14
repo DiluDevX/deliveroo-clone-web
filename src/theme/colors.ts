@@ -39,6 +39,8 @@ export const Colors = {
     facebook: "#4c69ba",
   },
   status: {
+    success: "#10B981",
+    warning: "#F59E0B",
     delivered: {
       bg: "#e8f5e9",
       text: "#2e7d32",

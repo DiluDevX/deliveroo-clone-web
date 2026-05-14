@@ -45,9 +45,12 @@ export const getAllUsers = async (): Promise<IUser[]> => {
     return response.data.data || [];
   } catch (error) {
     if (isAxiosError(error)) {
-      console.error("Error fetching users:", error.response?.data);
+      console.error("Error fetching users", {
+        status: error.response?.status,
+        message: error.message,
+      });
     }
-    return [];
+    throw new Error("Failed to fetch users");
   }
 };
 

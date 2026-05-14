@@ -65,24 +65,29 @@ const AdminDashboardPage = () => {
   useEffect(() => {
     setFinishedFetchingChartData(false);
     async function fetchEverything() {
-      const restaurants = await getAllRestaurants();
-      setFetchedRestaurants(restaurants);
-      const orders = await getAllOrders();
-      setFetchedOrders(orders);
-      const users = await getAllUsers();
-      setFetchedUsers(users);
-      const result = await getAdminDashboardStats();
-      setFetchedTotalRevenue(result.data.stats.totalPlatformRevenue);
+      try {
+        const restaurants = await getAllRestaurants();
+        setFetchedRestaurants(restaurants);
+        const orders = await getAllOrders();
+        setFetchedOrders(orders);
+        const users = await getAllUsers();
+        setFetchedUsers(users);
+        const result = await getAdminDashboardStats();
+        setFetchedTotalRevenue(result.data.stats.totalPlatformRevenue);
 
-      // Transform Finance records into chart data (using actual commission)
-      const financeRecords = await getFinanceRecords();
-      const daysToShow = timePeriod === "7days" ? 7 : 30;
-      const chartData = transformFinanceToRevenueChart(
-        financeRecords,
-        daysToShow,
-      );
-      setRevenueChartData(chartData);
-      setFinishedFetchingChartData(true);
+        // Transform Finance records into chart data (using actual commission)
+        const financeRecords = await getFinanceRecords();
+        const daysToShow = timePeriod === "7days" ? 7 : 30;
+        const chartData = transformFinanceToRevenueChart(
+          financeRecords,
+          daysToShow,
+        );
+        setRevenueChartData(chartData);
+      } catch (error) {
+        console.error("Failed to fetch admin dashboard data", error);
+      } finally {
+        setFinishedFetchingChartData(true);
+      }
     }
     fetchEverything();
   }, [timePeriod]);

@@ -16,9 +16,38 @@ import {
   Cell,
 } from "recharts";
 
+interface RevenueDataPoint {
+  week: string;
+  revenue: number;
+  orders: number;
+}
+
+interface CategoryBreakdown {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface MonthlyStats {
+  month: string;
+  revenue: number;
+  orders: number;
+}
+
+interface PeakHourData {
+  hour: string;
+  orders: number;
+}
+
+interface AnalyticsCard {
+  label: string;
+  value: string;
+  change: string;
+}
+
 const RestaurantAnalyticsPage = () => {
   // Mock analytics data
-  const revenueData = [
+  const revenueData: RevenueDataPoint[] = [
     { week: "Week 1", revenue: 2400, orders: 45 },
     { week: "Week 2", revenue: 3200, orders: 58 },
     { week: "Week 3", revenue: 2800, orders: 52 },
@@ -26,7 +55,7 @@ const RestaurantAnalyticsPage = () => {
     { week: "Week 5", revenue: 4200, orders: 85 },
   ];
 
-  const categoryBreakdown = [
+  const categoryBreakdown: CategoryBreakdown[] = [
     { name: "Pizza", value: 35, color: "#FF6B6B" },
     { name: "Salads", value: 20, color: "#4ECDC4" },
     { name: "Pasta", value: 25, color: "#FFE66D" },
@@ -34,7 +63,7 @@ const RestaurantAnalyticsPage = () => {
     { name: "Drinks", value: 5, color: "#FF8B94" },
   ];
 
-  const monthlyStats = [
+  const monthlyStats: MonthlyStats[] = [
     { month: "Jan", revenue: 8500, orders: 210 },
     { month: "Feb", revenue: 12300, orders: 298 },
     { month: "Mar", revenue: 15600, orders: 365 },
@@ -43,7 +72,7 @@ const RestaurantAnalyticsPage = () => {
     { month: "Jun", revenue: 21500, orders: 520 },
   ];
 
-  const peakHours = [
+  const peakHours: PeakHourData[] = [
     { hour: "11:00", orders: 15 },
     { hour: "12:00", orders: 42 },
     { hour: "13:00", orders: 38 },
@@ -54,7 +83,7 @@ const RestaurantAnalyticsPage = () => {
     { hour: "21:00", orders: 25 },
   ];
 
-  const analyticsCards = [
+  const analyticsCards: AnalyticsCard[] = [
     {
       label: "Total Revenue (Month)",
       value: "$21,500",
@@ -113,7 +142,10 @@ const RestaurantAnalyticsPage = () => {
               >
                 {card.value}
               </Typography>
-              <Typography variant="caption" sx={{ color: "#10B981" }}>
+              <Typography
+                variant="caption"
+                sx={{ color: Colors.status.success }}
+              >
                 {card.change}
               </Typography>
             </Card>
@@ -155,7 +187,7 @@ const RestaurantAnalyticsPage = () => {
                   yAxisId="right"
                   type="monotone"
                   dataKey="orders"
-                  stroke="#10B981"
+                  stroke={Colors.status.success}
                   strokeWidth={2}
                   name="Orders"
                 />
@@ -250,7 +282,7 @@ const RestaurantAnalyticsPage = () => {
                 <Tooltip />
                 <Bar
                   dataKey="orders"
-                  fill="#F59E0B"
+                  fill={Colors.status.warning}
                   name="Orders"
                   radius={[8, 8, 0, 0]}
                 />

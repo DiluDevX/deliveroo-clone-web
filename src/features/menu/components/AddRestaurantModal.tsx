@@ -24,46 +24,82 @@ import {
 } from "../../../services/admin.service";
 import { useAppSelector } from "../../../store/hooks/cartHooks";
 
+const optionalNonNegativeNumberString = (fieldName: string) =>
+  z
+    .string()
+    .trim()
+    .refine((value) => {
+      if (!value) return true;
+      const parsedValue = Number(value);
+      return Number.isFinite(parsedValue) && parsedValue >= 0;
+    }, `${fieldName} must be a positive number`);
+
+const optionalNonNegativeIntegerString = (fieldName: string) =>
+  z
+    .string()
+    .trim()
+    .refine((value) => {
+      if (!value) return true;
+      const parsedValue = Number(value);
+      return (
+        Number.isInteger(parsedValue) &&
+        Number.isFinite(parsedValue) &&
+        parsedValue >= 0
+      );
+    }, `${fieldName} must be a positive whole number`);
+
 const restaurantFormSchema = z.object({
   name: z
     .string()
+    .trim()
     .min(1, "Restaurant name is required")
+    .max(200, "Restaurant name is too long")
     .regex(
-      /^[a-zA-Z0-9\s]+$/,
-      "Restaurant name can only contain letters and numbers",
+      /^[a-zA-Z0-9\s'&\-.,]+$/,
+      "Restaurant name contains unsupported characters",
     ),
   cuisine: z
     .string()
+    .trim()
     .min(1, "Cuisine type is required")
-    .regex(/^[a-zA-Z\s]+$/, "Cuisine can only contain letters"),
+    .max(100, "Cuisine type is too long")
+    .regex(/^[a-zA-Z\s'\-&]+$/, "Cuisine contains unsupported characters"),
   image: z
     .string()
+    .trim()
     .min(1, "Image URL is required")
     .url("Image must be a valid URL"),
-  description: z.string(),
-  tags: z.string(),
-  openingAt: z.string().min(1, "Opening time is required"),
-  closingAt: z.string().min(1, "Closing time is required"),
+  description: z.string().trim(),
+  tags: z.string().trim(),
+  openingAt: z.string().trim().min(1, "Opening time is required"),
+  closingAt: z.string().trim().min(1, "Closing time is required"),
   minimumValue: z
     .string()
+    .trim()
     .refine(
       (val) =>
-        !Number.isNaN(Number.parseFloat(val)) && Number.parseFloat(val) >= 0,
+        Number.isFinite(Number(val)) && Number(val) >= 0,
       "Minimum value must be a positive number",
     ),
   deliveryCharge: z
     .string()
+    .trim()
     .refine(
       (val) =>
-        !Number.isNaN(Number.parseFloat(val)) && Number.parseFloat(val) >= 0,
+        Number.isFinite(Number(val)) && Number(val) >= 0,
       "Delivery charge must be a positive number",
     ),
-  rating: z.string(),
-  totalOrders: z.string(),
-  totalRevenue: z.string(),
+  rating: optionalNonNegativeNumberString("Rating"),
+  totalOrders: optionalNonNegativeIntegerString("Total orders"),
+  totalRevenue: optionalNonNegativeNumberString("Total revenue"),
   status: z.enum(["active", "disabled"]),
-  adminEmail: z.string(),
-  adminPassword: z.string(),
+  adminEmail: z.string().trim().email({ message: "Invalid email" }),
+  adminPassword: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters" })
+    .regex(/[A-Z]/, { message: "Must include an uppercase letter" })
+    .regex(/[a-z]/, { message: "Must include a lowercase letter" })
+    .regex(/[0-9]/, { message: "Must include a number" }),
 });
 
 interface AddRestaurantModalProps {
@@ -90,7 +126,7 @@ export interface CreateRestaurantFormData {
   adminPassword: string;
 }
 
-const resetFormData = () => (): CreateRestaurantFormData => ({
+const resetFormData = (): CreateRestaurantFormData => ({
   name: "",
   cuisine: "",
   image: "",
@@ -108,13 +144,74 @@ const resetFormData = () => (): CreateRestaurantFormData => ({
   adminPassword: "",
 });
 
+const parseOptionalNumber = (value: string) => (value ? Number(value) : 0);
+
+const parseOptionalInteger = (value: string) =>
+  value ? Number.parseInt(value, 10) : 0;
+
+const buildRestaurantPayload = (
+  data: CreateRestaurantFormData,
+): Partial<Restaurant> => ({
+  name: data.name,
+  image: data.image,
+  description: data.description,
+  tags: data.tags
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean),
+  openingAt: data.openingAt,
+  closingAt: data.closingAt,
+  minimumValue: Number(data.minimumValue),
+  deliveryCharge: Number(data.deliveryCharge),
+  cuisine: data.cuisine,
+  rating: parseOptionalNumber(data.rating),
+  totalOrders: parseOptionalInteger(data.totalOrders),
+  totalRevenue: parseOptionalNumber(data.totalRevenue),
+  status: data.status === "active" ? "ACTIVE" : "DISABLED",
+});
+
+const createRestaurantWithAdmin = async (
+  data: CreateRestaurantFormData,
+  isPlatformAdmin: boolean,
+): Promise<Restaurant> => {
+  const user = await createNewRestaurantAdmin(
+    data.adminEmail,
+    data.adminPassword,
+    data.name,
+    isPlatformAdmin,
+  );
+
+  if (!user?.id) {
+    throw new Error("Failed to create restaurant admin user");
+  }
+
+  const restaurant = await createRestaurant({
+    ...buildRestaurantPayload(data),
+    adminId: user.id,
+  });
+
+  if (!restaurant) {
+    throw new Error("Failed to create restaurant");
+  }
+
+  const res = await updateRestaurantAdmin(user.id, {
+    restaurantId: restaurant.id,
+  });
+
+  if (!res || !res.restaurantId) {
+    throw new Error("Failed to link restaurant admin to restaurant");
+  }
+
+  return restaurant;
+};
+
 const AddRestaurantModal = ({
   open,
   onClose,
   onSuccess,
 }: AddRestaurantModalProps) => {
   const [formData, setFormData] =
-    useState<CreateRestaurantFormData>(resetFormData());
+    useState<CreateRestaurantFormData>(() => resetFormData());
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -145,68 +242,9 @@ const AddRestaurantModal = ({
       return;
     }
 
-    const validatedData = validationResult.data;
-
-    const newRestaurant: Partial<Restaurant> = {
-      name: validatedData.name,
-      image: validatedData.image,
-      description: validatedData.description,
-      tags: validatedData.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag),
-      openingAt: validatedData.openingAt,
-      closingAt: validatedData.closingAt,
-      minimumValue: validatedData.minimumValue,
-      deliveryCharge: validatedData.deliveryCharge,
-      cuisine: validatedData.cuisine,
-      rating: validatedData.rating
-        ? Number.parseFloat(validatedData.rating)
-        : 0,
-      totalOrders: validatedData.totalOrders
-        ? Number.parseInt(validatedData.totalOrders)
-        : 0,
-      totalRevenue: validatedData.totalRevenue
-        ? Number.parseFloat(validatedData.totalRevenue)
-        : 0,
-      status: validatedData.status === "active" ? "ACTIVE" : "DISABLED",
-    };
-
     setLoading(true);
     try {
-      const user = await createNewRestaurantAdmin(
-        validatedData.adminEmail,
-        validatedData.adminPassword,
-        validatedData.name,
-        isPlatformAdmin,
-      );
-      if (!user) {
-        showErrorSnackbar("Failed to create restaurant admin user");
-        return;
-      }
-
-      if (!user.id) {
-        showErrorSnackbar("Restaurant admin user is missing an id");
-        return;
-      }
-
-      const restaurant = await createRestaurant({
-        ...newRestaurant,
-        adminId: user.id,
-      } as Restaurant);
-
-      if (!restaurant) {
-        showErrorSnackbar("Failed to create restaurant");
-        return;
-      }
-      const res = await updateRestaurantAdmin(user.id, {
-        restaurantId: restaurant.id,
-      });
-
-      if (!res.restaurantId) {
-        showErrorSnackbar("Failed to link restaurant admin to restaurant");
-        return;
-      }
+      await createRestaurantWithAdmin(validationResult.data, isPlatformAdmin);
       showSuccessSnackbar("Restaurant created successfully");
 
       setFormData(resetFormData());
@@ -214,21 +252,21 @@ const AddRestaurantModal = ({
       onClose();
       onSuccess();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create restaurant",
-      );
-      showErrorSnackbar("Something went wrong");
+      const message =
+        err instanceof Error ? err.message : "Failed to create restaurant";
+      setError(message);
+      showErrorSnackbar(message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleClose = () => {
+    if (loading) return;
+
     setError("");
     onClose();
-    if (!loading) {
-      setFormData(resetFormData());
-    }
+    setFormData(resetFormData());
   };
 
   return (
