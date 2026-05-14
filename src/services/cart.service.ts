@@ -95,7 +95,9 @@ export const updateCartItemQuantity = async (
     return true;
   } catch (error) {
     if (isAxiosError(error)) {
-      throw new Error("Error updating cart");
+      console.error("Error updating cart item quantity:", error.response?.data);
+    } else {
+      console.error("Error updating cart item quantity:", error);
     }
     return false;
   }
@@ -110,7 +112,12 @@ export const removeItemFromCart = async (
     });
 
     return true;
-  } catch {
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error removing cart item:", error.response?.data);
+    } else {
+      console.error("Error removing cart item:", error);
+    }
     return false;
   }
 };
@@ -122,7 +129,12 @@ export const clearCartInDb = async (): Promise<boolean> => {
     });
 
     return true;
-  } catch {
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error clearing cart:", error.response?.data);
+    } else {
+      console.error("Error clearing cart:", error);
+    }
     return false;
   }
 };

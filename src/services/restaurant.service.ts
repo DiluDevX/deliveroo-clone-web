@@ -289,7 +289,10 @@ export const getSingleRestaurant = async (restaurantId: string) => {
       `/restaurants/${encodeURIComponent(restaurantId)}`,
     );
     return response.data.data;
-  } catch {
+  } catch (error) {
+    if (!import.meta.env.PROD) {
+      console.error("Error fetching Restaurant", error);
+    }
     return null;
   }
 };

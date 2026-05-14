@@ -171,13 +171,20 @@ export const UpdateUserPassword = async ({
 }: {
   password: string;
   user_id: string;
-}) => {
+}): Promise<boolean> => {
   try {
-    await apiClient.patch(`/users/${user_id}`, {
-      password,
-    });
-    return { message: "Password updated successfully" };
-  } catch {
-    return new Error("Failed to update password");
+    await apiClient.patch(
+      `/users/${user_id}`,
+      { password },
+      { headers: getAuthHeader() },
+    );
+    return true;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error updating user password:", error.response?.data);
+    } else {
+      console.error("Error updating user password:", error);
+    }
+    return false;
   }
 };
