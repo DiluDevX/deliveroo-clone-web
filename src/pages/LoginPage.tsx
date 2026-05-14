@@ -79,17 +79,20 @@ export default function Login() {
     const loginResponse = await login({ email, password });
 
     if (loginResponse.type === "SUCCESS" && loginResponse.successResponse) {
+      const { user } = loginResponse.successResponse;
+
       dispatch(
         setCredentials({
           accessToken: loginResponse.successResponse.accessToken,
           refreshToken: loginResponse.successResponse.refreshToken,
           user: {
-            id: loginResponse.successResponse.user.id,
-            email: loginResponse.successResponse.user.email,
-            firstName: loginResponse.successResponse.user.firstName,
-            lastName: loginResponse.successResponse.user.lastName,
-            phone: loginResponse.successResponse.user.phone,
-            role: loginResponse.successResponse.user.role,
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phone: user.phone,
+            role: user.role,
+            restaurantId: user.restaurantId,
           },
         }),
       );
@@ -102,6 +105,10 @@ export default function Login() {
       if (redirectAfterLogin) {
         sessionStorage.removeItem("redirectAfterLogin");
         navigate(redirectAfterLogin);
+      } else if (user.role === "platform_admin") {
+        navigate("/admin/dashboard");
+      } else if (user.role === "restaurant_admin" && user.restaurantId) {
+        navigate("/restaurant/dashboard");
       } else {
         navigate("/");
       }

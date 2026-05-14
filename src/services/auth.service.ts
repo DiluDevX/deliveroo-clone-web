@@ -153,6 +153,7 @@ export const login = async (
               lastName: user.lastName,
               phone: user.phone ?? undefined,
               role: user.role,
+              restaurantId: user.restaurantId ?? undefined,
               status: "Active",
               orderCount: 0,
               createdAt: user.createdAt,
