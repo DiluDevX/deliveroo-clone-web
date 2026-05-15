@@ -18,9 +18,6 @@ jobs:
     name: Semantic Release
     runs-on: ubuntu-latest
 
-    env:
-      RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -42,7 +39,7 @@ jobs:
 
       - name: Semantic Release
         env:
-          GITHUB_TOKEN: ${{ env.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           HUSKY: 0
         run: npx semantic-release
 
