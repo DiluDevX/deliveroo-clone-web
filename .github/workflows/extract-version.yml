@@ -1,0 +1,41 @@
+name: Extract Version
+
+on:
+  workflow_call:
+    outputs:
+      version:
+        description: "The version tag without 'v' prefix"
+        value: ${{ jobs.extract.outputs.version }}
+      published:
+        description: "Whether a new version was published"
+        value: ${{ jobs.extract.outputs.published }}
+
+jobs:
+  extract:
+    name: Extract Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract.outputs.version }}
+      published: ${{ steps.extract.outputs.published }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version
+        id: extract
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -z "$TAG" ]; then
+            echo "No tags found"
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          VERSION=${TAG#v}
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "published=true" >> "$GITHUB_OUTPUT"
+          echo "Found tag: $TAG"

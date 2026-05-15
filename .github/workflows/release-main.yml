@@ -1,0 +1,20 @@
+name: CI/CD - Production Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release-production:
+    name: Release to Production
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
+    secrets: inherit
