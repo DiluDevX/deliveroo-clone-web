@@ -204,9 +204,7 @@ export const getAllRestaurants = async (
     appendRestaurantFilters(params, filters);
 
     const queryString = params.toString();
-    const url = queryString
-      ? `/restaurants?${queryString}`
-      : "/restaurants";
+    const url = queryString ? `/restaurants?${queryString}` : "/restaurants";
 
     const response = await apiClient.get(url, { headers: getAuthHeader() });
     if (!response.data) {
@@ -234,9 +232,7 @@ export const getFilteredRestaurants = async (
     appendRestaurantFilters(params, filters);
 
     const queryString = params.toString();
-    const url = queryString
-      ? `/restaurants?${queryString}`
-      : "/restaurants";
+    const url = queryString ? `/restaurants?${queryString}` : "/restaurants";
 
     const response = await apiClient.get<ApiPaginatedResponse>(url, {
       headers: getAuthHeader(),

@@ -76,7 +76,8 @@ const FilteredRestaurantsPage = () => {
           filterParams.minOrderValue = MINIMUM_ORDER_VALUE_THRESHOLDS.midMin;
           filterParams.maxOrderValue = MINIMUM_ORDER_VALUE_THRESHOLDS.midMax;
         } else if (filters.priceRange === "premium") {
-          filterParams.minOrderValue = MINIMUM_ORDER_VALUE_THRESHOLDS.premiumMin;
+          filterParams.minOrderValue =
+            MINIMUM_ORDER_VALUE_THRESHOLDS.premiumMin;
         }
         if (filters.offers) {
           filterParams.tags = "popular";

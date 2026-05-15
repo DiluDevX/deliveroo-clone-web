@@ -296,9 +296,9 @@ export const getValidAdminAuth = async (): Promise<AuthStatus> => {
 
   if (
     authStatus &&
-      typeof authStatus !== "boolean" &&
-      (authStatus.user?.role === "platform_admin" ||
-        authStatus.user?.role === "restaurant_admin")
+    typeof authStatus !== "boolean" &&
+    (authStatus.user?.role === "platform_admin" ||
+      authStatus.user?.role === "restaurant_admin")
   ) {
     return authStatus;
   }

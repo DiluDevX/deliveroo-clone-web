@@ -9,8 +9,12 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "format:fix": "prettier . --write",
-    "lint:fix": "eslint --fix ."
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "lint:check": "eslint src",
+    "lint:fix": "eslint --fix src",
+    "types:check": "tsc --noEmit",
+    "prepare": "husky"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -43,6 +47,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@commitlint/config-conventional": "^21.0.1",
     "@eslint/js": "^9.15.0",
     "@faker-js/faker": "^9.3.0",
     "@svgr/webpack": "^8.1.0",
@@ -53,11 +58,13 @@
     "@types/recharts": "^1.8.29",
     "@types/redux-persist": "^4.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "commitlint": "^21.0.1",
     "eslint": "^9.15.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
     "globals": "^15.12.0",
+    "husky": "^9.1.7",
     "live-server": "^1.2.0",
     "prettier": "3.4.2",
     "recharts": "^3.7.0",

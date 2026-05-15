@@ -20,10 +20,10 @@ export const getUserProfile = async (): Promise<UserProfile | null> => {
   }
 
   try {
-    const response = await apiClient.get<{ success: boolean; data: UserProfile }>(
-      "/users/me",
-      { headers: getAuthHeader() },
-    );
+    const response = await apiClient.get<{
+      success: boolean;
+      data: UserProfile;
+    }>("/users/me", { headers: getAuthHeader() });
     if (response.data.data?.id) {
       localStorage.setItem("userId", response.data.data.id);
     }
@@ -62,11 +62,10 @@ export const updateUserProfile = async (
   }
 
   try {
-    const response = await apiClient.patch<{ success: boolean; data: UserProfile }>(
-      "/users/me",
-      data,
-      { headers: getAuthHeader() },
-    );
+    const response = await apiClient.patch<{
+      success: boolean;
+      data: UserProfile;
+    }>("/users/me", data, { headers: getAuthHeader() });
     return response.data.data;
   } catch (error) {
     if (isAxiosError(error)) {

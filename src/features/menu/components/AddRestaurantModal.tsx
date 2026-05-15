@@ -77,16 +77,14 @@ const restaurantFormSchema = z.object({
     .string()
     .trim()
     .refine(
-      (val) =>
-        Number.isFinite(Number(val)) && Number(val) >= 0,
+      (val) => Number.isFinite(Number(val)) && Number(val) >= 0,
       "Minimum value must be a positive number",
     ),
   deliveryCharge: z
     .string()
     .trim()
     .refine(
-      (val) =>
-        Number.isFinite(Number(val)) && Number(val) >= 0,
+      (val) => Number.isFinite(Number(val)) && Number(val) >= 0,
       "Delivery charge must be a positive number",
     ),
   rating: optionalNonNegativeNumberString("Rating"),
@@ -210,8 +208,9 @@ const AddRestaurantModal = ({
   onClose,
   onSuccess,
 }: AddRestaurantModalProps) => {
-  const [formData, setFormData] =
-    useState<CreateRestaurantFormData>(() => resetFormData());
+  const [formData, setFormData] = useState<CreateRestaurantFormData>(() =>
+    resetFormData(),
+  );
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

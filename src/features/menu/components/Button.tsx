@@ -61,8 +61,7 @@ function Button({
         whiteSpace: "nowrap",
         border: borderOff ? "none" : `0.5px solid ${Colors.border.subtle}`,
         "&:hover": {
-          border:
-            disabled || borderOff ? "none" : `0.5px solid ${borderColor}`,
+          border: disabled || borderOff ? "none" : `0.5px solid ${borderColor}`,
         },
         borderColor,
         "&:active": {
