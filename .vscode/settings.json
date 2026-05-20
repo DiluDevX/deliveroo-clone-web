@@ -7,7 +7,9 @@
     "notistack",
     "resto",
     "rooute",
-    "Svgs"
+    "scrollspy",
+    "Svgs",
+    "unstub"
   ],
   "postman.settings.dotenv-detection-notification-visibility": false
 }

@@ -1,7 +1,5 @@
-import Lottie from "react-lottie-player";
-import loadingAnimation from "../../../assets/animations/lottie-loading-dot-animation.json";
 import { Colors } from "../../../theme";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 
 type LoadingIndicatorProps = {
   variant?: "button" | "bar";
@@ -67,17 +65,15 @@ const LoadingIndicator = ({ variant, text }: LoadingIndicatorProps) => {
         fontSize: variant === "button" ? "0.875rem" : "1.25rem",
         fill: Colors.text.default,
         fontFamily: "IBM Plex Sans, serif",
+        gap: variant === "button" ? 0.75 : 2,
       }}
     >
       <span style={{ color: Colors.background.brand }}>{text}</span>
 
-      <Lottie
-        loop
-        animationData={loadingAnimation}
-        play
-        style={{
-          width: variant === "button" ? 30 : 150,
-          height: variant === "button" ? 30 : 150,
+      <CircularProgress
+        size={variant === "button" ? 22 : 56}
+        thickness={4}
+        sx={{
           color: Colors.background.brand,
         }}
       />
