@@ -7,6 +7,9 @@ type LoadingIndicatorProps = {
 };
 
 const LoadingIndicator = ({ variant, text }: LoadingIndicatorProps) => {
+  const loadingLabel =
+    text || (variant === "button" ? "Loading" : "Loading content");
+
   if (variant === "bar") {
     return (
       <Box
@@ -71,6 +74,7 @@ const LoadingIndicator = ({ variant, text }: LoadingIndicatorProps) => {
       <span style={{ color: Colors.background.brand }}>{text}</span>
 
       <CircularProgress
+        aria-label={loadingLabel}
         size={variant === "button" ? 22 : 56}
         thickness={4}
         sx={{

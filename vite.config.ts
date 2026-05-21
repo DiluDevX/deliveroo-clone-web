@@ -8,13 +8,9 @@ export default defineConfig({
 
   build: {
     commonjsOptions: {
-      include: [/lottie-web/, /node_modules/],
+      include: [/node_modules/],
       transformMixedEsModules: true,
     },
-  },
-
-  optimizeDeps: {
-    include: ["lottie-web"],
   },
 
   server: {

@@ -194,7 +194,6 @@ const PaymentPage = () => {
       return;
     }
 
-    hasStartedCardSetup.current = true;
     let isActive = true;
 
     const prepareCardPayment = async () => {
@@ -209,6 +208,7 @@ const PaymentPage = () => {
         return;
       }
 
+      hasStartedCardSetup.current = true;
       setIsProcessing(true);
       setError(null);
       setProcessingStep("Creating order...");
@@ -266,6 +266,8 @@ const PaymentPage = () => {
         setError(message);
         console.error("Card payment setup error:", err);
       } finally {
+        hasStartedCardSetup.current = false;
+
         if (isActive) {
           setIsProcessing(false);
         }
@@ -276,6 +278,7 @@ const PaymentPage = () => {
 
     return () => {
       isActive = false;
+      hasStartedCardSetup.current = false;
     };
   }, [
     checkoutData?.address,

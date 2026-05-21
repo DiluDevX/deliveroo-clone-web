@@ -36,16 +36,6 @@ Object.defineProperty(globalThis, "localStorage", {
   value: localStorageMock,
 });
 
-Object.defineProperty(globalThis, "sessionStorage", {
-  configurable: true,
-  value: sessionStorageMock,
-});
-
-Object.defineProperty(globalThis, "localStorage", {
-  configurable: true,
-  value: localStorageMock,
-});
-
 afterEach(() => {
   cleanup();
   localStorageMock.clear();

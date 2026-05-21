@@ -23,5 +23,5 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["vite/client", "node", "./src/types/vite-env.d.ts"]
   },
-  "include": ["src", "tests/*.test.ts", "tests/*.spec.ts"]
+  "include": ["src", "tests"]
 }

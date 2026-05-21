@@ -2,7 +2,7 @@
 
 ### Features
 
-- :art: Added react router and nessasary files. ([54cd1c4](https://github.com/DiluDevX/deliveroo-clone-web/commit/54cd1c45124fc8d032d792db038af6305587bcf5))
+- :art: Added react router and necessary files. ([54cd1c4](https://github.com/DiluDevX/deliveroo-clone-web/commit/54cd1c45124fc8d032d792db038af6305587bcf5))
 - :art: Added store main front and styles ([2833023](https://github.com/DiluDevX/deliveroo-clone-web/commit/28330239e8beab88f4d22d555aac67979882f5cd))
 - :lipstick: Styles the Header ([0c693be](https://github.com/DiluDevX/deliveroo-clone-web/commit/0c693be55a02b0f4adb60b286774d900c447a97e))
 - :sparkles: Add menu components and views; implement dish types and update Header with SearchBar ([5b37a5c](https://github.com/DiluDevX/deliveroo-clone-web/commit/5b37a5c558f2e4d58305ff6e1e6c6a120ab5f8a9))

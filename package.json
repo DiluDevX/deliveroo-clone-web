@@ -17,7 +17,7 @@
     "lint:fix": "eslint --fix src",
     "types:check": "tsc --noEmit",
     "prepare": "husky",
-    "run tests": "vitest --run"
+    "test:run": "vitest --run"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

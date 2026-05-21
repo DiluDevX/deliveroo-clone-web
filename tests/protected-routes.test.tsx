@@ -87,6 +87,7 @@ describe("protected routes", () => {
     renderWithProviders(<AdminRouteHarness />, {
       preloadedState: {
         auth: {
+          isAuthInitialized: true,
           isAuthenticated: true,
           user: {
             firstName: "Customer",
@@ -106,6 +107,7 @@ describe("protected routes", () => {
     renderWithProviders(<AdminRouteHarness />, {
       preloadedState: {
         auth: {
+          isAuthInitialized: true,
           isAuthenticated: true,
           user: {
             firstName: "Platform",
@@ -124,6 +126,7 @@ describe("protected routes", () => {
     renderWithProviders(<RestaurantAdminRouteHarness />, {
       preloadedState: {
         auth: {
+          isAuthInitialized: true,
           isAuthenticated: true,
           user: {
             firstName: "Restaurant",
@@ -143,6 +146,7 @@ describe("protected routes", () => {
     renderWithProviders(<RestaurantAdminRouteHarness />, {
       preloadedState: {
         auth: {
+          isAuthInitialized: true,
           isAuthenticated: true,
           user: {
             firstName: "Restaurant",
