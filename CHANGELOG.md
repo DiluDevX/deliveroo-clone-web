@@ -1,3 +1,11 @@
+## [1.1.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.0.0...v1.1.0) (2026-05-21)
+
+### Features
+
+* add sum function and corresponding tests ([d3213fe](https://github.com/DiluDevX/deliveroo-clone-web/commit/d3213fe5bb05b98ccfd8517a510cd86c8a2728f4))
+* replace Lottie loading animation with CircularProgress in LoadingIndicator component ([2bb27f3](https://github.com/DiluDevX/deliveroo-clone-web/commit/2bb27f3175274b7b12ef60f009b58cbb6c4dc7f9))
+* update LoadingIndicator to include loading label and improve accessibility ([70841bc](https://github.com/DiluDevX/deliveroo-clone-web/commit/70841bc389378c7c07bf801467a0129d62797f7c))
+
 ## 1.0.0 (2026-05-15)
 
 ### Features
