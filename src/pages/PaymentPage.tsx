@@ -2,7 +2,7 @@ import { Box, Typography, Grid, Card, CircularProgress } from "@mui/material";
 import { Elements } from "@stripe/react-stripe-js";
 import { Colors } from "../theme/colors";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Button from "../features/menu/components/Button";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -24,11 +24,6 @@ type CheckoutData = {
   zipCode?: string;
 };
 
-type PaymentSetup = {
-  paymentId: string;
-  clientSecret: string;
-};
-
 const PaymentPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,6 +36,7 @@ const PaymentPage = () => {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const hasStartedCardSetup = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -61,7 +57,7 @@ const PaymentPage = () => {
   const restaurantAddress =
     localStorage.getItem("selected-restaurant-address") || "";
 
-  const shippingFee = deliveryMethod === "delivery" ? 5.0 : 0;
+  const shippingFee = deliveryMethod === "delivery" ? 5 : 0;
   const serviceFee = 0.99;
   const discount = 0;
   const total =
@@ -139,37 +135,6 @@ const PaymentPage = () => {
     return orderResponse;
   };
 
-  const createCardPaymentSetup = async (
-    orderId: string,
-  ): Promise<PaymentSetup> => {
-    setProcessingStep("Preparing payment...");
-
-    const paymentIntent = await createPaymentIntent({
-      orderId,
-      expectedTotalAmount: total,
-    });
-
-    const paymentData = paymentIntent?.data;
-
-    if (!paymentData?.clientSecret || !paymentData.paymentId) {
-      throw new Error("Failed to process payment. Please try again.");
-    }
-
-    return {
-      paymentId: paymentData.paymentId,
-      clientSecret: paymentData.clientSecret,
-    };
-  };
-
-  const storeCardPaymentSetup = (
-    order: CheckoutResult,
-    paymentSetup: PaymentSetup,
-  ) => {
-    setOrderNumber(order.orderNumber);
-    setPaymentId(paymentSetup.paymentId);
-    setClientSecret(paymentSetup.clientSecret);
-  };
-
   const getOrderDetails = () => ({
     subtotal,
     shippingFee,
@@ -219,26 +184,117 @@ const PaymentPage = () => {
     }
   };
 
-  /**
-   * Handle card payment - creates order and payment intent
-   */
-  const handleCardPayment = async () => {
-    if (!canStartPayment()) {
+  useEffect(() => {
+    if (
+      paymentMethod !== "CARD" ||
+      hasStartedCardSetup.current ||
+      clientSecret ||
+      paymentId
+    ) {
       return;
     }
 
-    startPaymentProcessing("Creating order...");
+    let isActive = true;
 
-    try {
-      const orderResponse = await createCheckoutOrder("card");
-      const paymentSetup = await createCardPaymentSetup(orderResponse.orderId);
-      storeCardPaymentSetup(orderResponse, paymentSetup);
-    } catch (err) {
-      handlePaymentError(err, "Card payment setup error:");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+    const prepareCardPayment = async () => {
+      const hasDeliveryAddress =
+        deliveryMethod !== "delivery" ||
+        Boolean(
+          checkoutData?.address && checkoutData.city && checkoutData.zipCode,
+        );
+
+      if (!hasDeliveryAddress) {
+        setError("Missing delivery address");
+        return;
+      }
+
+      hasStartedCardSetup.current = true;
+      setIsProcessing(true);
+      setError(null);
+      setProcessingStep("Creating order...");
+
+      try {
+        const orderResponse = await checkoutCart({
+          deliveryAddress: {
+            line1: checkoutData?.address || "",
+            city: checkoutData?.city || "",
+            postcode: checkoutData?.zipCode || "",
+            country: "UK",
+          },
+          restaurantName,
+          restaurantAddress,
+          deliveryFee: shippingFee,
+          serviceFee,
+          discountAmount: discount,
+          paymentMethod: "card",
+        });
+
+        if (!orderResponse?.orderId) {
+          throw new Error("Failed to create order. Please try again.");
+        }
+
+        setProcessingStep("Preparing payment...");
+
+        const paymentIntent = await createPaymentIntent({
+          orderId: orderResponse.orderId,
+          expectedTotalAmount: total,
+        });
+
+        const paymentData = paymentIntent?.data;
+
+        if (!paymentData?.clientSecret || !paymentData.paymentId) {
+          throw new Error("Failed to process payment. Please try again.");
+        }
+
+        if (!isActive) {
+          return;
+        }
+
+        setOrderNumber(orderResponse.orderNumber);
+        setPaymentId(paymentData.paymentId);
+        setClientSecret(paymentData.clientSecret);
+      } catch (err) {
+        if (!isActive) {
+          return;
+        }
+
+        const message =
+          err instanceof Error
+            ? err.message
+            : "An unexpected error occurred. Please try again.";
+
+        setError(message);
+        console.error("Card payment setup error:", err);
+      } finally {
+        hasStartedCardSetup.current = false;
+
+        if (isActive) {
+          setIsProcessing(false);
+        }
+      }
+    };
+
+    void prepareCardPayment();
+
+    return () => {
+      isActive = false;
+      hasStartedCardSetup.current = false;
+    };
+  }, [
+    checkoutData?.address,
+    checkoutData?.city,
+    checkoutData?.zipCode,
+    clientSecret,
+    deliveryMethod,
+    discount,
+    paymentId,
+    paymentMethod,
+    restaurantAddress,
+    restaurantName,
+    serviceFee,
+    shippingFee,
+    total,
+  ]);
 
   const handleStripePaymentSucceeded = async () => {
     if (!paymentId) {
@@ -535,38 +591,29 @@ const PaymentPage = () => {
                 </Box>
               </Box>
 
-              <Button
-                variant="filled"
-                disabled={
-                  isProcessing ||
-                  (paymentMethod === "CARD" && Boolean(clientSecret))
-                }
-                onClick={
-                  paymentMethod === "CASH_ON_DELIVERY"
-                    ? handleCashPayment
-                    : handleCardPayment
-                }
-                sx={{
-                  width: "100%",
-                  fontWeight: "bold",
-                  py: 1.5,
-                  fontSize: "1rem",
-                  mt: 3,
-                }}
-              >
-                {isProcessing ? (
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <CircularProgress size={20} sx={{ color: "white" }} />
-                    {processingStep || "Processing..."}
-                  </Box>
-                ) : paymentMethod === "CASH_ON_DELIVERY" ? (
-                  "Place Order"
-                ) : clientSecret ? (
-                  "Payment Ready"
-                ) : (
-                  "Prepare Payment"
-                )}
-              </Button>
+              {paymentMethod === "CASH_ON_DELIVERY" && (
+                <Button
+                  variant="filled"
+                  disabled={isProcessing}
+                  onClick={handleCashPayment}
+                  sx={{
+                    width: "100%",
+                    fontWeight: "bold",
+                    py: 1.5,
+                    fontSize: "1rem",
+                    mt: 3,
+                  }}
+                >
+                  {isProcessing ? (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <CircularProgress size={20} sx={{ color: "white" }} />
+                      {processingStep || "Processing..."}
+                    </Box>
+                  ) : (
+                    "Place Order"
+                  )}
+                </Button>
+              )}
 
               {error && (
                 <Box
