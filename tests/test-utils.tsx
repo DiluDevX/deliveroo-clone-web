@@ -29,6 +29,8 @@ const defaultCartState: CartState = {
   items: [],
   isLoading: false,
   isSyncing: false,
+  restaurantId: null,
+  restaurantName: null,
 };
 
 const defaultAdminState: AdminState = {

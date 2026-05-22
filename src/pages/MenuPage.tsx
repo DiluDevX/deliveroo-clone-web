@@ -63,6 +63,7 @@ const MenuPage = () => {
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isRestaurantLoading, setIsRestaurantLoading] = useState(true);
   const [isDishesLoading, setIsDishesLoading] = useState(true);
 
   const handleDishesLoadingChange = useCallback((isLoading: boolean) => {
@@ -73,9 +74,11 @@ const MenuPage = () => {
     const fetchRestaurantAndCategories = async () => {
       if (!orgId) {
         setError("No restaurant ID provided in URL.");
+        setIsRestaurantLoading(false);
         return;
       }
 
+      setIsRestaurantLoading(true);
       try {
         const restaurantData = await getSingleRestaurant(orgId);
         if (!restaurantData) {
@@ -98,6 +101,8 @@ const MenuPage = () => {
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load restaurant or categories.");
+      } finally {
+        setIsRestaurantLoading(false);
       }
     };
 
@@ -109,7 +114,10 @@ const MenuPage = () => {
   }
   return (
     <Box sx={{ flexGrow: 1, width: "100%", mt: 7 }}>
-      <RestaurantInfoView restaurant={restaurant} />
+      <RestaurantInfoView
+        isLoading={isRestaurantLoading}
+        restaurant={restaurant}
+      />
       <CategoriesBar
         error={error}
         categories={categories}

@@ -19,13 +19,30 @@ export interface CartState {
   items: CartItem[];
   isLoading: boolean;
   isSyncing: boolean;
+  restaurantId: string | null;
+  restaurantName: string | null;
 }
 
 const initialState: CartState = {
   items: [],
   isLoading: false,
   isSyncing: false,
+  restaurantId: null,
+  restaurantName: null,
 };
+
+type SetCartPayload =
+  | CartItem[]
+  | {
+      items: CartItem[];
+      restaurantId?: string | null;
+      restaurantName?: string | null;
+    };
+
+const getSelectedRestaurant = () => ({
+  restaurantId: localStorage.getItem("selected-restaurant-id"),
+  restaurantName: localStorage.getItem("selected-restaurant-name"),
+});
 
 const mapServerCartItem = (item: CartItemData): CartItem => ({
   _id: item.dishId,
@@ -51,10 +68,15 @@ export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async (_, { getState }) => {
     const state = getState() as RootState;
-    if (!state.auth.isAuthenticated) return [];
+    if (!state.auth.isAuthenticated) {
+      return {
+        restaurantId: null,
+        items: [],
+      };
+    }
 
-    const items = await cartService.getCart();
-    return items;
+    const cart = await cartService.getCart();
+    return cart;
   },
 );
 
@@ -65,7 +87,7 @@ export const syncCartToServer = createAsyncThunk(
     const state = getState() as RootState;
     if (!state.auth.isAuthenticated) return false;
 
-    const restaurantId = localStorage.getItem("selected-restaurant-id");
+    const { restaurantId, restaurantName } = getSelectedRestaurant();
     if (!restaurantId) return false;
 
     const syncedItems = await cartService.syncCart(
@@ -74,7 +96,13 @@ export const syncCartToServer = createAsyncThunk(
     );
     if (!syncedItems) return false;
 
-    dispatch(setCart(syncedItems.map(mapServerCartItem)));
+    dispatch(
+      setCart({
+        items: syncedItems.map(mapServerCartItem),
+        restaurantId,
+        restaurantName,
+      }),
+    );
 
     return true;
   },
@@ -84,11 +112,15 @@ export const syncCartToServer = createAsyncThunk(
 export const addItemAndSync = createAsyncThunk(
   "cart/addItemAndSync",
   async (dish: IDish, { getState, dispatch }) => {
+    const { restaurantId, restaurantName } = getSelectedRestaurant();
+
+    if (restaurantId) {
+      dispatch(setCartRestaurant({ restaurantId, restaurantName }));
+    }
     dispatch(addItem(dish));
 
     const state = getState() as RootState;
     if (state.auth.isAuthenticated) {
-      const restaurantId = localStorage.getItem("selected-restaurant-id");
       if (restaurantId) {
         const cartItem =
           state.cart.items.find((item) => item._id === dish._id) ??
@@ -185,9 +217,28 @@ const cartSlice = createSlice({
     },
     clearCart: (state) => {
       state.items = [];
+      state.restaurantId = null;
+      state.restaurantName = null;
     },
-    setCart: (state, action: PayloadAction<CartItem[]>) => {
-      state.items = action.payload;
+    setCart: (state, action: PayloadAction<SetCartPayload>) => {
+      if (Array.isArray(action.payload)) {
+        state.items = action.payload;
+        return;
+      }
+
+      state.items = action.payload.items;
+      state.restaurantId = action.payload.restaurantId ?? null;
+      state.restaurantName = action.payload.restaurantName ?? null;
+    },
+    setCartRestaurant: (
+      state,
+      action: PayloadAction<{
+        restaurantId: string;
+        restaurantName?: string | null;
+      }>,
+    ) => {
+      state.restaurantId = action.payload.restaurantId;
+      state.restaurantName = action.payload.restaurantName ?? null;
     },
     removeDummyCartItems: (state) => {
       state.items = state.items.filter((item) => !isDummyCartItem(item));
@@ -199,6 +250,8 @@ const cartSlice = createSlice({
         state.items = [];
         state.isLoading = false;
         state.isSyncing = false;
+        state.restaurantId = null;
+        state.restaurantName = null;
       })
       // Fetch cart
       .addCase(fetchCart.pending, (state) => {
@@ -206,25 +259,15 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.isLoading = false;
-        if (action.payload.length > 0) {
-          // Merge server cart with local cart
-          action.payload.forEach((serverItem) => {
-            const normalizedItem = mapServerCartItem(serverItem);
-            const existingItem = state.items.find(
-              (item) => String(item._id) === String(normalizedItem._id),
-            );
-            if (existingItem) {
-              existingItem.quantity = normalizedItem.quantity;
-              existingItem.cartItemId = normalizedItem.cartItemId;
-              existingItem.name = normalizedItem.name;
-              existingItem.image = normalizedItem.image;
-              existingItem.price = normalizedItem.price;
-              existingItem.modifiers = normalizedItem.modifiers;
-            } else {
-              state.items.push(normalizedItem);
-            }
-          });
+        if (action.payload.items.length === 0) {
+          state.restaurantId =
+            action.payload.restaurantId ?? state.restaurantId;
+          return;
         }
+
+        state.items = action.payload.items.map(mapServerCartItem);
+        state.restaurantId = action.payload.restaurantId;
+        state.restaurantName = null;
       })
       .addCase(fetchCart.rejected, (state) => {
         state.isLoading = false;
@@ -248,6 +291,7 @@ export const {
   updateQuantity,
   clearCart,
   setCart,
+  setCartRestaurant,
   removeDummyCartItems,
 } = cartSlice.actions;
 export default cartSlice.reducer;

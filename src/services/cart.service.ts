@@ -1,22 +1,28 @@
 import { isAxiosError } from "axios";
 import { CartItem } from "../store/cartSlice";
-import { CartItemData, CartResponse } from "../types/cart.types";
+import { CartItemData, CartResponse, CartSnapshot } from "../types/cart.types";
 import { getAuthHeader } from "./auth-headers";
 import { apiClient } from "./api.client";
 
-export const getCart = async (): Promise<CartItemData[]> => {
+export const getCart = async (): Promise<CartSnapshot> => {
   try {
     const response = await apiClient.get<CartResponse>("/cart", {
       headers: getAuthHeader(),
     });
 
     const items = response.data.data?.items || [];
-    return items;
+    return {
+      restaurantId: response.data.data?.restaurantId ?? null,
+      items,
+    };
   } catch (error) {
     if (isAxiosError(error)) {
       console.error("Error fetching cart:", error.response?.data);
     }
-    return [];
+    return {
+      restaurantId: null,
+      items: [],
+    };
   }
 };
 

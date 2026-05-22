@@ -22,6 +22,8 @@ const initialState: CartState = {
   items: [],
   isLoading: false,
   isSyncing: false,
+  restaurantId: null,
+  restaurantName: null,
 };
 
 const cartItem = (overrides: Partial<CartItem> = {}): CartItem => ({
@@ -112,7 +114,10 @@ describe("cartSlice", () => {
 
     const result = cartReducer(
       state,
-      fetchCart.fulfilled(serverItems, "request-id"),
+      fetchCart.fulfilled(
+        { restaurantId: "restaurant-1", items: serverItems },
+        "request-id",
+      ),
     );
 
     expect(result.isLoading).toBe(false);
@@ -128,5 +133,6 @@ describe("cartSlice", () => {
       _id: "dish-2",
       quantity: 2,
     });
+    expect(result.restaurantId).toBe("restaurant-1");
   });
 });

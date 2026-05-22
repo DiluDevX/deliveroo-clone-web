@@ -27,3 +27,8 @@ export interface CartResponse {
     updatedAt: string;
   };
 }
+
+export interface CartSnapshot {
+  restaurantId: string | null;
+  items: CartItemData[];
+}
