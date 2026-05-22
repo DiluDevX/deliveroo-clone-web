@@ -18,7 +18,7 @@ const renderCart = (isAuthenticated: boolean) => {
     description: "Tomato and mozzarella",
     price: "12.50",
     image: "/pizza.jpg",
-    categoryId: 1,
+    categoryId: "pizza",
     quantity: 2,
     cartItemId: "cart-item-1",
   };

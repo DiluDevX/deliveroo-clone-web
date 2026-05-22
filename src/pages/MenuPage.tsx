@@ -5,15 +5,59 @@ import MenuView from "../features/menu/views/MenuView";
 import Cart from "../features/menu/components/Cart";
 import { Colors } from "../theme";
 import { useEffect, useState, useCallback } from "react";
-import { getCategories } from "../services/category.service";
-import { ICategory } from "../data/Sides";
+import { ICategory, IDish } from "../data/Sides";
 import { useParams } from "react-router-dom";
 import { getSingleRestaurant } from "../services/restaurant.service";
 import { Restaurant } from "../types/restaurants";
 
+type RestaurantCategory = {
+  id: string;
+  name: string;
+  dishes?: Array<{
+    id: string;
+    name: string;
+    description?: string | null;
+    price: number;
+    image?: string | null;
+    categoryId?: string;
+  }>;
+};
+
+type RestaurantWithMenu = Restaurant & {
+  categories?: RestaurantCategory[];
+};
+
+const mapRestaurantCategories = (
+  restaurantData: RestaurantWithMenu,
+): ICategory[] =>
+  (restaurantData.categories ?? []).map((category) => ({
+    id: category.id,
+    name: category.name,
+    dishes: (category.dishes ?? []).map(
+      (dish): IDish => ({
+        _id: dish.id,
+        id: dish.id,
+        name: dish.name,
+        description: dish.description ?? "",
+        price: String(dish.price),
+        image: dish.image ?? "",
+        categoryId: category.id,
+      }),
+    ),
+  }));
+
+const getMenuCategories = (restaurantData: RestaurantWithMenu) => {
+  const restaurantCategories = mapRestaurantCategories(restaurantData);
+  const hasRealDishes = restaurantCategories.some(
+    (category) => (category.dishes ?? []).length > 0,
+  );
+
+  return hasRealDishes ? restaurantCategories : [];
+};
+
 const MenuPage = () => {
   const { orgId } = useParams();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     null,
   );
   const [categories, setCategories] = useState<ICategory[]>([]);
@@ -48,11 +92,7 @@ const MenuPage = () => {
           restaurantData.description || "",
         );
 
-        const categoryData = await getCategories();
-        if (!categoryData) {
-          setError("Categories not found.");
-        }
-        const validCategories = Array.isArray(categoryData) ? categoryData : [];
+        const validCategories = getMenuCategories(restaurantData);
         setCategories(validCategories);
         setSelectedCategoryId(validCategories[0]?.id || null);
       } catch (error) {

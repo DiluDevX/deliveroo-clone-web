@@ -7,6 +7,7 @@ import { Colors } from "../../../theme/colors";
 interface SearchBarProps {
   value?: string;
   onChange?: (value: string) => void;
+  onClear?: () => void;
   onSearch?: (value: string) => void;
   placeholder?: string;
 }
@@ -14,6 +15,7 @@ interface SearchBarProps {
 const SearchBar = ({
   value: externalValue,
   onChange,
+  onClear,
   onSearch,
   placeholder,
 }: SearchBarProps) => {
@@ -83,6 +85,10 @@ const SearchBar = ({
 
                   if (onChange) {
                     onChange("");
+                  }
+
+                  if (onClear) {
+                    onClear();
                   }
                 }}
                 sx={{ cursor: "pointer" }}

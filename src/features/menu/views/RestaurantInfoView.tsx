@@ -1,4 +1,10 @@
-import { Box, Container, Grid2 as Grid, Typography } from "@mui/material";
+import {
+  Box,
+  Container,
+  Grid2 as Grid,
+  Skeleton,
+  Typography,
+} from "@mui/material";
 import InfoButton from "../components/InfoButton";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import StarOutlinedIcon from "@mui/icons-material/StarOutlined";
@@ -12,11 +18,131 @@ import { Restaurant } from "../../../types/restaurants";
 import NotFoundScreen from "../components/NotFoundScreen";
 
 const RestaurantInfoView = ({
+  isLoading = false,
   restaurant,
 }: {
+  isLoading?: boolean;
   restaurant: Restaurant | null;
 }) => {
   const [imageError, setImageError] = useState(false);
+
+  if (isLoading) {
+    return (
+      <Container
+        disableGutters
+        maxWidth="xl"
+        sx={{
+          px: {
+            xs: 0,
+            sm: 2,
+            md: 2,
+          },
+          py: 3,
+        }}
+      >
+        <Box sx={{ paddingBottom: "1rem" }}>
+          <Skeleton
+            animation="wave"
+            variant="rounded"
+            width={86}
+            height={34}
+            sx={{ borderRadius: 1 }}
+          />
+        </Box>
+        <Grid container>
+          <Grid
+            size={{
+              xs: 12,
+              sm: 3,
+              md: 4,
+              lg: 3,
+            }}
+          >
+            <Skeleton
+              animation="wave"
+              variant="rounded"
+              sx={{
+                width: "100%",
+                minHeight: {
+                  xs: 220,
+                  sm: 180,
+                  md: 220,
+                },
+                height: "100%",
+                borderRadius: {
+                  xs: 0,
+                  sm: 2,
+                  md: 2,
+                },
+              }}
+            />
+          </Grid>
+          <Grid
+            size={{
+              xs: 12,
+              sm: 9,
+              md: 8,
+              lg: 5,
+            }}
+            sx={{
+              px: 2,
+              mt: { xs: 2, sm: 2, md: 2, lg: 0 },
+            }}
+          >
+            <Skeleton animation="wave" width="70%" height={44} />
+            <Skeleton animation="wave" width="45%" height={28} />
+            <Skeleton animation="wave" width="62%" height={28} />
+            <Box sx={{ mt: 2 }}>
+              <Skeleton
+                animation="wave"
+                variant="rounded"
+                width="100%"
+                height={58}
+                sx={{ borderRadius: 2, mb: 1.5 }}
+              />
+              <Skeleton
+                animation="wave"
+                variant="rounded"
+                width="100%"
+                height={58}
+                sx={{ borderRadius: 2 }}
+              />
+            </Box>
+          </Grid>
+          <Grid
+            size={{
+              lg: 4,
+            }}
+            sx={{
+              display: {
+                xs: "none",
+                sm: "none",
+                md: "none",
+                lg: "flex",
+              },
+              flexDirection: "column",
+              alignItems: "flex-end",
+            }}
+          >
+            <Skeleton
+              animation="wave"
+              variant="rounded"
+              width={270}
+              height={56}
+              sx={{ borderRadius: 2 }}
+            />
+            <Skeleton
+              animation="wave"
+              variant="rounded"
+              width={190}
+              height={44}
+              sx={{ borderRadius: 1, mt: 2 }}
+            />
+          </Grid>
+        </Grid>
+      </Container>
+    );
+  }
 
   if (!restaurant) {
     return <NotFoundScreen text="Restaurant not found" />;

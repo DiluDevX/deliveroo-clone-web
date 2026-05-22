@@ -38,7 +38,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=Stripe publishable key
 Required GitHub repository variables:
 
 ```text
-VITE_API_URL=https://your-bff-domain.example.com/api
+BFF_API_URL=https://your-bff-domain.example.com/api
 VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your-project-id
 VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com

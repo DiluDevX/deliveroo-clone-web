@@ -9,7 +9,6 @@ import {
   LoginRequestBodyDTO,
   LoginResponseBodyDTO,
   SignupRequestBodyDTO,
-  SignupResponseBodyDTO,
 } from "../types/auth.types";
 import { CommonResponseDTO } from "../types/common";
 import { IUser } from "../types/user.types";
@@ -33,6 +32,15 @@ type ICheckEmailResponse = {
 };
 
 type AuthStatus = false | { valid: true; user: IUser };
+type RefreshTokenPayload = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+type RefreshTokenApiResponse =
+  | CommonResponseDTO<RefreshTokenPayload>
+  | RefreshTokenPayload;
+
 export const checkEmail = async (
   body: CheckEmailRequestBodyDTO,
 ): Promise<ICheckEmailResponse> => {
@@ -187,20 +195,27 @@ export const login = async (
 
 type ISignupResponse = {
   type: "SUCCESS" | "CONFLICT" | "UNKNOWN";
-  successResponse?: SignupResponseBodyDTO;
+  successResponse?: IUser;
 };
+
+type SignupApiResponse = CommonResponseDTO<IUser> | IUser;
+
 export const signup = async (
   body: SignupRequestBodyDTO,
 ): Promise<ISignupResponse> => {
   try {
-    const response = await apiClient.post<SignupResponseBodyDTO>(
+    const response = await apiClient.post<SignupApiResponse>(
       "/auth/signup",
       body,
     );
+    const createdUser =
+      response.data && "data" in response.data
+        ? response.data.data
+        : response.data;
 
     return {
       type: "SUCCESS",
-      successResponse: response.data,
+      successResponse: createdUser,
     };
   } catch (error) {
     if (isAxiosError(error)) {
@@ -259,18 +274,29 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
   }
 };
 
-export const refreshToken = async () => {
+export const refreshToken = async (): Promise<RefreshTokenPayload | false> => {
   const storedRefreshToken = getStoredRefreshToken();
   if (!storedRefreshToken) {
     return false;
   }
 
   try {
-    const response = await apiClient.post("/auth/refresh", {
-      refreshToken: storedRefreshToken,
-    });
+    const response = await apiClient.post<RefreshTokenApiResponse>(
+      "/auth/refresh",
+      {
+        refreshToken: storedRefreshToken,
+      },
+    );
+    const payload =
+      response.data && "data" in response.data
+        ? response.data.data
+        : response.data;
 
-    return response.status === 200;
+    if (!payload.accessToken || !payload.refreshToken) {
+      return false;
+    }
+
+    return payload;
   } catch (error) {
     console.error("Error refreshing token", error);
     return false;

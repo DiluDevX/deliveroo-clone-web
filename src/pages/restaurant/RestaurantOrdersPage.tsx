@@ -19,54 +19,15 @@ import Button from "../../features/menu/components/Button";
 const RestaurantOrdersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Mock data
-  const mockOrders = [
-    {
-      id: "ORD-001",
-      customer: "John Doe",
-      items: 3,
-      total: "$45.99",
-      status: "Delivered",
-      date: "2025-02-06",
-      time: "14:30",
-    },
-    {
-      id: "ORD-002",
-      customer: "Jane Smith",
-      items: 2,
-      total: "$32.50",
-      status: "Preparing",
-      date: "2025-02-06",
-      time: "14:45",
-    },
-    {
-      id: "ORD-003",
-      customer: "Mike Johnson",
-      items: 4,
-      total: "$67.25",
-      status: "Ready",
-      date: "2025-02-06",
-      time: "15:00",
-    },
-    {
-      id: "ORD-004",
-      customer: "Sarah Williams",
-      items: 2,
-      total: "$28.75",
-      status: "Pending",
-      date: "2025-02-06",
-      time: "15:15",
-    },
-    {
-      id: "ORD-005",
-      customer: "Tom Brown",
-      items: 5,
-      total: "$89.99",
-      status: "Delivered",
-      date: "2025-02-05",
-      time: "20:30",
-    },
-  ];
+  const orders: Array<{
+    id: string;
+    customer: string;
+    items: number;
+    total: string;
+    status: string;
+    date: string;
+    time: string;
+  }> = [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -83,7 +44,7 @@ const RestaurantOrdersPage = () => {
     }
   };
 
-  const filteredOrders = mockOrders.filter(
+  const filteredOrders = orders.filter(
     (o) =>
       o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       o.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -203,6 +164,15 @@ const RestaurantOrdersPage = () => {
                   </TableCell>
                 </TableRow>
               ))}
+              {filteredOrders.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8}>
+                    <Typography sx={{ color: Colors.text.placeholder }}>
+                      No orders found.
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>

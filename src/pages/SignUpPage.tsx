@@ -18,7 +18,10 @@ import {
   checkPasswordSchema,
   createPasswordSchema,
 } from "../features/menu/validations/password.validation";
-import { signup } from "../services/auth.service";
+import { checkAuthStatus, login, signup } from "../services/auth.service";
+import { setAuthInitialized, setCredentials } from "../store/authSlice";
+import { useAppDispatch } from "../store/hooks/cartHooks";
+import { fetchCart } from "../store/cartSlice";
 
 type SignUpForm = {
   email: string;
@@ -40,6 +43,7 @@ const SignUpPage = ({
   initialLastName,
 }: SignUpPageProps) => {
   const { enqueueSnackbar } = useSnackbar();
+  const dispatch = useAppDispatch();
   const [checked, setChecked] = useState(false);
 
   const navigate = useNavigate();
@@ -102,14 +106,58 @@ const SignUpPage = ({
         autoHideDuration: 5000,
       });
     } else if (response.type === "SUCCESS" && response.successResponse) {
-      // The server should set the session via HttpOnly cookie. Do not persist tokens in client JS.
-      // If you must fallback to client storage, ensure comprehensive XSS mitigations and document why.
+      const loginResponse = await login({ email, password });
+
+      if (loginResponse.type !== "SUCCESS" || !loginResponse.successResponse) {
+        enqueueSnackbar({
+          variant: "success",
+          message: "Account created successfully. Please log in.",
+          autoHideDuration: 3000,
+        });
+        navigate("/account/login");
+        return;
+      }
+
+      const createdUser = response.successResponse;
+      const loginUser = loginResponse.successResponse.user;
+
+      dispatch(
+        setCredentials({
+          accessToken: loginResponse.successResponse.accessToken,
+          refreshToken: loginResponse.successResponse.refreshToken,
+          user: {
+            id: createdUser.id ?? loginUser.id,
+            email: createdUser.email,
+            firstName: createdUser.firstName,
+            lastName: createdUser.lastName,
+            phone: createdUser.phone ?? loginUser.phone,
+            role: createdUser.role ?? loginUser.role,
+            restaurantId: createdUser.restaurantId ?? loginUser.restaurantId,
+          },
+        }),
+      );
+      dispatch(setAuthInitialized(true));
+
+      const authStatus = await checkAuthStatus();
+      if (authStatus && typeof authStatus !== "boolean") {
+        dispatch(setCredentials({ user: authStatus.user }));
+      }
+
+      await dispatch(fetchCart());
+
       enqueueSnackbar({
         variant: "success",
         message: "Account created successfully!",
         autoHideDuration: 3000,
       });
-      navigate("/");
+
+      const redirectAfterLogin = sessionStorage.getItem("redirectAfterLogin");
+      if (redirectAfterLogin) {
+        sessionStorage.removeItem("redirectAfterLogin");
+        navigate(redirectAfterLogin);
+      } else {
+        navigate("/");
+      }
     } else {
       enqueueSnackbar({
         variant: "error",

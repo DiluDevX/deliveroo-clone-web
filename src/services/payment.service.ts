@@ -21,6 +21,9 @@ export const createPaymentIntent = async (
   } catch (error) {
     if (isAxiosError(error)) {
       console.error("Error creating payment intent:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+    } else {
+      console.error("Non-axios error creating payment intent:", error);
     }
     return null;
   }

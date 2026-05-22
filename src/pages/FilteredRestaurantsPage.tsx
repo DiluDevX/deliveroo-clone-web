@@ -202,11 +202,18 @@ const FilteredRestaurantsPage = () => {
           <SearchBar
             value={searchKey}
             onChange={setSearchKey}
-            onSearch={(value) =>
-              navigate(
-                `/filtered-restaurants?search=${encodeURIComponent(value)}`,
-              )
-            }
+            onClear={() => {
+              const nextParams = new URLSearchParams(searchParams);
+              nextParams.delete("search");
+              nextParams.delete("page");
+              setSearchParams(nextParams);
+            }}
+            onSearch={(value) => {
+              const nextParams = new URLSearchParams(searchParams);
+              nextParams.set("search", value);
+              nextParams.delete("page");
+              setSearchParams(nextParams);
+            }}
             placeholder="Search restaurants..."
           />
 

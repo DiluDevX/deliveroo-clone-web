@@ -6,7 +6,7 @@ import { useCartSync } from "../store/hooks/useCartSync";
 import { useEffect } from "react";
 import { useAppDispatch } from "../store/hooks/cartHooks";
 import { setAuthInitialized, setCredentials } from "../store/authSlice";
-import { populateDummyCart } from "../store/cartSlice";
+import { fetchCart, removeDummyCartItems } from "../store/cartSlice";
 import { checkAuthStatus, refreshToken } from "../services/auth.service";
 
 const MainLayout = () => {
@@ -17,19 +17,22 @@ const MainLayout = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      if (import.meta.env.DEV && import.meta.env.VITE_BYPASS_AUTH === "true") {
-        localStorage.setItem("selected-restaurant-id", "dummy-restaurant");
-        dispatch(setAuthInitialized(true));
-        dispatch(populateDummyCart());
-        return;
-      }
+      dispatch(removeDummyCartItems());
 
       let result = null;
       try {
         result = await checkAuthStatus();
         if (!result) {
           // Try refresh token if checkAuthStatus failed
-          await refreshToken();
+          const refreshedTokens = await refreshToken();
+          if (refreshedTokens) {
+            dispatch(
+              setCredentials({
+                accessToken: refreshedTokens.accessToken,
+                refreshToken: refreshedTokens.refreshToken,
+              }),
+            );
+          }
           result = await checkAuthStatus();
         }
       } catch (error) {
@@ -38,6 +41,7 @@ const MainLayout = () => {
       } finally {
         if (result && typeof result !== "boolean") {
           dispatch(setCredentials({ user: result.user }));
+          dispatch(fetchCart());
         } else {
           dispatch(setCredentials({}));
         }

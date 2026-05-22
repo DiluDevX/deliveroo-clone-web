@@ -43,6 +43,10 @@ export interface Order {
   restaurantId: string;
   driverId: string | null;
   status: string;
+  paymentStatus: string;
+  paymentId: string | null;
+  paymentMethod: string | null;
+  paymentExpiresAt: string | null;
   subtotal: number;
   deliveryFee: number;
   serviceFee: number;
@@ -64,6 +68,13 @@ export interface Order {
 }
 
 export interface CheckoutRequest {
+  userId?: string;
+  restaurantId?: string;
+  items?: Array<{
+    menuItemId: string;
+    quantity: number;
+    price: number;
+  }>;
   deliveryAddress: DeliveryAddress;
   restaurantName: string;
   restaurantAddress: string;
@@ -85,6 +96,10 @@ export interface CheckoutResponse {
     restaurantId: string;
     driverId: string | null;
     status: string;
+    paymentStatus: string;
+    paymentId: string | null;
+    paymentMethod: string | null;
+    paymentExpiresAt: string | null;
     subtotal: number;
     deliveryFee: number;
     serviceFee: number;
@@ -142,6 +157,14 @@ export interface CheckoutResult {
   orderId: string;
   orderNumber: string;
   status: string;
+  paymentStatus: string;
+  paymentId: string | null;
+  paymentMethod: string | null;
+  paymentExpiresAt: string | null;
+  subtotal: number;
+  deliveryFee: number;
+  serviceFee: number;
+  discountAmount: number;
   totalAmount: number;
   estimatedDeliveryAt: string | null;
 }

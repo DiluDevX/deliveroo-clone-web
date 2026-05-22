@@ -89,7 +89,7 @@ jobs:
           context: .
           push: true
           build-args: |
-            VITE_API_URL=${{ vars.VITE_API_URL }}
+            BFF_API_URL=${{ vars.BFF_API_URL }}
             VITE_BFF_API_KEY=${{ secrets.VITE_BFF_API_KEY }}
             VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}
             VITE_FIREBASE_AUTH_DOMAIN=${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}

@@ -60,8 +60,15 @@ createRoot(document.getElementById("root")!).render(
       <StrictMode>
         <SnackbarProvider
           maxSnack={2}
+          autoHideDuration={2000}
+          disableWindowBlurListener
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          style={{ marginTop: "4rem", fontFamily: "IBM Plex Sans, serif" }}
+          style={{
+            backgroundColor: Colors.background.brand,
+            marginTop: "4rem",
+            fontFamily: "IBM Plex Sans, serif",
+            pointerEvents: "none",
+          }}
         >
           <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>

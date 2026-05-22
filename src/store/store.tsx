@@ -18,7 +18,7 @@ const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  whitelist: ["cart", "auth", "admin"],
+  whitelist: ["auth", "admin"],
 };
 
 const rootReducer = combineReducers({

@@ -31,7 +31,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Colors } from "../../theme";
-import { dashboardStats } from "../../data/adminMockData";
 import { getAllRestaurants } from "../../services/restaurant.service";
 import { Restaurant } from "../../types/restaurants";
 import { FetchedAllOrders } from "../../types/orders";
@@ -128,14 +127,16 @@ const AdminDashboardPage = () => {
   ];
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Done":
+    switch (status.toUpperCase()) {
+      case "DELIVERED":
+      case "DONE":
         return "success";
-      case "pending":
+      case "PENDING":
+      case "PREPARING":
         return "warning";
-      case "failed":
+      case "FAILED":
         return "error";
-      case "cancelled":
+      case "CANCELLED":
         return "error";
       default:
         return "default";
@@ -393,14 +394,14 @@ const AdminDashboardPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {dashboardStats.recentOrders.map((order) => (
+                {fetchedOrders.slice(0, 6).map((order) => (
                   <TableRow key={order.id}>
                     <TableCell sx={{ fontWeight: "bold" }}>
                       {order.id}
                     </TableCell>
-                    <TableCell>{order.restaurant}</TableCell>
-                    <TableCell>{order.user}</TableCell>
-                    <TableCell>${order.amount.toFixed(2)}</TableCell>
+                    <TableCell>{order.restaurantId.name}</TableCell>
+                    <TableCell>{order.userId}</TableCell>
+                    <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
                     <TableCell>
                       <Chip
                         label={order.status}
@@ -414,10 +415,19 @@ const AdminDashboardPage = () => {
                       />
                     </TableCell>
                     <TableCell sx={{ color: Colors.text.default }}>
-                      {order.time}
+                      {new Date(order.createdAt).toLocaleDateString()}
                     </TableCell>
                   </TableRow>
                 ))}
+                {fetchedOrders.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6}>
+                      <Typography sx={{ color: Colors.text.placeholder }}>
+                        No orders found.
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>

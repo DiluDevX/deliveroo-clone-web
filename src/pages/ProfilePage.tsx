@@ -16,8 +16,6 @@ import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Button from "../features/menu/components/Button";
 import OrderDetailsModal from "../features/menu/components/OrderDetailsModal";
-import AddressModal from "../features/menu/components/AddressModal";
-import PaymentModal from "../features/menu/components/PaymentModal";
 import TextInput from "../features/menu/components/TextInput";
 import ClickableSwitch from "../features/menu/components/ClickableSwitch";
 import { useAppSelector, useAppDispatch } from "../store/hooks/cartHooks";
@@ -26,7 +24,6 @@ import {
   updateUserProfile,
   deleteUserAccount,
   updatePassword,
-  getUserAddresses,
 } from "../services/user.service";
 import { getOrderHistory } from "../services/order.service";
 import { Order } from "../types/order.types";
@@ -70,6 +67,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
+
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import {
   BikeScooter,
@@ -80,6 +78,8 @@ import {
   ShoppingBag,
 } from "@mui/icons-material";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import PaymentModal from "../features/menu/components/PaymentModal";
+import AddressModal from "../features/menu/components/AddressModal";
 
 const profileSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -147,8 +147,7 @@ const ProfilePage = () => {
           }),
         );
       }
-      const addressList = await getUserAddresses();
-      setAddresses(addressList);
+      setAddresses([]);
       setIsLoading(false);
     };
     loadProfile();
@@ -188,20 +187,45 @@ const ProfilePage = () => {
     navigate("/");
   };
 
-  const handleSetDefaultAddress = (addressId: string) => {
-    const updatedAddresses = addresses.map((addr) => ({
-      ...addr,
-      isDefault: addr.id === addressId,
-    }));
-    setAddresses(updatedAddresses);
+  const canResumeCardPayment = (order: Order) => {
+    if (
+      order.status !== "PENDING" ||
+      order.paymentMethod !== "card" ||
+      !["PENDING", "PROCESSING"].includes(order.paymentStatus) ||
+      !order.paymentExpiresAt
+    ) {
+      return false;
+    }
+
+    return new Date(order.paymentExpiresAt).getTime() > Date.now();
   };
 
-  const handleSetDefaultDummyAddress = (addressId: string) => {
-    const updatedDummy = dummyAddresses.map((addr) => ({
-      ...addr,
-      isDefault: addr.id === addressId,
+  const handleResumeCardPayment = (order: Order) => {
+    navigate("/payment", {
+      state: {
+        paymentMethod: "CARD",
+        deliveryMethod: "delivery",
+        order,
+      },
+    });
+  };
+
+  const setDefaultAddress = (items: Address[], addressId: string) =>
+    items.map((address) => ({
+      ...address,
+      isDefault: address.id === addressId,
     }));
-    setDummyAddresses(updatedDummy);
+
+  const handleSetDefaultDummyAddress = (addressId: string) => {
+    setDummyAddresses((currentAddresses) =>
+      setDefaultAddress(currentAddresses, addressId),
+    );
+  };
+
+  const handleSetDefaultAddress = (addressId: string) => {
+    setAddresses((currentAddresses) =>
+      setDefaultAddress(currentAddresses, addressId),
+    );
   };
 
   const menuItems = [
@@ -733,6 +757,15 @@ const ProfilePage = () => {
                           >
                             View Details
                           </Button>
+                          {canResumeCardPayment(order) && (
+                            <Button
+                              variant="filled"
+                              onClick={() => handleResumeCardPayment(order)}
+                              sx={{ flex: 1, fontSize: "0.85rem" }}
+                            >
+                              Pay now
+                            </Button>
+                          )}
                           {order.status === "DELIVERED" && (
                             <Button
                               variant="filled"

@@ -15,82 +15,49 @@ import {
 } from "recharts";
 
 const RestaurantDashboardPage = () => {
-  // Mock data for restaurant dashboard
   const dashboardStats = [
     {
       label: "Today's Sales",
-      value: "$2,450.50",
-      change: "+12.5%",
+      value: "$0.00",
+      change: "No data",
       icon: TrendingUp,
       color: "#10B981",
     },
     {
       label: "Active Orders",
-      value: "8",
-      change: "In progress",
+      value: "0",
+      change: "No data",
       icon: ShoppingCart,
       color: "#3B82F6",
     },
     {
       label: "Average Rating",
-      value: "4.8",
-      change: "342 reviews",
+      value: "0.0",
+      change: "No reviews",
       icon: Star,
       color: "#F59E0B",
     },
     {
       label: "Total Customers",
-      value: "1,240",
-      change: "+45 this month",
+      value: "0",
+      change: "No data",
       icon: People,
       color: "#8B5CF6",
     },
   ];
 
-  const revenueChartData = [
-    { day: "Mon", revenue: 1200, orders: 15 },
-    { day: "Tue", revenue: 1800, orders: 22 },
-    { day: "Wed", revenue: 1500, orders: 18 },
-    { day: "Thu", revenue: 2100, orders: 28 },
-    { day: "Fri", revenue: 2800, orders: 35 },
-    { day: "Sat", revenue: 3200, orders: 42 },
-    { day: "Sun", revenue: 2600, orders: 33 },
-  ];
+  const revenueChartData: Array<{ day: string; revenue: number }> = [];
 
-  const popularItemsData = [
-    { name: "Margherita Pizza", orders: 145 },
-    { name: "Caesar Salad", orders: 98 },
-    { name: "Pasta Carbonara", orders: 112 },
-    { name: "Garlic Bread", orders: 87 },
-    { name: "Tiramisu", orders: 64 },
-  ];
+  const popularItemsData: Array<{ name: string; orders: number }> = [];
 
-  const recentOrders = [
-    {
-      id: "ORD-001",
-      customer: "John Doe",
-      items: 3,
-      total: "$45.99",
-      status: "Delivered",
-      time: "2 hours ago",
-    },
-    {
-      id: "ORD-002",
-      customer: "Jane Smith",
-      items: 2,
-      total: "$32.50",
-      status: "Preparing",
-      time: "15 mins ago",
-    },
-    {
-      id: "ORD-003",
-      customer: "Mike Johnson",
-      items: 4,
-      total: "$67.25",
-      status: "Ready",
-      time: "Just now",
-    },
-  ];
+  const recentOrders: Array<{
+    id: string;
+    customer: string;
+    items: number;
+    total: string;
+    status: string;
+    time: string;
+  }> = [];
 
   const StatCard = ({ stat }: { stat: (typeof dashboardStats)[0] }) => {
     const IconComponent = stat.icon;
@@ -264,6 +231,11 @@ const RestaurantDashboardPage = () => {
                   </Box>
                 </Box>
               ))}
+              {recentOrders.length === 0 && (
+                <Typography sx={{ color: Colors.text.placeholder }}>
+                  No recent orders found.
+                </Typography>
+              )}
             </Box>
           </Card>
         </Grid>

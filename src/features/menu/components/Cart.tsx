@@ -75,7 +75,7 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    if (import.meta.env.VITE_BYPASS_AUTH !== "true" && !isAuthenticated) {
+    if (!isAuthenticated) {
       setShowLoginDialog(true);
       return;
     }

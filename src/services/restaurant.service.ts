@@ -1,8 +1,5 @@
 import { apiClient } from "./api.client";
 import { GetASingleRestaurant, Restaurant } from "../types/restaurants";
-import { DUMMY_RESTAURANTS } from "../data/dummyRestaurants";
-import { filterRestaurants, normalizeCuisineValue } from "../utils/filterUtils";
-import { FilterState } from "../types/filters";
 import { getAuthHeader } from "./auth-headers";
 
 export interface RestaurantFilters {
@@ -77,125 +74,6 @@ const appendRestaurantFilters = (
   if (filters.sort) params.append("sort", filters.sort);
 };
 
-const parseMoneyValue = (value: number | string) => {
-  const parsedValue = Number.parseFloat(String(value));
-  return Number.isFinite(parsedValue) ? parsedValue : null;
-};
-
-const parseTimeToMinutes = (time: string) => {
-  const [hours, minutes] = time.split(":").map(Number);
-
-  if (
-    hours === undefined ||
-    minutes === undefined ||
-    !Number.isInteger(hours) ||
-    !Number.isInteger(minutes)
-  ) {
-    return null;
-  }
-
-  return hours * 60 + minutes;
-};
-
-const isRestaurantOpen = (restaurant: Restaurant) => {
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const openingMinutes = parseTimeToMinutes(restaurant.openingAt);
-  const closingMinutes = parseTimeToMinutes(restaurant.closingAt);
-
-  if (openingMinutes === null || closingMinutes === null) {
-    return false;
-  }
-
-  if (openingMinutes <= closingMinutes) {
-    return currentMinutes >= openingMinutes && currentMinutes <= closingMinutes;
-  }
-
-  return currentMinutes >= openingMinutes || currentMinutes <= closingMinutes;
-};
-
-const toFallbackFilterState = (filters?: RestaurantFilters): FilterState => {
-  let priceRange: FilterState["priceRange"] = "all";
-
-  if (
-    filters?.minOrderValue !== undefined &&
-    filters.maxOrderValue !== undefined
-  ) {
-    priceRange = "mid";
-  } else if (filters?.maxOrderValue !== undefined) {
-    priceRange = "budget";
-  } else if (filters?.minOrderValue !== undefined) {
-    priceRange = "premium";
-  }
-
-  return {
-    cuisines: filters?.cuisine ? [filters.cuisine] : [],
-    priceRange,
-    minRating: filters?.rating ?? null,
-    deliveryTime: null,
-    offers: false,
-    searchQuery: filters?.search,
-  };
-};
-
-const applyFallbackFilters = (
-  restaurants: Restaurant[],
-  filters?: RestaurantFilters,
-) => {
-  let filtered = filterRestaurants(restaurants, toFallbackFilterState(filters));
-
-  if (filters?.minDeliveryFee !== undefined) {
-    const minimumDeliveryFee = filters.minDeliveryFee;
-    filtered = filtered.filter((restaurant) => {
-      const deliveryCharge = parseMoneyValue(restaurant.deliveryCharge);
-      return deliveryCharge !== null && deliveryCharge >= minimumDeliveryFee;
-    });
-  }
-
-  if (filters?.maxDeliveryFee !== undefined) {
-    const maximumDeliveryFee = filters.maxDeliveryFee;
-    filtered = filtered.filter((restaurant) => {
-      const deliveryCharge = parseMoneyValue(restaurant.deliveryCharge);
-      return deliveryCharge !== null && deliveryCharge <= maximumDeliveryFee;
-    });
-  }
-
-  if (filters?.minOrderValue !== undefined) {
-    const minimumOrderValue = filters.minOrderValue;
-    filtered = filtered.filter((restaurant) => {
-      const minimumValue = parseMoneyValue(restaurant.minimumValue);
-      return minimumValue !== null && minimumValue >= minimumOrderValue;
-    });
-  }
-
-  if (filters?.maxOrderValue !== undefined) {
-    const maximumOrderValue = filters.maxOrderValue;
-    filtered = filtered.filter((restaurant) => {
-      const minimumValue = parseMoneyValue(restaurant.minimumValue);
-      return minimumValue !== null && minimumValue <= maximumOrderValue;
-    });
-  }
-
-  if (filters?.tags) {
-    const selectedTags = filters.tags.split(",").map(normalizeCuisineValue);
-    if (selectedTags.includes("popular")) {
-      filtered = filtered.slice(0, 5);
-    } else {
-      filtered = filtered.filter((restaurant) =>
-        restaurant.tags.some((tag) =>
-          selectedTags.includes(normalizeCuisineValue(tag)),
-        ),
-      );
-    }
-  }
-
-  if (filters?.isOpen !== undefined) {
-    filtered = filtered.filter((restaurant) => isRestaurantOpen(restaurant));
-  }
-
-  return filtered;
-};
-
 export const getAllRestaurants = async (
   filters?: RestaurantFilters,
 ): Promise<Restaurant[]> => {
@@ -214,13 +92,7 @@ export const getAllRestaurants = async (
     return data.data;
   } catch (error) {
     console.error("Error fetching all Restaurants.", error);
-
-    if (!import.meta.env.DEV) {
-      return [];
-    }
-
-    console.log("Using dummy restaurant data for development");
-    return applyFallbackFilters(DUMMY_RESTAURANTS, filters);
+    return [];
   }
 };
 
@@ -253,32 +125,12 @@ export const getFilteredRestaurants = async (
   } catch (error) {
     console.error("Error fetching filtered Restaurants:", error);
 
-    if (!import.meta.env.DEV) {
-      return {
-        data: [],
-        total: 0,
-        page: filters?.page ?? 1,
-        limit: filters?.limit ?? 10,
-        totalPages: 0,
-      };
-    }
-
-    console.log("Using dummy restaurant data for development");
-    const filtered = applyFallbackFilters(DUMMY_RESTAURANTS, filters);
-
-    // Pagination
-    const page = filters?.page ?? 1;
-    const limit = filters?.limit ?? 10;
-    const start = (page - 1) * limit;
-    const paginatedData = filtered.slice(start, start + limit);
-    const totalPages = Math.ceil(filtered.length / limit);
-
     return {
-      data: paginatedData,
-      total: filtered.length,
-      page,
-      limit,
-      totalPages,
+      data: [],
+      total: 0,
+      page: filters?.page ?? 1,
+      limit: filters?.limit ?? 10,
+      totalPages: 0,
     };
   }
 };

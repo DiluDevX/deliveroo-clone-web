@@ -15,7 +15,7 @@ const baseDish = {
   description: "Tomato and mozzarella",
   price: "12.50",
   image: "/pizza.jpg",
-  categoryId: 1,
+  categoryId: "pizza",
 };
 
 const initialState: CartState = {
@@ -78,7 +78,7 @@ describe("cartSlice", () => {
     expect(result.items).toEqual([]);
   });
 
-  it("merges fetched server cart items and keeps the higher local quantity", () => {
+  it("replaces local cart items with fetched server cart items", () => {
     const state: CartState = {
       ...initialState,
       isLoading: true,
@@ -121,7 +121,7 @@ describe("cartSlice", () => {
       _id: "dish-1",
       name: "Updated Pizza",
       price: "13.25",
-      quantity: 3,
+      quantity: 1,
       cartItemId: "server-cart-1",
     });
     expect(result.items[1]).toMatchObject({

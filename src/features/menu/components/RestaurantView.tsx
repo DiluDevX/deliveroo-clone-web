@@ -22,7 +22,7 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
       }}
     >
       <Link
-        to={`/restaurants/${restaurant.name}/menu`}
+        to={`/restaurants/${restaurant.id}/menu`}
         style={{
           textDecoration: "none",
           color: "inherit",

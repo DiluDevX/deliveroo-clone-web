@@ -5,18 +5,21 @@ import { fetchCart, syncCartToServer } from "../cartSlice";
 export const useCartSync = () => {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const cartItems = useAppSelector((state) => state.cart.items);
   const previousAuthState = useRef(isAuthenticated);
 
   // Fetch cart from server when user logs in
   useEffect(() => {
     if (isAuthenticated && !previousAuthState.current) {
-      // User just logged in - fetch and merge cart from server
+      const hadLocalCartBeforeLogin = cartItems.length > 0;
+
       dispatch(fetchCart()).then(() => {
-        // Sync merged cart back to server
-        dispatch(syncCartToServer());
+        if (hadLocalCartBeforeLogin) {
+          dispatch(syncCartToServer());
+        }
       });
     }
 
     previousAuthState.current = isAuthenticated;
-  }, [isAuthenticated, dispatch]);
+  }, [isAuthenticated, cartItems.length, dispatch]);
 };

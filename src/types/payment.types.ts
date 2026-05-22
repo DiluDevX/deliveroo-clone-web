@@ -28,7 +28,7 @@ export interface PaymentIntentResponse {
   data: {
     paymentId: string;
     status: PaymentStatus;
-    clientSecret: string;
+    clientSecret?: string;
   };
 }
 
@@ -54,6 +54,10 @@ export interface OrderResponse {
     userId: string;
     restaurantId: string;
     status: OrderStatus;
+    paymentStatus: PaymentStatus;
+    paymentId: string | null;
+    paymentMethod: string | null;
+    paymentExpiresAt: string | null;
     /** Order total in GBP decimal format as returned by order-service. */
     totalAmount: number;
     deliveryAddress: {

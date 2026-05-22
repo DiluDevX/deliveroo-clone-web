@@ -2,17 +2,18 @@ import { faker } from "@faker-js/faker";
 
 export interface IDish {
   _id: string;
+  id?: string;
   name: string;
   description: string;
   price: string;
   image: string;
-  categoryId: number;
+  categoryId: string;
 }
 
 export interface ICategory {
-  data?: [string];
-  id: number;
+  id: string;
   name: string;
+  dishes?: IDish[];
 }
 
 export interface IDishFake {

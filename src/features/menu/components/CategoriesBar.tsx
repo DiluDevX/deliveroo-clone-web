@@ -7,8 +7,8 @@ import { useEffect, useRef, useState } from "react";
 interface CategoryProps {
   error: string | null;
   categories: ICategory[];
-  selectedCategoryId: number | null;
-  setSelectedCategoryId: (id: number | null) => void;
+  selectedCategoryId: string | null;
+  setSelectedCategoryId: (id: string | null) => void;
 }
 
 // Custom smooth scroll with easing
@@ -42,10 +42,10 @@ export const CategoriesBar = ({
   selectedCategoryId,
   setSelectedCategoryId,
 }: CategoryProps) => {
-  const categoryRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+  const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const isClickScrolling = useRef(false);
-  const targetCategoryId = useRef<number | null>(null);
-  const [pendingCategoryId, setPendingCategoryId] = useState<number | null>(
+  const targetCategoryId = useRef<string | null>(null);
+  const [pendingCategoryId, setPendingCategoryId] = useState<string | null>(
     null,
   );
 
@@ -133,7 +133,7 @@ export const CategoriesBar = ({
     };
   }, [setSelectedCategoryId]);
 
-  const handleOnCategoryClick = (id: number) => {
+  const handleOnCategoryClick = (id: string) => {
     // Set pending state immediately (shows lighter border)
     setPendingCategoryId(id);
 

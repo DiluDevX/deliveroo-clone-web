@@ -2,8 +2,7 @@ import { Box, Typography, Grid, Card, CircularProgress } from "@mui/material";
 import { Elements } from "@stripe/react-stripe-js";
 import { Colors } from "../theme/colors";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
-import Button from "../features/menu/components/Button";
+import { useState, useEffect, useRef, useCallback } from "react";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useAppSelector, useAppDispatch } from "../store/hooks/cartHooks";
@@ -13,15 +12,20 @@ import {
   confirmPayment,
 } from "../services/payment.service";
 import { checkoutCart } from "../services/order.service";
+import { syncCart as syncCartToBackend } from "../services/cart.service";
 import { clearCartAndSync } from "../store/cartSlice";
 import { stripePromise } from "../config/stripe";
 import { StripeCardForm } from "../features/menu/components/StripeCardForm";
-import { CheckoutRequest, CheckoutResult } from "../types/order.types";
+import { CheckoutRequest, Order } from "../types/order.types";
 
 type CheckoutData = {
   address?: string;
   city?: string;
   zipCode?: string;
+};
+
+type ResumePaymentState = {
+  order: Order;
 };
 
 const PaymentPage = () => {
@@ -36,13 +40,27 @@ const PaymentPage = () => {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
-  const hasStartedCardSetup = useRef(false);
+  const [confirmedOrderDetails, setConfirmedOrderDetails] = useState<{
+    subtotal: number;
+    shippingFee: number;
+    serviceFee: number;
+    discount: number;
+    total: number;
+  } | null>(null);
+  const orderCreatedRef = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setProgress(100);
     }, 300);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Reset order created flag when navigating away or on component unmount
+  useEffect(() => {
+    return () => {
+      orderCreatedRef.current = false;
+    };
   }, []);
 
   const checkoutData = location.state?.checkoutData as CheckoutData | null;
@@ -52,29 +70,58 @@ const PaymentPage = () => {
   const paymentMethod = (location.state?.paymentMethod || "CARD") as
     | "CARD"
     | "CASH_ON_DELIVERY";
+  const resumeOrder = (location.state as ResumePaymentState | null)?.order;
   const restaurantName =
-    localStorage.getItem("selected-restaurant-name") || "Restaurant";
+    resumeOrder?.restaurantName ||
+    localStorage.getItem("selected-restaurant-name") ||
+    "Restaurant";
   const restaurantAddress =
-    localStorage.getItem("selected-restaurant-address") || "";
+    resumeOrder?.restaurantAddress ||
+    localStorage.getItem("selected-restaurant-address") ||
+    "";
 
-  const shippingFee = deliveryMethod === "delivery" ? 5 : 0;
-  const serviceFee = 0.99;
-  const discount = 0;
+  const shippingFee =
+    resumeOrder?.deliveryFee ?? (deliveryMethod === "delivery" ? 5 : 0);
+  const serviceFee = resumeOrder?.serviceFee ?? 0.99;
+  const discount = resumeOrder?.discountAmount ?? 0;
   const total =
+    resumeOrder?.totalAmount ??
     cartItems.reduce(
       (total, item) => total + Number(item.price) * Number(item.quantity),
       0,
     ) +
-    shippingFee +
-    serviceFee -
-    discount;
+      shippingFee +
+      serviceFee -
+      discount;
 
-  const subtotal = cartItems.reduce(
-    (total, item) => total + Number(item.price) * Number(item.quantity),
-    0,
-  );
+  const subtotal =
+    resumeOrder?.subtotal ??
+    cartItems.reduce(
+      (total, item) => total + Number(item.price) * Number(item.quantity),
+      0,
+    );
+  const summaryItems =
+    resumeOrder?.items.map((item) => ({
+      id: item.id,
+      name: item.dishName,
+      image: item.dishImageUrl ?? undefined,
+      quantity: item.quantity,
+      total: item.lineTotal,
+    })) ??
+    cartItems.map((item) => ({
+      id: item._id,
+      name: item.name,
+      image: item.image,
+      quantity: item.quantity,
+      total: Number(item.price) * item.quantity,
+    }));
+  const displaySubtotal = confirmedOrderDetails?.subtotal ?? subtotal;
+  const displayShippingFee = confirmedOrderDetails?.shippingFee ?? shippingFee;
+  const displayServiceFee = confirmedOrderDetails?.serviceFee ?? serviceFee;
+  const displayDiscount = confirmedOrderDetails?.discount ?? discount;
+  const displayTotal = confirmedOrderDetails?.total ?? total;
 
-  const hasRequiredDeliveryAddress = () => {
+  const hasRequiredDeliveryAddress = useCallback(() => {
     if (deliveryMethod !== "delivery") {
       return true;
     }
@@ -82,78 +129,85 @@ const PaymentPage = () => {
     return Boolean(
       checkoutData?.address && checkoutData.city && checkoutData.zipCode,
     );
-  };
+  }, [
+    checkoutData?.address,
+    checkoutData?.city,
+    checkoutData?.zipCode,
+    deliveryMethod,
+  ]);
 
-  const canStartPayment = () => {
+  const canStartPayment = useCallback(() => {
     if (!hasRequiredDeliveryAddress()) {
       setError("Missing delivery address");
       return false;
     }
 
     return true;
-  };
+  }, [hasRequiredDeliveryAddress]);
 
-  const buildCheckoutRequest = (
-    checkoutPaymentMethod: "card" | "cash",
-  ): CheckoutRequest => ({
-    deliveryAddress: {
-      line1: checkoutData?.address || "",
-      city: checkoutData?.city || "",
-      postcode: checkoutData?.zipCode || "",
-      country: "UK",
+  const buildCheckoutRequest = useCallback(
+    (checkoutPaymentMethod: "card" | "cash"): CheckoutRequest => {
+      return {
+        deliveryAddress: {
+          line1: checkoutData?.address || "",
+          city: checkoutData?.city || "",
+          postcode: checkoutData?.zipCode || "",
+          country: "UK",
+        },
+        restaurantName,
+        restaurantAddress,
+        deliveryFee: shippingFee,
+        serviceFee,
+        discountAmount: discount,
+        paymentMethod: checkoutPaymentMethod,
+      };
     },
-    restaurantName,
-    restaurantAddress,
-    deliveryFee: shippingFee,
-    serviceFee,
-    discountAmount: discount,
-    paymentMethod: checkoutPaymentMethod,
-  });
-
-  const startPaymentProcessing = (step: string) => {
-    setIsProcessing(true);
-    setError(null);
-    setProcessingStep(step);
-  };
+    [
+      checkoutData?.address,
+      checkoutData?.city,
+      checkoutData?.zipCode,
+      discount,
+      restaurantAddress,
+      restaurantName,
+      serviceFee,
+      shippingFee,
+    ],
+  );
 
   const stopPaymentProcessing = () => {
     setIsProcessing(false);
     setProcessingStep("");
   };
 
-  const createCheckoutOrder = async (
-    checkoutPaymentMethod: "card" | "cash",
-  ): Promise<CheckoutResult> => {
-    const orderResponse = await checkoutCart(
-      buildCheckoutRequest(checkoutPaymentMethod),
-    );
+  const getOrderDetails = useCallback(
+    () => ({
+      subtotal,
+      shippingFee,
+      serviceFee,
+      discount,
+      total,
+    }),
+    [discount, serviceFee, shippingFee, subtotal, total],
+  );
 
-    if (!orderResponse?.orderId) {
-      throw new Error("Failed to create order. Please try again.");
-    }
+  const navigateToOrderConfirmation = useCallback(
+    (confirmationOrderId: string, clearCartOnSuccess: boolean) => {
+      if (clearCartOnSuccess) {
+        dispatch(clearCartAndSync());
+      }
 
-    return orderResponse;
-  };
+      sessionStorage.removeItem("pending-card-order");
+      navigate("/order-confirmation", {
+        state: {
+          orderId: confirmationOrderId,
+          orderDetails: confirmedOrderDetails ?? getOrderDetails(),
+        },
+      });
+    },
+    [confirmedOrderDetails, dispatch, getOrderDetails, navigate],
+  );
 
-  const getOrderDetails = () => ({
-    subtotal,
-    shippingFee,
-    serviceFee,
-    discount,
-    total,
-  });
-
-  const navigateToOrderConfirmation = (confirmationOrderId: string) => {
-    dispatch(clearCartAndSync());
-    navigate("/order-confirmation", {
-      state: {
-        orderId: confirmationOrderId,
-        orderDetails: getOrderDetails(),
-      },
-    });
-  };
-
-  const handlePaymentError = (err: unknown, context: string) => {
+  const handlePaymentError = useCallback((err: unknown, context: string) => {
     const message =
       err instanceof Error
         ? err.message
@@ -161,139 +215,164 @@ const PaymentPage = () => {
 
     setError(message);
     console.error(context, err);
-  };
+  }, []);
 
   /**
-   * Handle cash on delivery payment
-   * Creates order and navigates to confirmation
+   * Auto-initialize payment on page load
+   * Syncs cart, creates order, and prepares payment method
    */
-  const handleCashPayment = async () => {
-    if (!canStartPayment()) {
-      return;
-    }
-
-    startPaymentProcessing("Creating order...");
-
-    try {
-      const orderResponse = await createCheckoutOrder("cash");
-      navigateToOrderConfirmation(orderResponse.orderNumber);
-    } catch (err) {
-      handlePaymentError(err, "Cash payment error:");
-    } finally {
-      stopPaymentProcessing();
-    }
-  };
-
   useEffect(() => {
-    if (
-      paymentMethod !== "CARD" ||
-      hasStartedCardSetup.current ||
-      clientSecret ||
-      paymentId
-    ) {
+    // Only run once per session
+    if (orderCreatedRef.current || !canStartPayment()) {
       return;
     }
 
     let isActive = true;
 
-    const prepareCardPayment = async () => {
-      const hasDeliveryAddress =
-        deliveryMethod !== "delivery" ||
-        Boolean(
-          checkoutData?.address && checkoutData.city && checkoutData.zipCode,
-        );
-
-      if (!hasDeliveryAddress) {
-        setError("Missing delivery address");
-        return;
-      }
-
-      hasStartedCardSetup.current = true;
-      setIsProcessing(true);
-      setError(null);
-      setProcessingStep("Creating order...");
-
+    const initializePayment = async () => {
       try {
-        const orderResponse = await checkoutCart({
-          deliveryAddress: {
-            line1: checkoutData?.address || "",
-            city: checkoutData?.city || "",
-            postcode: checkoutData?.zipCode || "",
-            country: "UK",
-          },
-          restaurantName,
-          restaurantAddress,
-          deliveryFee: shippingFee,
-          serviceFee,
-          discountAmount: discount,
-          paymentMethod: "card",
-        });
+        orderCreatedRef.current = true;
+        setIsProcessing(true);
+        setError(null);
+
+        // For resuming a previous payment, skip to card form
+        if (resumeOrder) {
+          if (!isActive) return;
+
+          setConfirmedOrderDetails({
+            subtotal: resumeOrder.subtotal,
+            shippingFee: resumeOrder.deliveryFee,
+            serviceFee: resumeOrder.serviceFee,
+            discount: resumeOrder.discountAmount,
+            total: resumeOrder.totalAmount,
+          });
+          setOrderNumber(resumeOrder.orderNumber);
+
+          if (paymentMethod === "CARD") {
+            const pendingOrder = sessionStorage.getItem("pending-card-order");
+            if (pendingOrder) {
+              const { paymentId } = JSON.parse(pendingOrder);
+              setPaymentId(paymentId);
+            }
+          }
+
+          return;
+        }
+
+        // Get restaurantId from localStorage
+        const restaurantId = localStorage.getItem("selected-restaurant-id");
+
+        if (!restaurantId) {
+          throw new Error(
+            "Restaurant ID not found. Please select a restaurant.",
+          );
+        }
+
+        if (cartItems.length === 0) {
+          throw new Error("Cart is empty. Please add items before checkout.");
+        }
+
+        // Sync cart to backend
+        if (!isActive) return;
+        setProcessingStep("Syncing cart...");
+        const syncResult = await syncCartToBackend(cartItems, restaurantId);
+
+        if (!syncResult) {
+          throw new Error("Failed to sync cart. Please try again.");
+        }
+
+        // Create order
+        if (!isActive) return;
+        setProcessingStep("Creating order...");
+        const orderResponse = await checkoutCart(
+          buildCheckoutRequest(paymentMethod === "CARD" ? "card" : "cash"),
+        );
 
         if (!orderResponse?.orderId) {
           throw new Error("Failed to create order. Please try again.");
         }
 
-        setProcessingStep("Preparing payment...");
+        if (!isActive) return;
 
-        const paymentIntent = await createPaymentIntent({
-          orderId: orderResponse.orderId,
-          expectedTotalAmount: total,
-        });
+        const orderDetails = {
+          subtotal: orderResponse.subtotal,
+          shippingFee: orderResponse.deliveryFee,
+          serviceFee: orderResponse.serviceFee,
+          discount: orderResponse.discountAmount,
+          total: orderResponse.totalAmount,
+        };
 
-        const paymentData = paymentIntent?.data;
-
-        if (!paymentData?.clientSecret || !paymentData.paymentId) {
-          throw new Error("Failed to process payment. Please try again.");
-        }
-
-        if (!isActive) {
-          return;
-        }
-
+        setConfirmedOrderDetails(orderDetails);
         setOrderNumber(orderResponse.orderNumber);
-        setPaymentId(paymentData.paymentId);
-        setClientSecret(paymentData.clientSecret);
-      } catch (err) {
-        if (!isActive) {
-          return;
+
+        // Handle card payment - create PaymentIntent
+        if (paymentMethod === "CARD") {
+          if (!isActive) return;
+          setProcessingStep("Preparing payment...");
+
+          const paymentIntent = await createPaymentIntent({
+            orderId: orderResponse.orderId,
+            expectedTotalAmount: orderResponse.totalAmount,
+          });
+
+          if (!isActive) return;
+
+          const paymentData = paymentIntent?.data;
+
+          if (!paymentData?.clientSecret || !paymentData.paymentId) {
+            throw new Error("Failed to process payment. Please try again.");
+          }
+
+          sessionStorage.setItem(
+            "pending-card-order",
+            JSON.stringify({
+              orderId: orderResponse.orderId,
+              orderNumber: orderResponse.orderNumber,
+              totalAmount: orderResponse.totalAmount,
+            }),
+          );
+
+          setPaymentId(paymentData.paymentId);
+          setClientSecret(paymentData.clientSecret);
+        } else {
+          // Cash on delivery - automatically navigate to confirmation
+          if (!isActive) return;
+          setProcessingStep("Order confirmed...");
+          setTimeout(() => {
+            if (isActive) {
+              navigateToOrderConfirmation(orderResponse.orderNumber, true);
+            }
+          }, 1000);
         }
+      } catch (err) {
+        if (!isActive) return;
 
-        const message =
-          err instanceof Error
-            ? err.message
-            : "An unexpected error occurred. Please try again.";
-
-        setError(message);
-        console.error("Card payment setup error:", err);
+        orderCreatedRef.current = false;
+        handlePaymentError(err, "Payment initialization error:");
       } finally {
-        hasStartedCardSetup.current = false;
-
         if (isActive) {
           setIsProcessing(false);
         }
       }
     };
 
-    void prepareCardPayment();
+    void initializePayment();
 
     return () => {
       isActive = false;
-      hasStartedCardSetup.current = false;
     };
   }, [
+    buildCheckoutRequest,
+    canStartPayment,
+    cartItems,
     checkoutData?.address,
     checkoutData?.city,
     checkoutData?.zipCode,
-    clientSecret,
     deliveryMethod,
-    discount,
-    paymentId,
+    handlePaymentError,
+    navigateToOrderConfirmation,
     paymentMethod,
-    restaurantAddress,
-    restaurantName,
-    serviceFee,
-    shippingFee,
-    total,
+    resumeOrder,
   ]);
 
   const handleStripePaymentSucceeded = async () => {
@@ -312,7 +391,7 @@ const PaymentPage = () => {
         throw new Error("Payment confirmation failed. Please try again.");
       }
 
-      navigateToOrderConfirmation(orderNumber || "unknown");
+      navigateToOrderConfirmation(orderNumber || "unknown", !resumeOrder);
     } catch (err) {
       handlePaymentError(err, "Payment confirmation error:");
     } finally {
@@ -447,10 +526,9 @@ const PaymentPage = () => {
                     <Elements stripe={stripePromise} options={{ clientSecret }}>
                       <StripeCardForm
                         clientSecret={clientSecret}
-                        isProcessing={isProcessing}
                         onPaymentSuccess={handleStripePaymentSucceeded}
                         onPaymentError={setError}
-                        totalAmount={total}
+                        totalAmount={displayTotal}
                       />
                     </Elements>
                   ) : (
@@ -462,8 +540,10 @@ const PaymentPage = () => {
                         textAlign: "center",
                       }}
                     >
-                      <CircularProgress size={30} sx={{ mb: 2 }} />
-                      <Typography sx={{ color: Colors.text.default }}>
+                      <CircularProgress size={40} sx={{ mb: 2 }} />
+                      <Typography
+                        sx={{ color: Colors.text.default, fontWeight: "500" }}
+                      >
                         {processingStep || "Preparing payment..."}
                       </Typography>
                     </Box>
@@ -478,14 +558,43 @@ const PaymentPage = () => {
                     textAlign: "center",
                   }}
                 >
-                  <Typography sx={{ color: Colors.text.default, mb: 1 }}>
-                    You will pay in cash when your order is delivered.
-                  </Typography>
-                  <Typography
-                    sx={{ color: Colors.text.placeholder, fontSize: "0.9rem" }}
-                  >
-                    Please ensure you have the exact amount ready.
-                  </Typography>
+                  {isProcessing ? (
+                    <>
+                      <CircularProgress size={40} sx={{ mb: 2 }} />
+                      <Typography
+                        sx={{ color: Colors.text.default, fontWeight: "500" }}
+                      >
+                        {processingStep || "Processing..."}
+                      </Typography>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircleIcon
+                        sx={{
+                          fontSize: "3rem",
+                          color: Colors.background.brand,
+                          mb: 2,
+                        }}
+                      />
+                      <Typography
+                        sx={{
+                          color: Colors.text.default,
+                          mb: 1,
+                          fontWeight: "600",
+                        }}
+                      >
+                        Order Confirmed
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: Colors.text.placeholder,
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        You will pay in cash when your order is delivered.
+                      </Typography>
+                    </>
+                  )}
                 </Box>
               )}
             </Card>
@@ -510,9 +619,9 @@ const PaymentPage = () => {
               </Typography>
 
               <Box sx={{ mb: 3 }}>
-                {cartItems.map((item) => (
+                {summaryItems.map((item) => (
                   <Box
-                    key={item._id}
+                    key={item.id}
                     sx={{
                       display: "flex",
                       gap: 2,
@@ -551,7 +660,7 @@ const PaymentPage = () => {
                       </Typography>
                     </Box>
                     <Typography sx={{ fontWeight: "600" }}>
-                      £{(Number(item.price) * item.quantity).toFixed(2)}
+                      £{item.total.toFixed(2)}
                     </Typography>
                   </Box>
                 ))}
@@ -562,19 +671,25 @@ const PaymentPage = () => {
                   <Typography sx={{ color: Colors.text.default }}>
                     Subtotal
                   </Typography>
-                  <Typography>£{subtotal.toFixed(2)}</Typography>
+                  <Typography>£{displaySubtotal.toFixed(2)}</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography sx={{ color: Colors.text.default }}>
                     Delivery
                   </Typography>
-                  <Typography>£{shippingFee.toFixed(2)}</Typography>
+                  <Typography>£{displayShippingFee.toFixed(2)}</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography sx={{ color: Colors.text.default }}>
+                    Service fee
+                  </Typography>
+                  <Typography>£{displayServiceFee.toFixed(2)}</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography sx={{ color: Colors.text.default }}>
                     Discount
                   </Typography>
-                  <Typography>-£{discount.toFixed(2)}</Typography>
+                  <Typography>-£{displayDiscount.toFixed(2)}</Typography>
                 </Box>
                 <Box
                   sx={{
@@ -586,34 +701,10 @@ const PaymentPage = () => {
                 >
                   <Typography sx={{ fontWeight: "bold" }}>Total</Typography>
                   <Typography sx={{ fontWeight: "bold", fontSize: "1.1rem" }}>
-                    £{total.toFixed(2)}
+                    £{displayTotal.toFixed(2)}
                   </Typography>
                 </Box>
               </Box>
-
-              {paymentMethod === "CASH_ON_DELIVERY" && (
-                <Button
-                  variant="filled"
-                  disabled={isProcessing}
-                  onClick={handleCashPayment}
-                  sx={{
-                    width: "100%",
-                    fontWeight: "bold",
-                    py: 1.5,
-                    fontSize: "1rem",
-                    mt: 3,
-                  }}
-                >
-                  {isProcessing ? (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <CircularProgress size={20} sx={{ color: "white" }} />
-                      {processingStep || "Processing..."}
-                    </Box>
-                  ) : (
-                    "Place Order"
-                  )}
-                </Button>
-              )}
 
               {error && (
                 <Box

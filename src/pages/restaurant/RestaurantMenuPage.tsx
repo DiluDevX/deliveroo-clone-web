@@ -19,56 +19,17 @@ import Button from "../../features/menu/components/Button";
 const RestaurantMenuPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Mock menu data
-  const mockMenuItems = [
-    {
-      id: "ITEM-001",
-      name: "Margherita Pizza",
-      category: "Pizza",
-      price: "$12.99",
-      available: true,
-      preparationTime: "15 mins",
-      popularity: 145,
-    },
-    {
-      id: "ITEM-002",
-      name: "Caesar Salad",
-      category: "Salads",
-      price: "$8.99",
-      available: true,
-      preparationTime: "5 mins",
-      popularity: 98,
-    },
-    {
-      id: "ITEM-003",
-      name: "Pasta Carbonara",
-      category: "Pasta",
-      price: "$14.99",
-      available: true,
-      preparationTime: "20 mins",
-      popularity: 112,
-    },
-    {
-      id: "ITEM-004",
-      name: "Garlic Bread",
-      category: "Appetizers",
-      price: "$5.99",
-      available: false,
-      preparationTime: "8 mins",
-      popularity: 87,
-    },
-    {
-      id: "ITEM-005",
-      name: "Tiramisu",
-      category: "Desserts",
-      price: "$6.99",
-      available: true,
-      preparationTime: "0 mins",
-      popularity: 64,
-    },
-  ];
+  const menuItems: Array<{
+    id: string;
+    name: string;
+    category: string;
+    price: string;
+    available: boolean;
+    preparationTime: string;
+    popularity: number;
+  }> = [];
 
-  const filteredItems = mockMenuItems.filter(
+  const filteredItems = menuItems.filter(
     (item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.category.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -220,6 +181,15 @@ const RestaurantMenuPage = () => {
                   </TableCell>
                 </TableRow>
               ))}
+              {filteredItems.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={7}>
+                    <Typography sx={{ color: Colors.text.placeholder }}>
+                      No menu items found.
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>

@@ -11,13 +11,14 @@ import { useForm, Controller } from "react-hook-form";
 import TextInput from "../features/menu/components/TextInput";
 import { emailSchema } from "../features/menu/validations/email.validation";
 import { checkPasswordSchema } from "../features/menu/validations/password.validation";
-import { checkEmail, login } from "../services/auth.service";
+import { checkAuthStatus, checkEmail, login } from "../services/auth.service";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { setCredentials } from "../store/authSlice";
+import { setAuthInitialized, setCredentials } from "../store/authSlice";
 import { useAppDispatch } from "../store/hooks/cartHooks";
 import { useSnackbar } from "notistack";
 import SignUpPage from "./SignUpPage";
+import { fetchCart } from "../store/cartSlice";
 
 type LoginForm = {
   email: string;
@@ -96,6 +97,14 @@ export default function Login() {
           },
         }),
       );
+      dispatch(setAuthInitialized(true));
+
+      const authStatus = await checkAuthStatus();
+      if (authStatus && typeof authStatus !== "boolean") {
+        dispatch(setCredentials({ user: authStatus.user }));
+      }
+
+      await dispatch(fetchCart());
 
       localStorage.removeItem("existingUser");
 

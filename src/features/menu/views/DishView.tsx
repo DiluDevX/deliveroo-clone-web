@@ -3,7 +3,6 @@ import { Colors } from "../../../theme/colors";
 import Dish from "../components/Dish";
 import { useEffect, useState, useMemo } from "react";
 import { ICategory, IDish } from "../../../data/Sides";
-import { getDishes } from "../../../services/dish.service";
 
 interface DishViewProps {
   categories: ICategory[];
@@ -14,7 +13,7 @@ const DishView = ({ categories = [], onLoadingChange }: DishViewProps) => {
   const [dishesByCategory, setDishesByCategory] = useState<{
     [key: string]: IDish[];
   }>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const categoryIds = useMemo(
     () => categories.map((category) => category.id),
@@ -38,33 +37,14 @@ const DishView = ({ categories = [], onLoadingChange }: DishViewProps) => {
   }, [isLoading, onLoadingChange]);
 
   useEffect(() => {
-    const fetchDishes = async (categoryId: string) => {
-      try {
-        const response: IDish[] = await getDishes(categoryId);
-        setDishesByCategory((prev) => ({ ...prev, [categoryId]: response }));
-      } catch (error) {
-        console.error(
-          `Error fetching dishes for category ${categoryId}:`,
-          error,
-        );
-      }
-    };
-
-    const fetchAllDishes = async () => {
-      if (categoryIds.length === 0) {
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      await Promise.all(
-        categoryIds.map((categoryId) => fetchDishes(categoryId.toString())),
-      );
-      setIsLoading(false);
-    };
-
-    fetchAllDishes();
-  }, [categoryIds]);
+    setDishesByCategory(
+      categories.reduce<Record<string, IDish[]>>((acc, category) => {
+        acc[category.id] = category.dishes ?? [];
+        return acc;
+      }, {}),
+    );
+    setIsLoading(false);
+  }, [categories, categoryIds]);
 
   // Don't render anything - parent handles loading state
   if (!categories.length) {

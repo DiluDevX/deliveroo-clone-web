@@ -11,7 +11,7 @@ const ProtectedRoute = () => {
     return null;
   }
 
-  if (import.meta.env.VITE_BYPASS_AUTH !== "true" && !isAuthenticated) {
+  if (!isAuthenticated) {
     return <Navigate to="/account/login" state={{ from: location }} replace />;
   }
 

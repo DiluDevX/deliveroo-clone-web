@@ -3,10 +3,10 @@ import { Colors } from "../../../theme";
 
 type CategoryChipProps = {
   data: {
-    id: number;
+    id: string;
     name: string;
   };
-  onClick: (id: number) => void;
+  onClick: (id: string) => void;
   selected: boolean;
   pending?: boolean;
 };

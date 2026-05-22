@@ -10,7 +10,10 @@ import {
   confirmPayment,
   createPaymentIntent,
 } from "../src/services/payment.service";
+import { syncCart } from "../src/services/cart.service";
 import { renderWithProviders } from "./test-utils";
+import { CheckoutResult } from "../src/types/order.types";
+import { CartItemData } from "../src/types/cart.types";
 
 vi.mock("../src/config/stripe", () => ({
   stripePromise: Promise.resolve(null),
@@ -41,6 +44,10 @@ vi.mock("../src/services/payment.service", () => ({
   confirmPayment: vi.fn(),
 }));
 
+vi.mock("../src/services/cart.service", () => ({
+  syncCart: vi.fn(),
+}));
+
 const OrderConfirmation = () => {
   const location = useLocation();
   const state = location.state as { orderId?: string } | null;
@@ -54,9 +61,21 @@ const cartItem: CartItem = {
   description: "Tomato and mozzarella",
   price: "12.50",
   image: "/pizza.jpg",
-  categoryId: 1,
+  categoryId: "pizza",
   quantity: 2,
   cartItemId: "cart-item-1",
+};
+
+const syncedCartItem: CartItemData = {
+  id: "cart-item-1",
+  dishId: "dish-1",
+  dishName: "Margherita Pizza",
+  dishImageUrl: "/pizza.jpg",
+  unitPrice: 12.5,
+  quantity: 2,
+  modifiers: [],
+  createdAt: "2026-05-20T00:00:00.000Z",
+  updatedAt: "2026-05-20T00:00:00.000Z",
 };
 
 type TestCheckoutData = {
@@ -71,9 +90,29 @@ const defaultCheckoutData: TestCheckoutData = {
   zipCode: "SW1A 1AA",
 };
 
+const checkoutResult = (
+  overrides: Partial<CheckoutResult> = {},
+): CheckoutResult => ({
+  orderId: "order-1",
+  orderNumber: "ORD-1",
+  status: "PENDING",
+  paymentStatus: "PENDING",
+  paymentId: null,
+  paymentMethod: "card",
+  paymentExpiresAt: "2026-05-20T00:30:00.000Z",
+  subtotal: 25,
+  deliveryFee: 5,
+  serviceFee: 0.99,
+  discountAmount: 0,
+  totalAmount: 30.99,
+  estimatedDeliveryAt: null,
+  ...overrides,
+});
+
 const renderPaymentPage = (
   checkoutData: TestCheckoutData = defaultCheckoutData,
 ) => {
+  localStorage.setItem("selected-restaurant-id", "restaurant-1");
   localStorage.setItem("selected-restaurant-name", "Test Restaurant");
   localStorage.setItem("selected-restaurant-address", "1 Food Street");
 
@@ -112,16 +151,11 @@ const renderPaymentPage = (
 describe("PaymentPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(syncCart).mockResolvedValue([syncedCartItem]);
   });
 
   it("automatically creates one checkout order before requesting a card payment intent", async () => {
-    vi.mocked(checkoutCart).mockResolvedValue({
-      orderId: "order-1",
-      orderNumber: "ORD-1",
-      status: "PENDING",
-      totalAmount: 30.99,
-      estimatedDeliveryAt: null,
-    });
+    vi.mocked(checkoutCart).mockResolvedValue(checkoutResult());
     vi.mocked(createPaymentIntent).mockResolvedValue({
       success: true,
       message: "Payment intent created",
@@ -177,13 +211,7 @@ describe("PaymentPage", () => {
 
   it("confirms payment and navigates to order confirmation after Stripe succeeds", async () => {
     const user = userEvent.setup();
-    vi.mocked(checkoutCart).mockResolvedValue({
-      orderId: "order-1",
-      orderNumber: "ORD-1",
-      status: "PENDING",
-      totalAmount: 30.99,
-      estimatedDeliveryAt: null,
-    });
+    vi.mocked(checkoutCart).mockResolvedValue(checkoutResult());
     vi.mocked(createPaymentIntent).mockResolvedValue({
       success: true,
       message: "Payment intent created",

@@ -33,7 +33,7 @@ const mapServerCartItem = (item: CartItemData): CartItem => ({
   description: "",
   price: String(item.unitPrice),
   image: item.dishImageUrl,
-  categoryId: 0,
+  categoryId: "",
   quantity: item.quantity,
   cartItemId: item.id,
   modifiers: item.modifiers,
@@ -41,6 +41,10 @@ const mapServerCartItem = (item: CartItemData): CartItem => ({
 
 const matchesCartItem = (item: CartItem, id: string) =>
   item.cartItemId === id || item._id === id;
+
+const isDummyCartItem = (item: CartItem) =>
+  ["cart1", "cart2", "cart3"].includes(item.cartItemId ?? "") &&
+  ["1", "2", "3"].includes(item._id);
 
 // Async thunk to fetch cart from server
 export const fetchCart = createAsyncThunk(
@@ -185,46 +189,17 @@ const cartSlice = createSlice({
     setCart: (state, action: PayloadAction<CartItem[]>) => {
       state.items = action.payload;
     },
-    populateDummyCart: (state) => {
-      state.items = [
-        {
-          _id: "1",
-          name: "Margherita Pizza",
-          description: "Classic tomato and mozzarella",
-          price: "12.99",
-          image:
-            "https://images.unsplash.com/photo-1604382345074-af4b0eb60143?w=400",
-          categoryId: 1,
-          quantity: 2,
-          cartItemId: "cart1",
-        },
-        {
-          _id: "2",
-          name: "Pepperoni Pizza",
-          description: "Tomato, mozzarella, pepperoni",
-          price: "14.99",
-          image:
-            "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400",
-          categoryId: 1,
-          quantity: 1,
-          cartItemId: "cart2",
-        },
-        {
-          _id: "3",
-          name: "Garlic Bread",
-          description: "Toasted bread with garlic butter",
-          price: "4.99",
-          image:
-            "https://images.unsplash.com/photo-1619535860434-ba1d8fa12536?w=400",
-          categoryId: 2,
-          quantity: 1,
-          cartItemId: "cart3",
-        },
-      ];
+    removeDummyCartItems: (state) => {
+      state.items = state.items.filter((item) => !isDummyCartItem(item));
     },
   },
   extraReducers: (builder) => {
     builder
+      .addCase("auth/logOut", (state) => {
+        state.items = [];
+        state.isLoading = false;
+        state.isSyncing = false;
+      })
       // Fetch cart
       .addCase(fetchCart.pending, (state) => {
         state.isLoading = true;
@@ -239,11 +214,7 @@ const cartSlice = createSlice({
               (item) => String(item._id) === String(normalizedItem._id),
             );
             if (existingItem) {
-              // Keep the higher quantity
-              existingItem.quantity = Math.max(
-                existingItem.quantity,
-                normalizedItem.quantity,
-              );
+              existingItem.quantity = normalizedItem.quantity;
               existingItem.cartItemId = normalizedItem.cartItemId;
               existingItem.name = normalizedItem.name;
               existingItem.image = normalizedItem.image;
@@ -277,6 +248,6 @@ export const {
   updateQuantity,
   clearCart,
   setCart,
-  populateDummyCart,
+  removeDummyCartItems,
 } = cartSlice.actions;
 export default cartSlice.reducer;

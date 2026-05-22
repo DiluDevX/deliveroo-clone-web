@@ -32,6 +32,7 @@ import {
   updateQuantityAndSync,
   removeItemAndSync,
   clearCartAndSync,
+  syncCartToServer,
 } from "../store/cartSlice";
 import { DeliveryDiningSharp, ShoppingBagOutlined } from "@mui/icons-material";
 import { checkoutCart } from "../services/order.service";
@@ -135,8 +136,17 @@ const CheckoutPage = () => {
       return;
     }
 
+    setIsProcessing(true);
+    const syncResult = await dispatch(syncCartToServer());
+    if (syncCartToServer.rejected.match(syncResult) || !syncResult.payload) {
+      setIsProcessing(false);
+      enqueueSnackbar("Failed to sync cart. Please try again.", {
+        variant: "error",
+      });
+      return;
+    }
+
     if (paymentMethod === "CASH_ON_DELIVERY") {
-      setIsProcessing(true);
       const restaurantName =
         localStorage.getItem("selected-restaurant-name") || "Restaurant";
       const restaurantAddress =
@@ -183,6 +193,7 @@ const CheckoutPage = () => {
       return;
     }
 
+    setIsProcessing(false);
     navigate("/payment", {
       state: { checkoutData: data, deliveryMethod, paymentMethod },
     });
@@ -229,7 +240,7 @@ const CheckoutPage = () => {
   }, [cartItems, navigate, orderPlaced]);
 
   useEffect(() => {
-    if (import.meta.env.VITE_BYPASS_AUTH !== "true" && !isAuthenticated) {
+    if (!isAuthenticated) {
       sessionStorage.setItem("redirectAfterLogin", "/checkout");
       navigate("/account/login");
     }
