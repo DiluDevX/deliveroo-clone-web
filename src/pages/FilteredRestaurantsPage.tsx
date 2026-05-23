@@ -135,7 +135,7 @@ const FilteredRestaurantsPage = () => {
       <Grid
         container
         spacing={2}
-        justifyContent="center"
+        justifyContent="flex-start"
         sx={{ width: "100%" }}
       >
         {filteredRestaurants.map((restaurant) => (

@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Colors } from "../theme/colors";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Button from "../features/menu/components/Button";
 import TextInput from "../features/menu/components/TextInput";
@@ -37,6 +37,8 @@ import {
 import { DeliveryDiningSharp, ShoppingBagOutlined } from "@mui/icons-material";
 import { checkoutCart } from "../services/order.service";
 import { enqueueSnackbar } from "notistack";
+import { createUserAddress, getUserAddresses } from "../services/user.service";
+import { Address } from "../types/user.types";
 
 type PaymentMethod = "CARD" | "CASH_ON_DELIVERY";
 
@@ -67,6 +69,9 @@ const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CARD");
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("new");
+  const [saveAddressForFuture, setSaveAddressForFuture] = useState(false);
 
   const effectiveDeliveryMethod =
     paymentMethod === "CASH_ON_DELIVERY" ? "delivery" : deliveryMethod;
@@ -112,6 +117,7 @@ const CheckoutPage = () => {
     control,
     formState: { isValid },
     watch,
+    setValue,
   } = form;
 
   const agreedToTerms = watch("agreedToTerms", false);
@@ -128,12 +134,74 @@ const CheckoutPage = () => {
   const canPlaceOrder =
     isValid && agreedToTerms && hasRequiredContact && hasRequiredAddress;
 
+  const applyAddressToForm = useCallback(
+    (addressToApply?: Address) => {
+      setValue("address", addressToApply?.line1 || "", {
+        shouldValidate: true,
+      });
+      setValue("city", addressToApply?.city || "", { shouldValidate: true });
+      setValue("zipCode", addressToApply?.postcode || "", {
+        shouldValidate: true,
+      });
+    },
+    [setValue],
+  );
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const loadAddresses = async () => {
+      const addresses = await getUserAddresses();
+      setSavedAddresses(addresses);
+
+      const defaultAddress = addresses.find((addr) => addr.isDefault);
+      if (defaultAddress) {
+        setSelectedAddressId(defaultAddress.id);
+        applyAddressToForm(defaultAddress);
+      }
+    };
+
+    void loadAddresses();
+  }, [applyAddressToForm, isAuthenticated]);
+
+  const handleAddressSelectionChange = (addressId: string) => {
+    setSelectedAddressId(addressId);
+
+    if (addressId === "new") {
+      applyAddressToForm();
+      return;
+    }
+
+    applyAddressToForm(savedAddresses.find((addr) => addr.id === addressId));
+  };
+
   const handlePlaceOrder = form.handleSubmit(async (data) => {
     if (!hasRequiredAddress) {
       enqueueSnackbar("Please enter a delivery address.", {
         variant: "error",
       });
       return;
+    }
+
+    if (
+      effectiveDeliveryMethod === "delivery" &&
+      selectedAddressId === "new" &&
+      saveAddressForFuture
+    ) {
+      const savedAddress = await createUserAddress({
+        label: "Delivery",
+        line1: data.address || "",
+        city: data.city || "",
+        postcode: data.zipCode || "",
+        country: "UK",
+      });
+
+      if (!savedAddress) {
+        enqueueSnackbar("Failed to save address. Please try again.", {
+          variant: "error",
+        });
+        return;
+      }
     }
 
     setIsProcessing(true);
@@ -517,44 +585,89 @@ const CheckoutPage = () => {
                 </Box>
               </RadioGroup>
 
+              <Typography
+                sx={{ fontWeight: "600", mb: 2, color: Colors.text.default }}
+              >
+                Contact Information
+              </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 <Box
                   sx={{
                     borderRadius: "8px",
                     backgroundColor: Colors.background.light,
+                    p: 2,
                   }}
                 >
-                  <Typography sx={{ fontWeight: 600, mb: 1 }}>
-                    Contact Information
-                  </Typography>
-                  <Typography sx={{ color: Colors.text.default }}>
-                    {user?.firstName} {user?.lastName}
-                  </Typography>
-                  <Typography sx={{ color: Colors.text.default }}>
-                    {user?.email}
-                  </Typography>
-                  {isPhoneMissing ? (
-                    <Controller
-                      name="phone"
-                      control={control}
-                      render={({ field, fieldState }) => (
-                        <TextInput
-                          {...field}
-                          fullWidth
-                          label="Phone number"
-                          value={field.value || ""}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          error={fieldState.error?.message}
-                          placeholder="Enter phone number"
-                          sx={{ mt: 1 }}
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+                  >
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontSize: "0.85rem",
+                          color: Colors.text.placeholder,
+                          mb: 0.25,
+                        }}
+                      >
+                        Name
+                      </Typography>
+                      <Typography
+                        sx={{ color: Colors.text.default, fontWeight: 500 }}
+                      >
+                        {user?.firstName} {user?.lastName}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontSize: "0.85rem",
+                          color: Colors.text.placeholder,
+                          mb: 0.25,
+                        }}
+                      >
+                        Email
+                      </Typography>
+                      <Typography
+                        sx={{ color: Colors.text.default, fontWeight: 500 }}
+                      >
+                        {user?.email}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontSize: "0.85rem",
+                          color: Colors.text.placeholder,
+                          mb: 0.75,
+                        }}
+                      >
+                        Phone
+                      </Typography>
+                      {isPhoneMissing ? (
+                        <Controller
+                          name="phone"
+                          control={control}
+                          render={({ field, fieldState }) => (
+                            <TextInput
+                              {...field}
+                              fullWidth
+                              label="Phone number"
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value)}
+                              error={fieldState.error?.message}
+                              placeholder="Enter phone number"
+                            />
+                          )}
                         />
+                      ) : (
+                        <Typography
+                          sx={{ color: Colors.text.default, fontWeight: 500 }}
+                        >
+                          {user?.phone}
+                        </Typography>
                       )}
-                    />
-                  ) : (
-                    <Typography sx={{ color: Colors.text.default }}>
-                      {user?.phone}
-                    </Typography>
-                  )}
+                    </Box>
+                  </Box>
                 </Box>
               </Box>
 
@@ -563,6 +676,75 @@ const CheckoutPage = () => {
                   <Typography sx={{ fontWeight: 600, mb: 1 }}>
                     Delivery Address
                   </Typography>
+                  {savedAddresses.length > 0 && (
+                    <RadioGroup
+                      value={selectedAddressId}
+                      onChange={(event) =>
+                        handleAddressSelectionChange(event.target.value)
+                      }
+                      sx={{ mb: 2, gap: 1 }}
+                    >
+                      {savedAddresses.map((savedAddress) => (
+                        <Box
+                          key={savedAddress.id}
+                          sx={{
+                            border: `1px solid ${
+                              selectedAddressId === savedAddress.id
+                                ? Colors.background.brand
+                                : Colors.border.subtle
+                            }`,
+                            borderRadius: 2,
+                            px: 2,
+                          }}
+                        >
+                          <FormControlLabel
+                            value={savedAddress.id}
+                            control={
+                              <Radio
+                                sx={{
+                                  color: Colors.background.brand,
+                                  "&.Mui-checked": {
+                                    color: Colors.background.brand,
+                                  },
+                                }}
+                              />
+                            }
+                            label={
+                              <Box sx={{ py: 1 }}>
+                                <Typography sx={{ fontWeight: 600 }}>
+                                  {savedAddress.label}
+                                  {savedAddress.isDefault ? " · Default" : ""}
+                                </Typography>
+                                <Typography
+                                  sx={{
+                                    color: Colors.text.placeholder,
+                                    fontSize: "0.85rem",
+                                  }}
+                                >
+                                  {savedAddress.line1}, {savedAddress.city},{" "}
+                                  {savedAddress.postcode}
+                                </Typography>
+                              </Box>
+                            }
+                          />
+                        </Box>
+                      ))}
+                      <FormControlLabel
+                        value="new"
+                        control={
+                          <Radio
+                            sx={{
+                              color: Colors.background.brand,
+                              "&.Mui-checked": {
+                                color: Colors.background.brand,
+                              },
+                            }}
+                          />
+                        }
+                        label="Use a new address"
+                      />
+                    </RadioGroup>
+                  )}
                   <Controller
                     name="address"
                     control={control}
@@ -575,6 +757,7 @@ const CheckoutPage = () => {
                         onChange={(e) => field.onChange(e.target.value)}
                         error={fieldState.error?.message}
                         placeholder="Enter delivery address"
+                        disabled={selectedAddressId !== "new"}
                       />
                     )}
                   />
@@ -591,6 +774,7 @@ const CheckoutPage = () => {
                           onChange={(e) => field.onChange(e.target.value)}
                           error={fieldState.error?.message}
                           placeholder="Enter city"
+                          disabled={selectedAddressId !== "new"}
                         />
                       )}
                     />
@@ -606,39 +790,35 @@ const CheckoutPage = () => {
                           onChange={(e) => field.onChange(e.target.value)}
                           error={fieldState.error?.message}
                           placeholder="Enter ZIP code"
+                          disabled={selectedAddressId !== "new"}
                         />
                       )}
                     />
                   </Box>
-                </Box>
-              )}
-
-              <Box sx={{ mt: 3 }}>
-                <Controller
-                  name="agreedToTerms"
-                  control={control}
-                  render={({ field }) => (
+                  {selectedAddressId === "new" && (
                     <FormControlLabel
+                      sx={{ mt: 2 }}
                       control={
                         <Checkbox
-                          {...field}
+                          checked={saveAddressForFuture}
+                          onChange={(event) =>
+                            setSaveAddressForFuture(event.target.checked)
+                          }
                           sx={{
                             color: Colors.background.brand,
                             "&.Mui-checked": { color: Colors.background.brand },
                           }}
-                          checked={field.value || false}
-                          onChange={(e) => field.onChange(e.target.checked)}
                         />
                       }
                       label={
                         <Typography sx={{ fontSize: "0.9rem" }}>
-                          I have read and agree to the Terms and Conditions
+                          Save this address for future orders
                         </Typography>
                       }
                     />
                   )}
-                />
-              </Box>
+                </Box>
+              )}
             </Card>
           </Grid>
 
@@ -649,7 +829,6 @@ const CheckoutPage = () => {
                 borderRadius: "12px",
                 border: `1px solid ${Colors.border.subtle}`,
                 boxShadow: "none",
-                minHeight: "100Ch",
               }}
             >
               <Typography
@@ -864,6 +1043,31 @@ const CheckoutPage = () => {
                 </Box>
               </Box>
 
+              <Controller
+                name="agreedToTerms"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        {...field}
+                        sx={{
+                          color: Colors.background.brand,
+                          "&.Mui-checked": { color: Colors.background.brand },
+                        }}
+                        checked={field.value || false}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label={
+                      <Typography sx={{ fontSize: "0.9rem" }}>
+                        I have read and agree to the Terms and Conditions
+                      </Typography>
+                    }
+                  />
+                )}
+              />
+
               <Button
                 variant="filled"
                 disabled={!canPlaceOrder || isProcessing}
@@ -903,7 +1107,7 @@ const CheckoutPage = () => {
                 </Typography>
               </Box>
               <Typography
-                sx={{ fontSize: "0.75rem", textAlign: "center", mt: 1 }}
+                sx={{ fontSize: "0.75rem", textAlign: "center", mb: 0 }}
               >
                 Ensuring your financial and personal details are secure during
                 every transaction.

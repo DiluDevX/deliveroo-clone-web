@@ -1,5 +1,5 @@
 import { isAxiosError } from "axios";
-import { CartItem } from "../store/cartSlice";
+import type { CartItem } from "../store/cartSlice";
 import { CartItemData, CartResponse, CartSnapshot } from "../types/cart.types";
 import { getAuthHeader } from "./auth-headers";
 import { apiClient } from "./api.client";

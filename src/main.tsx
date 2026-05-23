@@ -60,14 +60,14 @@ createRoot(document.getElementById("root")!).render(
       <StrictMode>
         <SnackbarProvider
           maxSnack={2}
-          autoHideDuration={2000}
-          disableWindowBlurListener
+          autoHideDuration={1000}
+          disableWindowBlurListener={true}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
           style={{
+            pointerEvents: "auto",
             backgroundColor: Colors.background.brand,
             marginTop: "4rem",
             fontFamily: "IBM Plex Sans, serif",
-            pointerEvents: "none",
           }}
         >
           <Provider store={store}>

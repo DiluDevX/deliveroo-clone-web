@@ -94,6 +94,7 @@ function Button({
             height: "auto",
             width: "1.6rem",
             aspectRatio: 1,
+            marginRight: 5,
           }}
         />
       )}
@@ -120,7 +121,6 @@ function Button({
         <Typography
           sx={{
             display: { xs: "none", sm: "flex" },
-            marginLeft: { md: "1rem", lg: "0.5rem" },
           }}
         >
           {title}
