@@ -1,4 +1,5 @@
 import { isAxiosError } from "axios";
+import { z } from "zod";
 import {
   PaymentIntentRequest,
   PaymentIntentResponse,
@@ -11,6 +12,13 @@ import {
 } from "../types/payment.types";
 import { getAuthHeader } from "./auth-headers";
 import { apiClient } from "./api.client";
+
+const PaymentMethodFinalizeSchema = z.object({
+  setupIntentId: z.string().min(1),
+  setAsDefault: z.boolean(),
+});
+
+const PaymentMethodIdSchema = z.string().min(1);
 
 export const createPaymentIntent = async (
   data: PaymentIntentRequest,
@@ -140,10 +148,19 @@ export const finalizeSetupIntent = async (
   setupIntentId: string,
   setAsDefault: boolean,
 ): Promise<UserPaymentMethod | null> => {
+  const parsed = PaymentMethodFinalizeSchema.safeParse({
+    setupIntentId,
+    setAsDefault,
+  });
+  if (!parsed.success) {
+    console.error("Invalid payment method setup input:", parsed.error.issues);
+    return null;
+  }
+
   try {
     const response = await apiClient.post<UserPaymentMethodResponse>(
       "/payments/payment-methods/finalize",
-      { setupIntentId, setAsDefault },
+      parsed.data,
       { headers: getAuthHeader() },
     );
     return response.data.data;
@@ -158,9 +175,15 @@ export const finalizeSetupIntent = async (
 export const setDefaultPaymentMethod = async (
   paymentMethodId: string,
 ): Promise<UserPaymentMethod | null> => {
+  const parsed = PaymentMethodIdSchema.safeParse(paymentMethodId);
+  if (!parsed.success) {
+    console.error("Invalid payment method id:", parsed.error.issues);
+    return null;
+  }
+
   try {
     const response = await apiClient.patch<UserPaymentMethodResponse>(
-      `/payments/payment-methods/${paymentMethodId}/default`,
+      `/payments/payment-methods/${parsed.data}/default`,
       {},
       { headers: getAuthHeader() },
     );
@@ -179,9 +202,15 @@ export const setDefaultPaymentMethod = async (
 export const deletePaymentMethod = async (
   paymentMethodId: string,
 ): Promise<boolean> => {
+  const parsed = PaymentMethodIdSchema.safeParse(paymentMethodId);
+  if (!parsed.success) {
+    console.error("Invalid payment method id:", parsed.error.issues);
+    return false;
+  }
+
   try {
     await apiClient.delete<UserPaymentMethodResponse>(
-      `/payments/payment-methods/${paymentMethodId}`,
+      `/payments/payment-methods/${parsed.data}`,
       { headers: getAuthHeader() },
     );
     return true;

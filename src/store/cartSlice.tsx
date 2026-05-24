@@ -1,26 +1,9 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { IDish } from "../data/Sides";
 import type { RootState } from "./store";
-import { CartItemData } from "../types/cart.types";
+import type { CartItem, CartItemData, CartState } from "../types/cart.types";
 
-export interface CartItem extends IDish {
-  quantity: number;
-  cartItemId?: string;
-  modifiers?: Array<{
-    id: string;
-    name: string;
-    option: string;
-    extraPrice: number;
-  }>;
-}
-
-export interface CartState {
-  items: CartItem[];
-  isLoading: boolean;
-  isSyncing: boolean;
-  restaurantId: string | null;
-  restaurantName: string | null;
-}
+export type { CartItem, CartState } from "../types/cart.types";
 
 const initialState: CartState = {
   items: [],

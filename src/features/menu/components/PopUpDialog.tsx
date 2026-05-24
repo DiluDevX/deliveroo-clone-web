@@ -55,7 +55,7 @@ const PopUpDialog = ({
   const cancelButton = (
     <Button
       variant="border"
-      onClick={onClose}
+      onClick={handleClose}
       disabled={loading}
       sx={{
         flex: actionsDirection === "row" ? undefined : 1,

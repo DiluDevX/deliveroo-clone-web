@@ -1,3 +1,24 @@
+import type { IDish } from "../data/Sides";
+
+export interface CartItem extends IDish {
+  quantity: number;
+  cartItemId?: string;
+  modifiers?: Array<{
+    id: string;
+    name: string;
+    option: string;
+    extraPrice: number;
+  }>;
+}
+
+export interface CartState {
+  items: CartItem[];
+  isLoading: boolean;
+  isSyncing: boolean;
+  restaurantId: string | null;
+  restaurantName: string | null;
+}
+
 export interface CartItemData {
   id: string;
   dishId: string;
