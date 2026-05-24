@@ -16,9 +16,9 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { setAuthInitialized, setCredentials } from "../store/authSlice";
 import { useAppDispatch } from "../store/hooks/cartHooks";
-import { useSnackbar } from "notistack";
 import SignUpPage from "./SignUpPage";
 import { fetchCart } from "../store/cartSlice";
+import { showErrorSnackbar, showSuccessSnackbar } from "../utils/notifications";
 
 type LoginForm = {
   email: string;
@@ -30,7 +30,6 @@ type AuthStep = "email" | "password" | "signup";
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { enqueueSnackbar } = useSnackbar();
 
   const [authStep, setAuthStep] = useState<AuthStep>("email");
   const [verifiedEmail, setVerifiedEmail] = useState("");
@@ -108,7 +107,7 @@ export default function Login() {
 
       localStorage.removeItem("existingUser");
 
-      enqueueSnackbar("Logged In!", { variant: "success" });
+      showSuccessSnackbar("Logged In!");
 
       const redirectAfterLogin = sessionStorage.getItem("redirectAfterLogin");
       if (redirectAfterLogin) {
@@ -122,9 +121,9 @@ export default function Login() {
         navigate("/");
       }
     } else if (loginResponse.type === "INVALID") {
-      enqueueSnackbar("Invalid Credentials", { variant: "error" });
+      showErrorSnackbar("Invalid Credentials");
     } else {
-      enqueueSnackbar("Something went wrong", { variant: "error" });
+      showErrorSnackbar("Something went wrong");
     }
   };
 
@@ -147,7 +146,7 @@ export default function Login() {
       setAuthStep("signup");
       return;
     } else {
-      enqueueSnackbar("Something went wrong.", { variant: "error" });
+      showErrorSnackbar("Something went wrong.");
       return;
     }
   });

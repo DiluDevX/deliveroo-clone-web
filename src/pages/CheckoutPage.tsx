@@ -36,9 +36,7 @@ import {
 } from "../store/cartSlice";
 import { DeliveryDiningSharp, ShoppingBagOutlined } from "@mui/icons-material";
 import { checkoutCart } from "../services/order.service";
-import { enqueueSnackbar } from "notistack";
-import { createUserAddress, getUserAddresses } from "../services/user.service";
-import { Address } from "../types/user.types";
+import { showErrorSnackbar } from "../utils/notifications";
 
 type PaymentMethod = "CARD" | "CASH_ON_DELIVERY";
 
@@ -177,9 +175,7 @@ const CheckoutPage = () => {
 
   const handlePlaceOrder = form.handleSubmit(async (data) => {
     if (!hasRequiredAddress) {
-      enqueueSnackbar("Please enter a delivery address.", {
-        variant: "error",
-      });
+      showErrorSnackbar("Please enter a delivery address.");
       return;
     }
 
@@ -208,9 +204,7 @@ const CheckoutPage = () => {
     const syncResult = await dispatch(syncCartToServer());
     if (syncCartToServer.rejected.match(syncResult) || !syncResult.payload) {
       setIsProcessing(false);
-      enqueueSnackbar("Failed to sync cart. Please try again.", {
-        variant: "error",
-      });
+      showErrorSnackbar("Failed to sync cart. Please try again.");
       return;
     }
 
@@ -254,9 +248,7 @@ const CheckoutPage = () => {
           },
         });
       } else {
-        enqueueSnackbar("Failed to place order. Please try again.", {
-          variant: "error",
-        });
+        showErrorSnackbar("Failed to place order. Please try again.");
       }
       return;
     }

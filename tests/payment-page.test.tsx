@@ -9,10 +9,11 @@ import { checkoutCart } from "../src/services/order.service";
 import {
   confirmPayment,
   createPaymentIntent,
+  getUserPaymentMethods,
 } from "../src/services/payment.service";
 import { syncCart } from "../src/services/cart.service";
 import { renderWithProviders } from "./test-utils";
-import { CheckoutResult } from "../src/types/order.types";
+import { CheckoutResult, Order } from "../src/types/order.types";
 import { CartItemData } from "../src/types/cart.types";
 
 vi.mock("../src/config/stripe", () => ({
@@ -27,7 +28,7 @@ vi.mock("../src/features/menu/components/StripeCardForm", () => ({
   StripeCardForm: ({
     onPaymentSuccess,
   }: {
-    onPaymentSuccess: () => Promise<void>;
+    onPaymentSuccess: () => Promise<boolean>;
   }) => (
     <button type="button" onClick={() => void onPaymentSuccess()}>
       Complete card payment
@@ -42,6 +43,7 @@ vi.mock("../src/services/order.service", () => ({
 vi.mock("../src/services/payment.service", () => ({
   createPaymentIntent: vi.fn(),
   confirmPayment: vi.fn(),
+  getUserPaymentMethods: vi.fn(),
 }));
 
 vi.mock("../src/services/cart.service", () => ({
@@ -148,10 +150,91 @@ const renderPaymentPage = (
   );
 };
 
+const renderResumePaymentPage = (order: Order) =>
+  renderWithProviders(
+    <MemoryRouter
+      initialEntries={[
+        {
+          pathname: "/payment",
+          state: {
+            deliveryMethod: "delivery",
+            paymentMethod: "CARD",
+            order,
+          },
+        },
+      ]}
+    >
+      <Routes>
+        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/order-confirmation" element={<OrderConfirmation />} />
+      </Routes>
+    </MemoryRouter>,
+    {
+      preloadedState: {
+        auth: {
+          isAuthenticated: true,
+          isAuthInitialized: true,
+        },
+        cart: {
+          items: [],
+        },
+      },
+    },
+  );
+
+const resumeOrder = (): Order => ({
+  id: "order-resume-1",
+  orderNumber: "ORD-RESUME-1",
+  userId: "user-1",
+  restaurantId: "restaurant-1",
+  driverId: null,
+  status: "PENDING",
+  paymentStatus: "PROCESSING",
+  paymentId: "payment-existing",
+  paymentMethod: "card",
+  paymentExpiresAt: "2026-05-20T00:30:00.000Z",
+  subtotal: 25,
+  deliveryFee: 5,
+  serviceFee: 0.99,
+  discountAmount: 0,
+  totalAmount: 30.99,
+  deliveryAddress: {
+    line1: "10 Main Street",
+    city: "London",
+    postcode: "SW1A 1AA",
+    country: "UK",
+  },
+  restaurantName: "Test Restaurant",
+  restaurantAddress: "1 Food Street",
+  estimatedDeliveryAt: null,
+  actualDeliveryAt: null,
+  promoCode: null,
+  cancelledAt: null,
+  cancellationActor: null,
+  cancellationReason: null,
+  items: [
+    {
+      id: "order-item-1",
+      dishId: "dish-1",
+      dishName: "Margherita Pizza",
+      dishImageUrl: "/pizza.jpg",
+      dishCategory: "pizza",
+      unitPrice: 12.5,
+      quantity: 2,
+      lineTotal: 25,
+      modifiers: [],
+    },
+  ],
+  statusHistory: [],
+  createdAt: "2026-05-20T00:00:00.000Z",
+  updatedAt: "2026-05-20T00:00:00.000Z",
+});
+
 describe("PaymentPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(syncCart).mockResolvedValue([syncedCartItem]);
+    vi.mocked(getUserPaymentMethods).mockResolvedValue([]);
   });
 
   it("automatically creates one checkout order before requesting a card payment intent", async () => {
@@ -207,6 +290,33 @@ describe("PaymentPage", () => {
     ).toBeInTheDocument();
     expect(checkoutCart).not.toHaveBeenCalled();
     expect(createPaymentIntent).not.toHaveBeenCalled();
+  });
+
+  it("retrieves a payment intent when resuming a pending card order", async () => {
+    vi.mocked(createPaymentIntent).mockResolvedValue({
+      success: true,
+      message: "Existing payment intent retrieved",
+      data: {
+        paymentId: "payment-existing",
+        status: "PROCESSING",
+        clientSecret: "client-secret",
+      },
+    });
+
+    renderResumePaymentPage(resumeOrder());
+
+    expect(
+      await screen.findByRole("button", { name: "Complete card payment" }),
+    ).toBeInTheDocument();
+    expect(checkoutCart).not.toHaveBeenCalled();
+    expect(syncCart).not.toHaveBeenCalled();
+    expect(createPaymentIntent).toHaveBeenCalledWith({
+      orderId: "order-resume-1",
+      expectedTotalAmount: 30.99,
+    });
+    expect(
+      screen.queryByText("Missing delivery address"),
+    ).not.toBeInTheDocument();
   });
 
   it("confirms payment and navigates to order confirmation after Stripe succeeds", async () => {

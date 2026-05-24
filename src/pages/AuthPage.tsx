@@ -5,7 +5,6 @@ import AppleIcon from "@mui/icons-material/Apple";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import { Link, useNavigate } from "react-router-dom";
 import { Colors, Svgs } from "../theme";
-import { enqueueSnackbar } from "notistack";
 import {
   handleFacebookSignIn,
   handleGoogleSignIn,
@@ -13,6 +12,7 @@ import {
 import { checkEmail } from "../services/auth.service";
 import { useAppDispatch } from "../store/hooks/cartHooks";
 import { setCredentials } from "../store/authSlice";
+import { showErrorSnackbar, showSuccessSnackbar } from "../utils/notifications";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -22,10 +22,7 @@ const AuthPage = () => {
     try {
       const response = await handleFacebookSignIn();
       if (!response) {
-        enqueueSnackbar("Something went wrong", {
-          variant: "error",
-          autoHideDuration: 1500,
-        });
+        showErrorSnackbar("Something went wrong");
         return;
       }
       const fullName = response.displayName ?? "";
@@ -50,26 +47,17 @@ const AuthPage = () => {
             }),
           );
         }
-        enqueueSnackbar("Signed in successfully", {
-          variant: "success",
-          autoHideDuration: 1500,
-        });
+        showSuccessSnackbar("Signed in successfully");
         navigate("/");
       } else if (isThereAnUser.type === "NEW") {
         navigate(
           `/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
         );
       } else {
-        enqueueSnackbar("Something went wrong", {
-          variant: "error",
-          autoHideDuration: 1500,
-        });
+        showErrorSnackbar("Something went wrong");
       }
     } catch {
-      enqueueSnackbar("Something went wrong", {
-        variant: "error",
-        autoHideDuration: 1500,
-      });
+      showErrorSnackbar("Something went wrong");
       return;
     }
   };
@@ -78,10 +66,7 @@ const AuthPage = () => {
     try {
       const response = await handleGoogleSignIn();
       if (!response) {
-        enqueueSnackbar("Something went wrong", {
-          variant: "error",
-          autoHideDuration: 1500,
-        });
+        showErrorSnackbar("Something went wrong");
         return;
       }
       const fullName = response.displayName ?? "";
@@ -106,26 +91,17 @@ const AuthPage = () => {
             }),
           );
         }
-        enqueueSnackbar("Signed in successfully", {
-          variant: "success",
-          autoHideDuration: 1500,
-        });
+        showSuccessSnackbar("Signed in successfully");
         navigate("/");
       } else if (isThereAnUser.type === "NEW") {
         navigate(
           `/account/signup?email=${response.email}&firstName=${firstName}&lastName=${lastName}`,
         );
       } else {
-        enqueueSnackbar("Something went wrong", {
-          variant: "error",
-          autoHideDuration: 1500,
-        });
+        showErrorSnackbar("Something went wrong");
       }
     } catch {
-      enqueueSnackbar("Something went wrong", {
-        variant: "error",
-        autoHideDuration: 1500,
-      });
+      showErrorSnackbar("Something went wrong");
       return;
     }
   };

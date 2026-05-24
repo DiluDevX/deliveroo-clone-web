@@ -8,8 +8,7 @@ import Button from "./Button";
 
 import { store } from "../../../store/store";
 import { useAppDispatch } from "../../../store/hooks/cartHooks";
-import { logOut } from "../../../store/authSlice";
-import { logout } from "../../../services/auth.service";
+import { logOutUser } from "../../../store/authThunks";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ReceiptIcon from "@mui/icons-material/Receipt";
@@ -69,8 +68,7 @@ export default function AnchorTemporaryDrawer({
   };
 
   const handleLogout = async () => {
-    await logout();
-    dispatch(logOut());
+    await dispatch(logOutUser());
     toggleDrawer(false);
     navigate("/");
   };

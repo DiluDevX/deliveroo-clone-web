@@ -1,12 +1,24 @@
 import { isAxiosError } from "axios";
+import { z } from "zod";
 import {
   PaymentIntentRequest,
   PaymentIntentResponse,
   PaymentResponse,
   OrderResponse,
+  SetupIntentResponse,
+  UserPaymentMethod,
+  UserPaymentMethodResponse,
+  UserPaymentMethodsResponse,
 } from "../types/payment.types";
 import { getAuthHeader } from "./auth-headers";
 import { apiClient } from "./api.client";
+
+const PaymentMethodFinalizeSchema = z.object({
+  setupIntentId: z.string().min(1),
+  setAsDefault: z.boolean(),
+});
+
+const PaymentMethodIdSchema = z.string().min(1);
 
 export const createPaymentIntent = async (
   data: PaymentIntentRequest,
@@ -97,5 +109,115 @@ export const cancelPayment = async (
       console.error("Error canceling payment:", error.response?.data);
     }
     return null;
+  }
+};
+
+export const getUserPaymentMethods = async (): Promise<UserPaymentMethod[]> => {
+  try {
+    const response = await apiClient.get<UserPaymentMethodsResponse>(
+      "/payments/payment-methods",
+      { headers: getAuthHeader() },
+    );
+    return response.data.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error fetching payment methods:", error.response?.data);
+    }
+    return [];
+  }
+};
+
+export const createSetupIntent =
+  async (): Promise<SetupIntentResponse | null> => {
+    try {
+      const response = await apiClient.post<SetupIntentResponse>(
+        "/payments/payment-methods/setup-intent",
+        {},
+        { headers: getAuthHeader() },
+      );
+      return response.data;
+    } catch (error) {
+      if (isAxiosError(error)) {
+        console.error("Error creating setup intent:", error.response?.data);
+      }
+      return null;
+    }
+  };
+
+export const finalizeSetupIntent = async (
+  setupIntentId: string,
+  setAsDefault: boolean,
+): Promise<UserPaymentMethod | null> => {
+  const parsed = PaymentMethodFinalizeSchema.safeParse({
+    setupIntentId,
+    setAsDefault,
+  });
+  if (!parsed.success) {
+    console.error("Invalid payment method setup input:", parsed.error.issues);
+    return null;
+  }
+
+  try {
+    const response = await apiClient.post<UserPaymentMethodResponse>(
+      "/payments/payment-methods/finalize",
+      parsed.data,
+      { headers: getAuthHeader() },
+    );
+    return response.data.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error saving payment method:", error.response?.data);
+    }
+    return null;
+  }
+};
+
+export const setDefaultPaymentMethod = async (
+  paymentMethodId: string,
+): Promise<UserPaymentMethod | null> => {
+  const parsed = PaymentMethodIdSchema.safeParse(paymentMethodId);
+  if (!parsed.success) {
+    console.error("Invalid payment method id:", parsed.error.issues);
+    return null;
+  }
+
+  try {
+    const response = await apiClient.patch<UserPaymentMethodResponse>(
+      `/payments/payment-methods/${parsed.data}/default`,
+      {},
+      { headers: getAuthHeader() },
+    );
+    return response.data.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error(
+        "Error setting default payment method:",
+        error.response?.data,
+      );
+    }
+    return null;
+  }
+};
+
+export const deletePaymentMethod = async (
+  paymentMethodId: string,
+): Promise<boolean> => {
+  const parsed = PaymentMethodIdSchema.safeParse(paymentMethodId);
+  if (!parsed.success) {
+    console.error("Invalid payment method id:", parsed.error.issues);
+    return false;
+  }
+
+  try {
+    await apiClient.delete<UserPaymentMethodResponse>(
+      `/payments/payment-methods/${parsed.data}`,
+      { headers: getAuthHeader() },
+    );
+    return true;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error deleting payment method:", error.response?.data);
+    }
+    return false;
   }
 };
