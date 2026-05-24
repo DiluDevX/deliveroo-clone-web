@@ -11,8 +11,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import LoadingIndicator from "../features/menu/components/LoadingIndicator";
 import { useState } from "react";
 import { sendEmail } from "../services/mail.service";
-import { enqueueSnackbar } from "notistack";
 import { useAppSelector } from "../store/hooks/cartHooks";
+import {
+  showErrorSnackbar,
+  showSuccessSnackbar,
+  showWarningSnackbar,
+} from "../utils/notifications";
 
 type RecoveryForm = {
   emailOrPhone: string;
@@ -53,22 +57,15 @@ const RecoveryPage = () => {
         values.email = values.emailOrPhone;
         const result = await sendEmail(values.email);
         if (result) {
-          enqueueSnackbar("Email sent successfully", {
-            variant: "success",
-            autoHideDuration: 1500,
-          });
+          showSuccessSnackbar("Email sent successfully");
         } else {
-          enqueueSnackbar("Email not sent. Please try again.", {
-            variant: "error",
-            autoHideDuration: 1500,
-          });
+          showErrorSnackbar("Email not sent. Please try again.");
         }
         setIsSubmitting(false);
       } else {
-        enqueueSnackbar("Phone recovery not yet available. Please use email.", {
-          variant: "warning",
-          autoHideDuration: 1500,
-        });
+        showWarningSnackbar(
+          "Phone recovery not yet available. Please use email.",
+        );
       }
       localStorage.setItem("emailOrPhone", values.emailOrPhone);
       navigate("/account/recovery-confirmation", {
@@ -78,10 +75,7 @@ const RecoveryPage = () => {
         },
       });
     } catch (error) {
-      enqueueSnackbar("An error occurred. Please try again.", {
-        variant: "error",
-        autoHideDuration: 1500,
-      });
+      showErrorSnackbar("An error occurred. Please try again.");
       console.error("Submission failed:", error);
     } finally {
       setIsSubmitting(false);

@@ -1,7 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IUser } from "../types/user.types";
-import { logout } from "../services/auth.service";
-import { showSuccessSnackbar } from "../utils/notifications";
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -65,8 +63,6 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.refreshToken = null;
-      logout();
-      showSuccessSnackbar("Logged Out!");
     },
   },
 });

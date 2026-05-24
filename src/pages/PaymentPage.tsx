@@ -1,4 +1,11 @@
-import { Box, Typography, Grid, Card, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CircularProgress,
+  Skeleton,
+} from "@mui/material";
 import { Elements } from "@stripe/react-stripe-js";
 import { Colors } from "../theme/colors";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -10,6 +17,7 @@ import CreditCardIcon from "@mui/icons-material/CreditCard";
 import {
   createPaymentIntent,
   confirmPayment,
+  getUserPaymentMethods,
 } from "../services/payment.service";
 import { checkoutCart } from "../services/order.service";
 import { syncCart as syncCartToBackend } from "../services/cart.service";
@@ -17,6 +25,7 @@ import { clearCartAndSync } from "../store/cartSlice";
 import { stripePromise } from "../config/stripe";
 import { StripeCardForm } from "../features/menu/components/StripeCardForm";
 import { CheckoutRequest, Order } from "../types/order.types";
+import { UserPaymentMethod } from "../types/payment.types";
 
 type CheckoutData = {
   address?: string;
@@ -27,6 +36,70 @@ type CheckoutData = {
 type ResumePaymentState = {
   order: Order;
 };
+
+const CardPaymentSkeleton = () => (
+  <Card
+    sx={{
+      p: 3,
+      borderRadius: "12px",
+      border: `1px solid ${Colors.border.subtle}`,
+      boxShadow: "none",
+    }}
+  >
+    <Skeleton
+      variant="text"
+      width={140}
+      height={32}
+      animation="wave"
+      sx={{ mb: 2 }}
+    />
+
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box>
+        <Skeleton variant="text" width={110} height={22} animation="wave" />
+        <Skeleton
+          variant="rounded"
+          width="100%"
+          height={48}
+          animation="wave"
+          sx={{ borderRadius: "8px" }}
+        />
+      </Box>
+
+      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+        <Box>
+          <Skeleton variant="text" width={88} height={22} animation="wave" />
+          <Skeleton
+            variant="rounded"
+            width="100%"
+            height={48}
+            animation="wave"
+            sx={{ borderRadius: "8px" }}
+          />
+        </Box>
+        <Box>
+          <Skeleton variant="text" width={42} height={22} animation="wave" />
+          <Skeleton
+            variant="rounded"
+            width="100%"
+            height={48}
+            animation="wave"
+            sx={{ borderRadius: "8px" }}
+          />
+        </Box>
+      </Box>
+
+      <Skeleton variant="text" width="72%" height={20} animation="wave" />
+      <Skeleton
+        variant="rounded"
+        width="100%"
+        height={48}
+        animation="wave"
+        sx={{ borderRadius: "8px", mt: 1 }}
+      />
+    </Box>
+  </Card>
+);
 
 const PaymentPage = () => {
   const navigate = useNavigate();
@@ -39,6 +112,9 @@ const PaymentPage = () => {
   const [progress, setProgress] = useState(50);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentId, setPaymentId] = useState<string | null>(null);
+  const [savedPaymentMethods, setSavedPaymentMethods] = useState<
+    UserPaymentMethod[]
+  >([]);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
   const [confirmedOrderDetails, setConfirmedOrderDetails] = useState<{
     subtotal: number;
@@ -121,6 +197,29 @@ const PaymentPage = () => {
   const displayDiscount = confirmedOrderDetails?.discount ?? discount;
   const displayTotal = confirmedOrderDetails?.total ?? total;
 
+  useEffect(() => {
+    if (paymentMethod !== "CARD") {
+      setSavedPaymentMethods([]);
+      return;
+    }
+
+    let isActive = true;
+
+    const loadSavedPaymentMethods = async () => {
+      const paymentMethods = await getUserPaymentMethods();
+
+      if (isActive) {
+        setSavedPaymentMethods(paymentMethods);
+      }
+    };
+
+    void loadSavedPaymentMethods();
+
+    return () => {
+      isActive = false;
+    };
+  }, [paymentMethod]);
+
   const hasRequiredDeliveryAddress = useCallback(() => {
     if (deliveryMethod !== "delivery") {
       return true;
@@ -137,13 +236,17 @@ const PaymentPage = () => {
   ]);
 
   const canStartPayment = useCallback(() => {
+    if (resumeOrder) {
+      return true;
+    }
+
     if (!hasRequiredDeliveryAddress()) {
       setError("Missing delivery address");
       return false;
     }
 
     return true;
-  }, [hasRequiredDeliveryAddress]);
+  }, [hasRequiredDeliveryAddress, resumeOrder]);
 
   const buildCheckoutRequest = useCallback(
     (checkoutPaymentMethod: "card" | "cash"): CheckoutRequest => {
@@ -235,25 +338,48 @@ const PaymentPage = () => {
         setIsProcessing(true);
         setError(null);
 
-        // For resuming a previous payment, skip to card form
+        // For resuming a previous payment, recreate/retrieve the PaymentIntent.
+        // The backend is idempotent by orderId, so this returns the existing Stripe intent.
         if (resumeOrder) {
           if (!isActive) return;
 
-          setConfirmedOrderDetails({
+          const resumedOrderDetails = {
             subtotal: resumeOrder.subtotal,
             shippingFee: resumeOrder.deliveryFee,
             serviceFee: resumeOrder.serviceFee,
             discount: resumeOrder.discountAmount,
             total: resumeOrder.totalAmount,
-          });
-          setOrderNumber(resumeOrder.orderNumber);
+          };
 
           if (paymentMethod === "CARD") {
-            const pendingOrder = sessionStorage.getItem("pending-card-order");
-            if (pendingOrder) {
-              const { paymentId } = JSON.parse(pendingOrder);
-              setPaymentId(paymentId);
+            setProcessingStep("Preparing payment...");
+
+            const paymentIntent = await createPaymentIntent({
+              orderId: resumeOrder.id,
+              expectedTotalAmount: resumeOrder.totalAmount,
+            });
+
+            if (!isActive) return;
+
+            const paymentData = paymentIntent?.data;
+
+            if (!paymentData?.clientSecret || !paymentData.paymentId) {
+              throw new Error("Failed to process payment. Please try again.");
             }
+
+            setConfirmedOrderDetails(resumedOrderDetails);
+            setOrderNumber(resumeOrder.orderNumber);
+            sessionStorage.setItem(
+              "pending-card-order",
+              JSON.stringify({
+                orderId: resumeOrder.id,
+                orderNumber: resumeOrder.orderNumber,
+                totalAmount: resumeOrder.totalAmount,
+              }),
+            );
+
+            setPaymentId(paymentData.paymentId);
+            setClientSecret(paymentData.clientSecret);
           }
 
           return;
@@ -302,9 +428,6 @@ const PaymentPage = () => {
           total: orderResponse.totalAmount,
         };
 
-        setConfirmedOrderDetails(orderDetails);
-        setOrderNumber(orderResponse.orderNumber);
-
         // Handle card payment - create PaymentIntent
         if (paymentMethod === "CARD") {
           if (!isActive) return;
@@ -323,6 +446,8 @@ const PaymentPage = () => {
             throw new Error("Failed to process payment. Please try again.");
           }
 
+          setConfirmedOrderDetails(orderDetails);
+          setOrderNumber(orderResponse.orderNumber);
           sessionStorage.setItem(
             "pending-card-order",
             JSON.stringify({
@@ -335,6 +460,8 @@ const PaymentPage = () => {
           setPaymentId(paymentData.paymentId);
           setClientSecret(paymentData.clientSecret);
         } else {
+          setConfirmedOrderDetails(orderDetails);
+          setOrderNumber(orderResponse.orderNumber);
           // Cash on delivery - automatically navigate to confirmation
           if (!isActive) return;
           setProcessingStep("Order confirmed...");
@@ -375,10 +502,10 @@ const PaymentPage = () => {
     resumeOrder,
   ]);
 
-  const handleStripePaymentSucceeded = async () => {
+  const handleStripePaymentSucceeded = async (): Promise<boolean> => {
     if (!paymentId) {
       setError("Payment setup failed. Please try again.");
-      return;
+      return false;
     }
 
     setIsProcessing(true);
@@ -392,8 +519,10 @@ const PaymentPage = () => {
       }
 
       navigateToOrderConfirmation(orderNumber || "unknown", !resumeOrder);
+      return true;
     } catch (err) {
       handlePaymentError(err, "Payment confirmation error:");
+      return false;
     } finally {
       stopPaymentProcessing();
     }
@@ -529,24 +658,11 @@ const PaymentPage = () => {
                         onPaymentSuccess={handleStripePaymentSucceeded}
                         onPaymentError={setError}
                         totalAmount={displayTotal}
+                        savedPaymentMethods={savedPaymentMethods}
                       />
                     </Elements>
                   ) : (
-                    <Box
-                      sx={{
-                        p: 3,
-                        backgroundColor: Colors.background.light,
-                        borderRadius: "8px",
-                        textAlign: "center",
-                      }}
-                    >
-                      <CircularProgress size={40} sx={{ mb: 2 }} />
-                      <Typography
-                        sx={{ color: Colors.text.default, fontWeight: "500" }}
-                      >
-                        {processingStep || "Preparing payment..."}
-                      </Typography>
-                    </Box>
+                    <CardPaymentSkeleton />
                   )}
                 </>
               ) : (

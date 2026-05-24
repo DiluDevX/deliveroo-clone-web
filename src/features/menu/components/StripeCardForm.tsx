@@ -1,168 +1,124 @@
-import { Box, Typography, Card } from "@mui/material";
 import {
-  CardCvcElement,
-  CardExpiryElement,
-  CardNumberElement,
+  Box,
+  Card,
+  CircularProgress,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  Typography,
+} from "@mui/material";
+import {
+  PaymentElement,
   useElements,
   useStripe,
 } from "@stripe/react-stripe-js";
+import { useEffect, useState } from "react";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
 import { Colors } from "../../../theme/colors";
+import { UserPaymentMethod } from "../../../types/payment.types";
 import Button from "./Button";
-import { useState } from "react";
-
-type StripeElementChange = {
-  complete: boolean;
-  error?: {
-    message?: string;
-  };
-};
 
 interface StripeCardFormProps {
   clientSecret: string;
-  onPaymentSuccess: () => void;
+  onPaymentSuccess: () => boolean | Promise<boolean>;
   onPaymentError: (error: string) => void;
   totalAmount: number;
+  savedPaymentMethods?: UserPaymentMethod[];
 }
 
-/**
- * Stripe Card Payment Form Component
- * Handles secure card input using Stripe CardElement
- * PCI compliance is handled by Stripe - card data never touches your server
- */
 export const StripeCardForm = ({
   clientSecret,
   onPaymentSuccess,
   onPaymentError,
   totalAmount,
+  savedPaymentMethods = [],
 }: StripeCardFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
-  const [cardholderName, setCardholderName] = useState("");
+  const defaultPaymentMethod = savedPaymentMethods.find(
+    (paymentMethod) => paymentMethod.isDefault,
+  );
+  const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState(
+    defaultPaymentMethod?.id ?? "new",
+  );
   const [isConfirming, setIsConfirming] = useState(false);
-  const [cardNumberComplete, setCardNumberComplete] = useState(false);
-  const [cardExpiryComplete, setCardExpiryComplete] = useState(false);
-  const [cardCvcComplete, setCardCvcComplete] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const isCardholderNameValid = cardholderName.trim().length > 1;
-  const isFormComplete =
-    isCardholderNameValid &&
-    cardNumberComplete &&
-    cardExpiryComplete &&
-    cardCvcComplete;
+  useEffect(() => {
+    if (savedPaymentMethods.length === 0) {
+      setSelectedPaymentMethodId("new");
+      return;
+    }
 
-  const elementOptions = {
-    style: {
-      base: {
-        fontSize: "1rem",
-        color: Colors.text.default,
-        "::placeholder": {
-          color: Colors.text.placeholder,
-        },
-      },
-      invalid: {
-        color: "#dc3545",
-      },
-    },
-    disabled: isConfirming,
-  };
+    setSelectedPaymentMethodId((currentValue) => {
+      const hasCurrentValue = savedPaymentMethods.some(
+        (paymentMethod) => paymentMethod.id === currentValue,
+      );
 
-  const stripeFieldSx = {
-    padding: "10px 12px",
-    borderRadius: "8px",
-    backgroundColor: isConfirming ? Colors.background.default : "white",
-    minHeight: "40px",
-    display: "flex",
-    alignItems: "center",
-    "& .StripeElement": {
-      width: "100%",
-    },
-  };
-
-  const handleElementChange =
-    (field: "cardNumber" | "cardExpiry" | "cardCvc") =>
-    (event: StripeElementChange) => {
-      if (field === "cardNumber") {
-        setCardNumberComplete(event.complete);
+      if (currentValue === "new" || hasCurrentValue) {
+        return currentValue;
       }
 
-      if (field === "cardExpiry") {
-        setCardExpiryComplete(event.complete);
-      }
+      return defaultPaymentMethod?.id ?? savedPaymentMethods[0].id;
+    });
+  }, [defaultPaymentMethod?.id, savedPaymentMethods]);
 
-      if (field === "cardCvc") {
-        setCardCvcComplete(event.complete);
-      }
+  const selectedPaymentMethod = savedPaymentMethods.find(
+    (paymentMethod) => paymentMethod.id === selectedPaymentMethodId,
+  );
 
-      setFieldErrors((currentErrors) => {
-        const nextErrors = { ...currentErrors };
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
-        if (event.error?.message) {
-          nextErrors[field] = event.error.message;
-        } else {
-          delete nextErrors[field];
-        }
-
-        return nextErrors;
-      });
-    };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const nextErrors: Record<string, string> = {};
-
-    if (!stripe || !elements) {
+    if (!stripe) {
       onPaymentError("Stripe is not loaded. Please try again.");
       return;
     }
 
-    if (!cardholderName.trim()) {
-      nextErrors.cardholderName = "Please enter the cardholder name";
-    } else if (!isCardholderNameValid) {
-      nextErrors.cardholderName = "Cardholder name is too short";
-    }
-
-    if (!cardNumberComplete) {
-      nextErrors.cardNumber = "Please enter a valid card number";
-    }
-
-    if (!cardExpiryComplete) {
-      nextErrors.cardExpiry = "Please enter a valid expiry date";
-    }
-
-    if (!cardCvcComplete) {
-      nextErrors.cardCvc = "Please enter a valid CVC";
-    }
-
-    if (Object.keys(nextErrors).length > 0) {
-      setFieldErrors((currentErrors) => ({
-        ...currentErrors,
-        ...nextErrors,
-      }));
-      onPaymentError("Please complete the card details.");
-      return;
-    }
-
-    const cardNumberElement = elements.getElement(CardNumberElement);
-    if (!cardNumberElement) {
-      onPaymentError("Card number element not found");
-      return;
-    }
-
     setIsConfirming(true);
+    let shouldStayDisabled = false;
 
     try {
-      const { error, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret,
-        {
-          payment_method: {
-            card: cardNumberElement,
-            billing_details: {
-              name: cardholderName,
-            },
+      if (selectedPaymentMethod) {
+        const { error, paymentIntent } = await stripe.confirmCardPayment(
+          clientSecret,
+          {
+            payment_method: selectedPaymentMethod.providerPaymentMethodId,
           },
+        );
+
+        if (error) {
+          onPaymentError(error.message || "Payment confirmation failed");
+          return;
+        }
+
+        if (paymentIntent?.status !== "succeeded") {
+          onPaymentError(
+            `Payment not completed. Status: ${paymentIntent?.status ?? "unknown"}`,
+          );
+          return;
+        }
+
+        const finalized = await onPaymentSuccess();
+        if (finalized) {
+          shouldStayDisabled = true;
+          setIsRedirecting(true);
+        }
+        return;
+      }
+
+      if (!elements) {
+        onPaymentError("Payment form is still loading.");
+        return;
+      }
+
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: window.location.href,
         },
-      );
+        redirect: "if_required",
+      });
 
       if (error) {
         onPaymentError(error.message || "Payment confirmation failed");
@@ -176,15 +132,23 @@ export const StripeCardForm = ({
         return;
       }
 
-      onPaymentSuccess();
+      const finalized = await onPaymentSuccess();
+      if (finalized) {
+        shouldStayDisabled = true;
+        setIsRedirecting(true);
+      }
     } catch (err) {
       onPaymentError(
         err instanceof Error ? err.message : "An unexpected error occurred",
       );
     } finally {
-      setIsConfirming(false);
+      if (!shouldStayDisabled) {
+        setIsConfirming(false);
+      }
     }
   };
+
+  const isPaymentSubmitting = isConfirming || isRedirecting;
 
   return (
     <Card
@@ -204,165 +168,73 @@ export const StripeCardForm = ({
             Card Details
           </Typography>
 
-          <Box sx={{ mb: 2 }}>
-            <label htmlFor="cardholder-name">
-              <Typography
-                sx={{
-                  fontSize: "0.875rem",
-                  mb: 0.5,
-                  color: Colors.text.default,
-                }}
-              >
-                Cardholder Name
-              </Typography>
-            </label>
-            <input
-              id="cardholder-name"
-              type="text"
-              value={cardholderName}
-              onChange={(e) => {
-                setCardholderName(e.target.value);
-                setFieldErrors((currentErrors) => {
-                  const nextErrors = { ...currentErrors };
-                  delete nextErrors.cardholderName;
-                  return nextErrors;
-                });
-              }}
-              placeholder="John Doe"
-              disabled={isConfirming}
-              aria-invalid={Boolean(fieldErrors.cardholderName)}
-              aria-describedby="cardholder-name-error"
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: "8px",
-                border: `1px solid ${Colors.border.subtle}`,
-                fontSize: "1rem",
-                fontFamily: "inherit",
-                boxSizing: "border-box",
-                backgroundColor: isConfirming
-                  ? Colors.background.default
-                  : "white",
-              }}
-            />
-            {fieldErrors.cardholderName && (
-              <Typography
-                id="cardholder-name-error"
-                sx={{ mt: 0.5, fontSize: "0.75rem", color: "#dc3545" }}
-              >
-                {fieldErrors.cardholderName}
-              </Typography>
-            )}
-          </Box>
-
-          <Box sx={{ mb: 2 }}>
-            <label htmlFor="card-number-element">
-              <Typography
-                sx={{
-                  fontSize: "0.875rem",
-                  mb: 0.5,
-                  color: Colors.text.default,
-                }}
-              >
-                Card Number
-              </Typography>
-            </label>
-            <Box
-              id="card-number-element"
-              sx={{
-                ...stripeFieldSx,
-                border: `1px solid ${
-                  fieldErrors.cardNumber ? "#dc3545" : Colors.border.subtle
-                }`,
-              }}
+          {savedPaymentMethods.length > 0 && (
+            <RadioGroup
+              value={selectedPaymentMethodId}
+              onChange={(event) =>
+                setSelectedPaymentMethodId(event.target.value)
+              }
+              sx={{ mb: 2, gap: 1 }}
             >
-              <CardNumberElement
-                options={elementOptions}
-                onChange={handleElementChange("cardNumber")}
-              />
-            </Box>
-            {fieldErrors.cardNumber && (
-              <Typography
-                sx={{ mt: 0.5, fontSize: "0.75rem", color: "#dc3545" }}
-              >
-                {fieldErrors.cardNumber}
-              </Typography>
-            )}
-          </Box>
+              {savedPaymentMethods.map((paymentMethod) => (
+                <Box
+                  key={paymentMethod.id}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    border: `1px solid ${Colors.border.subtle}`,
+                    borderRadius: 2,
+                    px: 1.5,
+                    py: 1,
+                  }}
+                >
+                  <FormControlLabel
+                    value={paymentMethod.id}
+                    control={<Radio />}
+                    label={
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <CreditCardIcon
+                          sx={{ color: Colors.text.placeholder, fontSize: 20 }}
+                        />
+                        <Typography sx={{ fontWeight: 600 }}>
+                          {paymentMethod.brand.toUpperCase()} ****
+                          {paymentMethod.last4}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            color: Colors.text.placeholder,
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          {String(paymentMethod.expMonth).padStart(2, "0")}/
+                          {String(paymentMethod.expYear).slice(-2)}
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                </Box>
+              ))}
 
-          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-            <Box sx={{ flex: 1 }}>
-              <Typography
-                component="label"
-                htmlFor="card-expiry-element"
-                sx={{
-                  display: "block",
-                  fontSize: "0.875rem",
-                  mb: 0.5,
-                  color: Colors.text.default,
-                }}
-              >
-                Expiry Date
-              </Typography>
               <Box
-                id="card-expiry-element"
                 sx={{
-                  ...stripeFieldSx,
-                  border: `1px solid ${
-                    fieldErrors.cardExpiry ? "#dc3545" : Colors.border.subtle
-                  }`,
+                  border: `1px solid ${Colors.border.subtle}`,
+                  borderRadius: 2,
+                  px: 1.5,
+                  py: 1,
                 }}
               >
-                <CardExpiryElement
-                  options={elementOptions}
-                  onChange={handleElementChange("cardExpiry")}
+                <FormControlLabel
+                  value="new"
+                  control={<Radio />}
+                  label="Use a new card"
                 />
               </Box>
-              {fieldErrors.cardExpiry && (
-                <Typography
-                  sx={{ mt: 0.5, fontSize: "0.75rem", color: "#dc3545" }}
-                >
-                  {fieldErrors.cardExpiry}
-                </Typography>
-              )}
-            </Box>
+            </RadioGroup>
+          )}
 
-            <Box sx={{ flex: 1 }}>
-              <Typography
-                component="label"
-                htmlFor="card-cvc-element"
-                sx={{
-                  display: "block",
-                  fontSize: "0.875rem",
-                  mb: 0.5,
-                  color: Colors.text.default,
-                }}
-              >
-                CVC
-              </Typography>
-              <Box
-                id="card-cvc-element"
-                sx={{
-                  ...stripeFieldSx,
-                  border: `1px solid ${
-                    fieldErrors.cardCvc ? "#dc3545" : Colors.border.subtle
-                  }`,
-                }}
-              >
-                <CardCvcElement
-                  options={elementOptions}
-                  onChange={handleElementChange("cardCvc")}
-                />
-              </Box>
-              {fieldErrors.cardCvc && (
-                <Typography
-                  sx={{ mt: 0.5, fontSize: "0.75rem", color: "#dc3545" }}
-                >
-                  {fieldErrors.cardCvc}
-                </Typography>
-              )}
-            </Box>
-          </Box>
+          {selectedPaymentMethodId === "new" && <PaymentElement />}
 
           <Typography
             sx={{
@@ -372,25 +244,32 @@ export const StripeCardForm = ({
               mb: 2,
             }}
           >
-            💳 This is a test payment. Use card:{" "}
-            <strong>4242 4242 4242 4242</strong>
-            <br />
-            Expiry: Any future date | CVC: Any 3 digits
+            This is a test payment. Use card{" "}
+            <strong>4242 4242 4242 4242</strong>, any future expiry, and any
+            3-digit CVC.
           </Typography>
         </Box>
 
         <Button
           variant="filled"
           type="submit"
-          disabled={isConfirming || !stripe || !isFormComplete}
+          disabled={isPaymentSubmitting || !stripe}
           sx={{
             width: "100%",
             fontWeight: "bold",
             py: 1.5,
             fontSize: "1rem",
+            gap: 1,
           }}
         >
-          {isConfirming ? "Processing..." : `Pay £${totalAmount.toFixed(2)}`}
+          {isPaymentSubmitting ? (
+            <>
+              <CircularProgress size={18} sx={{ color: "inherit" }} />
+              Processing...
+            </>
+          ) : (
+            `Pay £${totalAmount.toFixed(2)}`
+          )}
         </Button>
       </form>
     </Card>

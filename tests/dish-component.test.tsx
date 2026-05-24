@@ -1,6 +1,7 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import Dish from "../src/features/menu/components/Dish";
 import { CartItem } from "../src/store/cartSlice";
 import { renderWithProviders } from "./test-utils";
@@ -31,15 +32,20 @@ describe("Dish", () => {
     localStorage.setItem("selected-restaurant-id", "restaurant-2");
     localStorage.setItem("selected-restaurant-name", "Katsu House");
 
-    const { store } = renderWithProviders(<Dish data={dish} />, {
-      preloadedState: {
-        cart: {
-          items: [existingCartItem],
-          restaurantId: "restaurant-1",
-          restaurantName: "Pizza Place",
+    const { store } = renderWithProviders(
+      <MemoryRouter>
+        <Dish data={dish} />
+      </MemoryRouter>,
+      {
+        preloadedState: {
+          cart: {
+            items: [existingCartItem],
+            restaurantId: "restaurant-1",
+            restaurantName: "Pizza Place",
+          },
         },
       },
-    });
+    );
 
     await user.click(
       screen.getByRole("button", { name: "Add Chicken Katsu to cart" }),
@@ -56,15 +62,20 @@ describe("Dish", () => {
     localStorage.setItem("selected-restaurant-id", "restaurant-2");
     localStorage.setItem("selected-restaurant-name", "Katsu House");
 
-    const { store } = renderWithProviders(<Dish data={dish} />, {
-      preloadedState: {
-        cart: {
-          items: [existingCartItem],
-          restaurantId: "restaurant-1",
-          restaurantName: "Pizza Place",
+    const { store } = renderWithProviders(
+      <MemoryRouter>
+        <Dish data={dish} />
+      </MemoryRouter>,
+      {
+        preloadedState: {
+          cart: {
+            items: [existingCartItem],
+            restaurantId: "restaurant-1",
+            restaurantName: "Pizza Place",
+          },
         },
       },
-    });
+    );
 
     await user.click(
       screen.getByRole("button", { name: "Add Chicken Katsu to cart" }),

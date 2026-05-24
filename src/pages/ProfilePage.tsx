@@ -25,9 +25,15 @@ import {
   deleteUserAccount,
   updatePassword,
 } from "../services/user.service";
+import {
+  deletePaymentMethod,
+  getUserPaymentMethods,
+  setDefaultPaymentMethod,
+} from "../services/payment.service";
 import { getOrderHistory } from "../services/order.service";
 import { Order } from "../types/order.types";
 import { Address } from "../types/user.types";
+import { UserPaymentMethod } from "../types/payment.types";
 
 const DUMMY_ADDRESSES: Address[] = [
   {
@@ -52,11 +58,8 @@ const DUMMY_ADDRESSES: Address[] = [
   },
 ];
 
-const DUMMY_PAYMENTS = [
-  { id: "pay_1", last4: "4242", brand: "Visa", expiry: "12/25" },
-  { id: "pay_2", last4: "1234", brand: "Mastercard", expiry: "06/26" },
-];
-import { logOut, setCredentials } from "../store/authSlice";
+import { setCredentials } from "../store/authSlice";
+import { logOutUser } from "../store/authThunks";
 import PersonIcon from "@mui/icons-material/Person";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
@@ -80,6 +83,8 @@ import {
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import PaymentModal from "../features/menu/components/PaymentModal";
 import AddressModal from "../features/menu/components/AddressModal";
+import PopUpDialog from "../features/menu/components/PopUpDialog";
+import { showErrorSnackbar, showSuccessSnackbar } from "../utils/notifications";
 
 const profileSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -107,7 +112,8 @@ const ProfilePage = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [dummyAddresses, setDummyAddresses] =
     useState<Address[]>(DUMMY_ADDRESSES);
-  const [payments] = useState(DUMMY_PAYMENTS);
+  const [payments, setPayments] = useState<UserPaymentMethod[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -115,6 +121,11 @@ const ProfilePage = () => {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [paymentMethodToDelete, setPaymentMethodToDelete] =
+    useState<UserPaymentMethod | null>(null);
+  const [isDeletingPaymentMethod, setIsDeletingPaymentMethod] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -147,6 +158,13 @@ const ProfilePage = () => {
           }),
         );
       }
+      setPaymentsLoading(true);
+      try {
+        const savedPaymentMethods = await getUserPaymentMethods();
+        setPayments(savedPaymentMethods);
+      } finally {
+        setPaymentsLoading(false);
+      }
       setAddresses([]);
       setIsLoading(false);
     };
@@ -167,23 +185,21 @@ const ProfilePage = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete your account? This action cannot be undone.",
-      )
-    ) {
-      const success = await deleteUserAccount();
-      if (success) {
-        dispatch(logOut());
-        navigate("/");
-      } else {
-        setError("Failed to delete account");
-      }
+    setIsDeletingAccount(true);
+    const success = await deleteUserAccount();
+    setIsDeletingAccount(false);
+
+    if (success) {
+      setShowDeleteAccountDialog(false);
+      dispatch(logOutUser());
+      navigate("/");
+    } else {
+      setError("Failed to delete account");
     }
   };
 
   const handleLogout = () => {
-    dispatch(logOut());
+    dispatch(logOutUser());
     navigate("/");
   };
 
@@ -226,6 +242,56 @@ const ProfilePage = () => {
     setAddresses((currentAddresses) =>
       setDefaultAddress(currentAddresses, addressId),
     );
+  };
+
+  const loadPaymentMethods = async () => {
+    setPaymentsLoading(true);
+    try {
+      const savedPaymentMethods = await getUserPaymentMethods();
+      setPayments(savedPaymentMethods);
+      setAddresses([]);
+    } finally {
+      setPaymentsLoading(false);
+    }
+  };
+
+  const handleSetDefaultPaymentMethod = async (paymentMethodId: string) => {
+    const updatedPaymentMethod = await setDefaultPaymentMethod(paymentMethodId);
+
+    if (!updatedPaymentMethod) {
+      setError("Failed to update default payment method");
+      showErrorSnackbar("Failed to update default payment method");
+      return;
+    }
+
+    setPayments((currentPayments) =>
+      currentPayments.map((payment) => ({
+        ...payment,
+        isDefault: payment.id === paymentMethodId,
+      })),
+    );
+    showSuccessSnackbar("Default payment method updated");
+  };
+
+  const handleDeletePaymentMethod = async () => {
+    if (!paymentMethodToDelete) {
+      return;
+    }
+
+    setIsDeletingPaymentMethod(true);
+    const deleted = await deletePaymentMethod(paymentMethodToDelete.id);
+
+    if (!deleted) {
+      setError("Failed to delete payment method");
+      showErrorSnackbar("Failed to delete payment method");
+      setIsDeletingPaymentMethod(false);
+      return;
+    }
+
+    await loadPaymentMethods();
+    setPaymentMethodToDelete(null);
+    setIsDeletingPaymentMethod(false);
+    showSuccessSnackbar("Payment method deleted");
   };
 
   const menuItems = [
@@ -1037,41 +1103,101 @@ const ProfilePage = () => {
                 <AddIcon sx={{ mr: 0.5 }} /> Add New
               </Button>
             </Box>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {payments.map((pay) => (
-                <Box
-                  key={pay.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    p: 2,
-                    border: `1px solid ${Colors.border.subtle}`,
-                    borderRadius: 2,
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <CreditCardIcon sx={{ color: Colors.text.placeholder }} />
-                    <Box>
-                      <Typography sx={{ fontWeight: 600 }}>
-                        {pay.brand} ****{pay.last4}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          color: Colors.text.placeholder,
-                          fontSize: "0.85rem",
-                        }}
-                      >
-                        Expires {pay.expiry}
-                      </Typography>
+            {paymentsLoading ? (
+              <Typography sx={{ color: Colors.text.placeholder }}>
+                Loading payment methods...
+              </Typography>
+            ) : payments.length === 0 ? (
+              <Box
+                sx={{
+                  p: 3,
+                  border: `1px solid ${Colors.border.subtle}`,
+                  borderRadius: 2,
+                  textAlign: "center",
+                }}
+              >
+                <CreditCardIcon
+                  sx={{ color: Colors.text.placeholder, fontSize: 40, mb: 1 }}
+                />
+                <Typography sx={{ color: Colors.text.placeholder }}>
+                  No saved payment methods
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {payments.map((pay) => (
+                  <Box
+                    key={pay.id}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      p: 2,
+                      border: `1px solid ${Colors.border.subtle}`,
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <CreditCardIcon sx={{ color: Colors.text.placeholder }} />
+                      <Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <Typography sx={{ fontWeight: 600 }}>
+                            {pay.brand.toUpperCase()} ****{pay.last4}
+                          </Typography>
+                          {pay.isDefault && (
+                            <CheckCircleIcon
+                              sx={{
+                                color: Colors.background.brand,
+                                fontSize: "1.2rem",
+                              }}
+                            />
+                          )}
+                        </Box>
+                        <Typography
+                          sx={{
+                            color: Colors.text.placeholder,
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          Expires {String(pay.expMonth).padStart(2, "0")}/
+                          {String(pay.expYear).slice(-2)}
+                        </Typography>
+                        {!pay.isDefault && (
+                          <Typography
+                            onClick={() =>
+                              void handleSetDefaultPaymentMethod(pay.id)
+                            }
+                            sx={{
+                              mt: 1,
+                              fontSize: "0.85rem",
+                              color: Colors.background.brand,
+                              fontWeight: 500,
+                              cursor: "pointer",
+                              "&:hover": { textDecoration: "underline" },
+                            }}
+                          >
+                            Set as Default
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
+                    <IconButton
+                      size="small"
+                      onClick={() => setPaymentMethodToDelete(pay)}
+                      aria-label={`Delete ${pay.brand} ending in ${pay.last4}`}
+                    >
+                      <DeleteIcon sx={{ fontSize: "1.2rem" }} />
+                    </IconButton>
                   </Box>
-                  <IconButton size="small">
-                    <DeleteIcon sx={{ fontSize: "1.2rem" }} />
-                  </IconButton>
-                </Box>
-              ))}
-            </Box>
+                ))}
+              </Box>
+            )}
           </Card>
         );
 
@@ -1298,7 +1424,7 @@ const ProfilePage = () => {
               </Typography>
               <Button
                 variant="border"
-                onClick={handleDeleteAccount}
+                onClick={() => setShowDeleteAccountDialog(true)}
                 sx={{
                   borderColor: Colors.background.danger,
                   color: Colors.background.danger,
@@ -1483,10 +1609,45 @@ const ProfilePage = () => {
       <PaymentModal
         open={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        onSave={async () => {
-          setShowPaymentModal(false);
-          return true;
+        onSaved={loadPaymentMethods}
+      />
+
+      <PopUpDialog
+        open={Boolean(paymentMethodToDelete)}
+        onClose={() => {
+          if (!isDeletingPaymentMethod) {
+            setPaymentMethodToDelete(null);
+          }
         }}
+        onConfirm={() => void handleDeletePaymentMethod()}
+        title="Delete payment method?"
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        loadingLabel="Deleting..."
+        danger
+        loading={isDeletingPaymentMethod}
+        disableClose={isDeletingPaymentMethod}
+      >
+        <Typography sx={{ color: Colors.text.default }}>
+          Are you sure you want to remove{" "}
+          {paymentMethodToDelete?.brand.toUpperCase()} ending in{" "}
+          {paymentMethodToDelete?.last4}? You will need to enter the card again
+          to use it later.
+        </Typography>
+      </PopUpDialog>
+
+      <PopUpDialog
+        open={showDeleteAccountDialog}
+        onClose={() => setShowDeleteAccountDialog(false)}
+        onConfirm={() => void handleDeleteAccount()}
+        title="Delete account?"
+        description="Are you sure you want to delete your account? This action cannot be undone."
+        confirmLabel="Delete account"
+        cancelLabel="Cancel"
+        loadingLabel="Deleting..."
+        danger
+        loading={isDeletingAccount}
+        disableClose={isDeletingAccount}
       />
     </Box>
   );

@@ -1,12 +1,4 @@
-import {
-  Box,
-  Card,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Typography,
-} from "@mui/material";
+import { Box, Card, Typography } from "@mui/material";
 import { IDish } from "../../../data/Sides";
 import Button from "./Button";
 import AddIcon from "@mui/icons-material/Add";
@@ -15,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "../../../store/hooks/cartHooks";
 import { addItemAndSync, clearCartAndSync } from "../../../store/cartSlice";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import PopUpDialog from "./PopUpDialog";
 
 type DishProps = {
   data: IDish;
@@ -25,7 +18,6 @@ const Dish = ({ data }: DishProps) => {
   const [isReplaceCartDialogOpen, setIsReplaceCartDialogOpen] = useState(false);
   const cartItems = useAppSelector((state) => state.cart.items);
   const cartRestaurantId = useAppSelector((state) => state.cart.restaurantId);
-  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const cartRestaurantName = useAppSelector(
     (state) => state.cart.restaurantName,
   );
@@ -33,19 +25,10 @@ const Dish = ({ data }: DishProps) => {
   const handleAddToCart = async () => {
     const selectedRestaurantId = localStorage.getItem("selected-restaurant-id");
 
-    if (!isAuthenticated) {
-      if (selectedRestaurantId && selectedRestaurantId === cartRestaurantId) {
-        dispatch(addItemAndSync(data));
-        return;
-      }
-      await dispatch(clearCartAndSync());
-      dispatch(addItemAndSync(data));
-      return;
-    } else if (
+    if (
       cartItems.length > 0 &&
       cartRestaurantId &&
       selectedRestaurantId &&
-      isAuthenticated &&
       cartRestaurantId !== selectedRestaurantId
     ) {
       setIsReplaceCartDialogOpen(true);
@@ -177,47 +160,28 @@ const Dish = ({ data }: DishProps) => {
           />
         </Button>
       </Card>
-      <Dialog
+      <PopUpDialog
         open={isReplaceCartDialogOpen}
         onClose={() => setIsReplaceCartDialogOpen(false)}
-        aria-labelledby="replace-cart-dialog-title"
+        onConfirm={() => void handleStartNewCart()}
+        title="Start a new order?"
+        confirmLabel="Start new order"
+        cancelLabel="Keep current cart"
       >
-        <DialogTitle id="replace-cart-dialog-title">
-          Start a new order?
-        </DialogTitle>
-        <DialogContent>
-          <Typography sx={{ color: Colors.text.default }}>
-            Your cart contains items from{" "}
-            <Link
-              style={{
-                color: Colors.background.brand,
-                textDecoration: "none",
-              }}
-              to={`/restaurants/${cartRestaurantId}/menu`}
-            >
-              {cartRestaurantName || "another restaurant"}
-            </Link>
-            . Starting a new order will clear your current cart.
-          </Typography>
-        </DialogContent>
-        <DialogActions
-          sx={{
-            px: 3,
-            pb: 2,
-            gap: 1,
-          }}
-        >
-          <Button
-            variant="border"
-            onClick={() => setIsReplaceCartDialogOpen(false)}
+        <Typography sx={{ color: Colors.text.default }}>
+          Your cart contains items from{" "}
+          <Link
+            style={{
+              color: Colors.background.brand,
+              textDecoration: "none",
+            }}
+            to={`/restaurants/${cartRestaurantId}/menu`}
           >
-            Keep current cart
-          </Button>
-          <Button variant="filled" onClick={handleStartNewCart}>
-            Start new order
-          </Button>
-        </DialogActions>
-      </Dialog>
+            {cartRestaurantName || "another restaurant"}
+          </Link>
+          . Starting a new order will clear your current cart.
+        </Typography>
+      </PopUpDialog>
     </>
   );
 };

@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  Box,
-  Typography,
-  IconButton,
-  Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from "@mui/material";
+import { Box, Typography, IconButton, Divider } from "@mui/material";
 import ShoppingBasketOutlinedIcon from "@mui/icons-material/ShoppingBasketOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -22,6 +13,7 @@ import {
 } from "../../../store/cartSlice";
 import Button from "./Button";
 import { useNavigate } from "react-router-dom";
+import PopUpDialog from "./PopUpDialog";
 
 const Cart = () => {
   const dispatch = useAppDispatch();
@@ -92,70 +84,18 @@ const Cart = () => {
 
   // Login Dialog Component
   const LoginDialog = () => (
-    <Dialog
+    <PopUpDialog
       open={showLoginDialog}
       onClose={() => setShowLoginDialog(false)}
-      PaperProps={{
-        sx: {
-          borderRadius: "12px",
-          padding: "1rem",
-          maxWidth: "400px",
-        },
-      }}
-    >
-      <DialogTitle
-        sx={{
-          fontWeight: "bold",
-          textAlign: "center",
-          color: Colors.text.default,
-        }}
-      >
-        Login Required
-      </DialogTitle>
-      <DialogContent>
-        <Typography
-          sx={{
-            textAlign: "center",
-            color: Colors.text.default,
-            mb: 2,
-          }}
-        >
-          Please log in to proceed with your order.
-        </Typography>
-      </DialogContent>
-      <DialogActions
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 1,
-          px: 2,
-          pb: 2,
-        }}
-      >
-        <Button
-          onClick={handleLoginRedirect}
-          variant="filled"
-          sx={{
-            width: "100%",
-            fontWeight: "bold",
-            py: 1.5,
-          }}
-        >
-          Log In
-        </Button>
-        <Button
-          onClick={() => setShowLoginDialog(false)}
-          variant="border"
-          sx={{
-            width: "100%",
-            fontWeight: "bold",
-            py: 1.5,
-          }}
-        >
-          Continue Shopping
-        </Button>
-      </DialogActions>
-    </Dialog>
+      onConfirm={handleLoginRedirect}
+      title="Login Required"
+      description="Please log in to proceed with your order."
+      confirmLabel="Log In"
+      cancelLabel="Continue Shopping"
+      actionsDirection="column"
+      maxWidth="400px"
+      paperSx={{ p: 1 }}
+    />
   );
 
   if (cartItems.length === 0) {

@@ -3,7 +3,6 @@ import Box from "@mui/material/Box";
 import { Colors } from "../theme/colors";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useSnackbar } from "notistack";
 import Checkbox from "@mui/material/Checkbox";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -22,6 +21,7 @@ import { checkAuthStatus, login, signup } from "../services/auth.service";
 import { setAuthInitialized, setCredentials } from "../store/authSlice";
 import { useAppDispatch } from "../store/hooks/cartHooks";
 import { fetchCart } from "../store/cartSlice";
+import { showErrorSnackbar, showSuccessSnackbar } from "../utils/notifications";
 
 type SignUpForm = {
   email: string;
@@ -42,7 +42,6 @@ const SignUpPage = ({
   initialFirstName,
   initialLastName,
 }: SignUpPageProps) => {
-  const { enqueueSnackbar } = useSnackbar();
   const dispatch = useAppDispatch();
   const [checked, setChecked] = useState(false);
 
@@ -100,20 +99,12 @@ const SignUpPage = ({
     const response = await signup({ email, password, firstName, lastName });
 
     if (response.type === "CONFLICT") {
-      enqueueSnackbar({
-        variant: "error",
-        message: "User Already Exists. Please Login.",
-        autoHideDuration: 5000,
-      });
+      showErrorSnackbar("User Already Exists. Please Login.");
     } else if (response.type === "SUCCESS" && response.successResponse) {
       const loginResponse = await login({ email, password });
 
       if (loginResponse.type !== "SUCCESS" || !loginResponse.successResponse) {
-        enqueueSnackbar({
-          variant: "success",
-          message: "Account created successfully. Please log in.",
-          autoHideDuration: 3000,
-        });
+        showSuccessSnackbar("Account created successfully. Please log in.");
         navigate("/account/login");
         return;
       }
@@ -145,11 +136,7 @@ const SignUpPage = ({
 
       await dispatch(fetchCart());
 
-      enqueueSnackbar({
-        variant: "success",
-        message: "Account created successfully!",
-        autoHideDuration: 3000,
-      });
+      showSuccessSnackbar("Account created successfully!");
 
       const redirectAfterLogin = sessionStorage.getItem("redirectAfterLogin");
       if (redirectAfterLogin) {
@@ -159,11 +146,7 @@ const SignUpPage = ({
         navigate("/");
       }
     } else {
-      enqueueSnackbar({
-        variant: "error",
-        message: "Something Went Wrong",
-        autoHideDuration: 5000,
-      });
+      showErrorSnackbar("Something Went Wrong");
     }
   });
 
