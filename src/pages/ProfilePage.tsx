@@ -84,6 +84,7 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import PaymentModal from "../features/menu/components/PaymentModal";
 import AddressModal from "../features/menu/components/AddressModal";
 import PopUpDialog from "../features/menu/components/PopUpDialog";
+import { showErrorSnackbar, showSuccessSnackbar } from "../utils/notifications";
 
 const profileSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -157,8 +158,13 @@ const ProfilePage = () => {
           }),
         );
       }
-      const savedPaymentMethods = await getUserPaymentMethods();
-      setPayments(savedPaymentMethods);
+      setPaymentsLoading(true);
+      try {
+        const savedPaymentMethods = await getUserPaymentMethods();
+        setPayments(savedPaymentMethods);
+      } finally {
+        setPaymentsLoading(false);
+      }
       setAddresses([]);
       setIsLoading(false);
     };
@@ -240,9 +246,13 @@ const ProfilePage = () => {
 
   const loadPaymentMethods = async () => {
     setPaymentsLoading(true);
-    const savedPaymentMethods = await getUserPaymentMethods();
-    setPayments(savedPaymentMethods);
-    setPaymentsLoading(false);
+    try {
+      const savedPaymentMethods = await getUserPaymentMethods();
+      setPayments(savedPaymentMethods);
+      setAddresses([]);
+    } finally {
+      setPaymentsLoading(false);
+    }
   };
 
   const handleSetDefaultPaymentMethod = async (paymentMethodId: string) => {
@@ -250,6 +260,7 @@ const ProfilePage = () => {
 
     if (!updatedPaymentMethod) {
       setError("Failed to update default payment method");
+      showErrorSnackbar("Failed to update default payment method");
       return;
     }
 
@@ -259,6 +270,7 @@ const ProfilePage = () => {
         isDefault: payment.id === paymentMethodId,
       })),
     );
+    showSuccessSnackbar("Default payment method updated");
   };
 
   const handleDeletePaymentMethod = async () => {
@@ -271,6 +283,7 @@ const ProfilePage = () => {
 
     if (!deleted) {
       setError("Failed to delete payment method");
+      showErrorSnackbar("Failed to delete payment method");
       setIsDeletingPaymentMethod(false);
       return;
     }
@@ -278,6 +291,7 @@ const ProfilePage = () => {
     await loadPaymentMethods();
     setPaymentMethodToDelete(null);
     setIsDeletingPaymentMethod(false);
+    showSuccessSnackbar("Payment method deleted");
   };
 
   const menuItems = [
