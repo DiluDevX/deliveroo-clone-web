@@ -1,67 +1,213 @@
 import {
+  Alert,
+  Box,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogTitle,
-  Box,
-  Typography,
-  IconButton,
   Divider,
+  FormControlLabel,
+  IconButton,
+  Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
+import {
+  Elements,
+  PaymentElement,
+  useElements,
+  useStripe,
+} from "@stripe/react-stripe-js";
+import { useEffect, useState } from "react";
 import { Colors } from "../../../theme/colors";
+import {
+  createSetupIntent,
+  finalizeSetupIntent,
+} from "../../../services/payment.service";
+import { stripePromise } from "../../../config/stripe";
 import Button from "./Button";
-import TextInput from "./TextInput";
-import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 
 type PaymentModalProps = {
   open: boolean;
   onClose: () => void;
-  onSave: (data: PaymentFormValues) => Promise<boolean>;
+  onSaved: () => Promise<void> | void;
 };
 
-type PaymentFormValues = {
-  cardNumber: string;
-  expiry: string;
-  cvc: string;
-  name: string;
+type SaveCardFormProps = {
+  setupIntentId: string;
+  onClose: () => void;
+  onSaved: () => Promise<void> | void;
 };
 
-const PaymentModal = ({ open, onClose, onSave }: PaymentModalProps) => {
-  const [isLoading, setIsLoading] = useState(false);
+const SaveCardForm = ({
+  setupIntentId,
+  onClose,
+  onSaved,
+}: SaveCardFormProps) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isSaving, setIsSaving] = useState(false);
+  const [setAsDefault, setSetAsDefault] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const schema = z.object({
-    cardNumber: z.string().min(1, "Card number is required"),
-    expiry: z.string().min(1, "Expiry date is required"),
-    cvc: z.string().min(1, "CVC is required"),
-    name: z.string().min(1, "Name is required"),
-  });
+  const handleSave = async () => {
+    if (!stripe || !elements) {
+      setError("Payment form is still loading.");
+      return;
+    }
 
-  const form = useForm<PaymentFormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      cardNumber: "",
-      expiry: "",
-      cvc: "",
-      name: "",
-    },
-  });
+    setIsSaving(true);
+    setError(null);
 
-  const handleSave = async (values: PaymentFormValues) => {
-    setIsLoading(true);
     try {
-      const success = await onSave(values);
-      if (success) {
-        onClose();
-        form.reset();
+      const { error: setupError, setupIntent } = await stripe.confirmSetup({
+        elements,
+        confirmParams: {
+          return_url: window.location.href,
+        },
+        redirect: "if_required",
+      });
+
+      if (setupError) {
+        setError(setupError.message ?? "Could not save this card.");
+        return;
       }
+
+      if (setupIntent?.status !== "succeeded") {
+        setError(
+          `Card setup was not completed. Status: ${setupIntent?.status ?? "unknown"}`,
+        );
+        return;
+      }
+
+      const savedPaymentMethod = await finalizeSetupIntent(
+        setupIntent.id || setupIntentId,
+        setAsDefault,
+      );
+
+      if (!savedPaymentMethod) {
+        setError("Card was saved by Stripe, but could not be stored here.");
+        return;
+      }
+
+      await onSaved();
+      onClose();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not save this card.",
+      );
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
+
+  return (
+    <>
+      <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            p: 2,
+            backgroundColor: Colors.background.default,
+            borderRadius: 2,
+          }}
+        >
+          <CreditCardIcon
+            sx={{ fontSize: 32, color: Colors.text.placeholder }}
+          />
+          <Typography
+            sx={{ color: Colors.text.placeholder, fontSize: "0.9rem" }}
+          >
+            Add a new card
+          </Typography>
+        </Box>
+
+        {error && <Alert severity="error">{error}</Alert>}
+
+        <PaymentElement />
+
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={setAsDefault}
+              onChange={(event) => setSetAsDefault(event.target.checked)}
+              sx={{
+                color: Colors.background.brand,
+                "&.Mui-checked": { color: Colors.background.brand },
+              }}
+            />
+          }
+          label={
+            <Typography sx={{ fontSize: "0.9rem" }}>
+              Use as default card
+            </Typography>
+          }
+        />
+      </Box>
+
+      <Divider />
+
+      <Box sx={{ p: 2, display: "flex", gap: 2 }}>
+        <Button
+          variant="border"
+          onClick={onClose}
+          disabled={isSaving}
+          sx={{ flex: 1 }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="filled"
+          onClick={handleSave}
+          disabled={!stripe || !elements || isSaving}
+          sx={{ flex: 1 }}
+        >
+          {isSaving ? "Saving..." : "Save"}
+        </Button>
+      </Box>
+    </>
+  );
+};
+
+const PaymentModal = ({ open, onClose, onSaved }: PaymentModalProps) => {
+  const [setupIntentId, setSetupIntentId] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setSetupIntentId(null);
+      setClientSecret(null);
+      setError(null);
+      return;
+    }
+
+    let isActive = true;
+
+    const prepareSetupIntent = async () => {
+      const setupIntent = await createSetupIntent();
+
+      if (!isActive) {
+        return;
+      }
+
+      if (!setupIntent?.data.clientSecret) {
+        setError("Could not prepare the card form.");
+        return;
+      }
+
+      setSetupIntentId(setupIntent.data.setupIntentId);
+      setClientSecret(setupIntent.data.clientSecret);
+    };
+
+    void prepareSetupIntent();
+
+    return () => {
+      isActive = false;
+    };
+  }, [open]);
 
   return (
     <Dialog
@@ -96,109 +242,27 @@ const PaymentModal = ({ open, onClose, onSave }: PaymentModalProps) => {
       </DialogTitle>
 
       <DialogContent sx={{ p: 0, m: 0, overflowY: "auto" }}>
-        <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              p: 2,
-              backgroundColor: Colors.background.default,
-              borderRadius: 2,
-            }}
-          >
-            <CreditCardIcon
-              sx={{ fontSize: 32, color: Colors.text.placeholder }}
+        {error && (
+          <Box sx={{ p: 2 }}>
+            <Alert severity="error">{error}</Alert>
+          </Box>
+        )}
+
+        {clientSecret && setupIntentId ? (
+          <Elements stripe={stripePromise} options={{ clientSecret }}>
+            <SaveCardForm
+              setupIntentId={setupIntentId}
+              onClose={onClose}
+              onSaved={onSaved}
             />
-            <Typography
-              sx={{ color: Colors.text.placeholder, fontSize: "0.9rem" }}
-            >
-              Add a new card
+          </Elements>
+        ) : (
+          <Box sx={{ p: 3 }}>
+            <Typography sx={{ color: Colors.text.placeholder }}>
+              Preparing secure card form...
             </Typography>
           </Box>
-
-          <Controller
-            name="cardNumber"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <TextInput
-                {...field}
-                fullWidth
-                label="Card number"
-                value={field.value || ""}
-                onChange={(e) => field.onChange(e.target.value)}
-                error={fieldState.error?.message}
-                placeholder="1234 5678 9012 3456"
-              />
-            )}
-          />
-
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Controller
-              name="expiry"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <TextInput
-                  {...field}
-                  fullWidth
-                  label="Expiry"
-                  value={field.value || ""}
-                  onChange={(e) => field.onChange(e.target.value)}
-                  error={fieldState.error?.message}
-                  placeholder="MM/YY"
-                />
-              )}
-            />
-
-            <Controller
-              name="cvc"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <TextInput
-                  {...field}
-                  fullWidth
-                  label="CVC"
-                  value={field.value || ""}
-                  onChange={(e) => field.onChange(e.target.value)}
-                  error={fieldState.error?.message}
-                  placeholder="123"
-                />
-              )}
-            />
-          </Box>
-
-          <Controller
-            name="name"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <TextInput
-                {...field}
-                fullWidth
-                label="Name on card"
-                value={field.value || ""}
-                onChange={(e) => field.onChange(e.target.value)}
-                error={fieldState.error?.message}
-                placeholder="John Doe"
-              />
-            )}
-          />
-        </Box>
-
-        <Divider />
-
-        <Box sx={{ p: 2, display: "flex", gap: 2 }}>
-          <Button variant="border" onClick={onClose} sx={{ flex: 1 }}>
-            Cancel
-          </Button>
-          <Button
-            variant="filled"
-            onClick={form.handleSubmit(handleSave)}
-            disabled={!form.formState.isValid || isLoading}
-            sx={{ flex: 1 }}
-          >
-            {isLoading ? "Saving..." : "Save"}
-          </Button>
-        </Box>
+        )}
       </DialogContent>
     </Dialog>
   );

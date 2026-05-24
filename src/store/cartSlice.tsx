@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { IDish } from "../data/Sides";
-import * as cartService from "../services/cart.service";
-import { RootState } from "./store";
+import type { RootState } from "./store";
 import { CartItemData } from "../types/cart.types";
 
 export interface CartItem extends IDish {
@@ -75,7 +74,8 @@ export const fetchCart = createAsyncThunk(
       };
     }
 
-    const cart = await cartService.getCart();
+    const { getCart } = await import("../services/cart.service");
+    const cart = await getCart();
     return cart;
   },
 );
@@ -90,10 +90,8 @@ export const syncCartToServer = createAsyncThunk(
     const { restaurantId, restaurantName } = getSelectedRestaurant();
     if (!restaurantId) return false;
 
-    const syncedItems = await cartService.syncCart(
-      state.cart.items,
-      restaurantId,
-    );
+    const { syncCart } = await import("../services/cart.service");
+    const syncedItems = await syncCart(state.cart.items, restaurantId);
     if (!syncedItems) return false;
 
     dispatch(
@@ -122,10 +120,11 @@ export const addItemAndSync = createAsyncThunk(
     const state = getState() as RootState;
     if (state.auth.isAuthenticated) {
       if (restaurantId) {
+        const { addItemToCart } = await import("../services/cart.service");
         const cartItem =
           state.cart.items.find((item) => item._id === dish._id) ??
           ({ ...dish, quantity: 1 } satisfies CartItem);
-        const didSync = await cartService.addItemToCart(cartItem, restaurantId);
+        const didSync = await addItemToCart(cartItem, restaurantId);
         if (didSync) {
           dispatch(fetchCart());
         }
@@ -142,7 +141,8 @@ export const removeItemAndSync = createAsyncThunk(
 
     const state = getState() as RootState;
     if (state.auth.isAuthenticated) {
-      await cartService.removeItemFromCart(cartItemId);
+      const { removeItemFromCart } = await import("../services/cart.service");
+      await removeItemFromCart(cartItemId);
     }
   },
 );
@@ -158,10 +158,10 @@ export const updateQuantityAndSync = createAsyncThunk(
 
     const state = getState() as RootState;
     if (state.auth.isAuthenticated) {
-      await cartService.updateCartItemQuantity(
-        payload.cartItemId,
-        payload.quantity,
+      const { updateCartItemQuantity } = await import(
+        "../services/cart.service"
       );
+      await updateCartItemQuantity(payload.cartItemId, payload.quantity);
     }
   },
 );
@@ -174,7 +174,8 @@ export const clearCartAndSync = createAsyncThunk(
 
     const state = getState() as RootState;
     if (state.auth.isAuthenticated) {
-      await cartService.clearCartInDb();
+      const { clearCartInDb } = await import("../services/cart.service");
+      await clearCartInDb();
     }
   },
 );

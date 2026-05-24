@@ -32,6 +32,42 @@ export interface PaymentIntentResponse {
   };
 }
 
+export interface SetupIntentResponse {
+  success: boolean;
+  message: string;
+  data: {
+    setupIntentId: string;
+    clientSecret: string;
+  };
+}
+
+export interface UserPaymentMethod {
+  id: string;
+  providerPaymentMethodId: string;
+  brand: string;
+  last4: string;
+  expMonth: number;
+  expYear: number;
+  funding: string | null;
+  country: string | null;
+  cardholderName: string | null;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserPaymentMethodResponse {
+  success: boolean;
+  message: string;
+  data: UserPaymentMethod;
+}
+
+export interface UserPaymentMethodsResponse {
+  success: boolean;
+  message: string;
+  data: UserPaymentMethod[];
+}
+
 export interface PaymentResponse {
   success: boolean;
   data: {
