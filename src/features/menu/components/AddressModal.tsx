@@ -14,7 +14,7 @@ import TextInput from "./TextInput";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Address } from "../../../types/user.types";
 
 type AddressModalProps = {
@@ -61,6 +61,17 @@ const AddressModal = ({
       instructions: address?.instructions || "",
     },
   });
+
+  useEffect(() => {
+    form.reset({
+      label: address?.label || "",
+      line1: address?.line1 || "",
+      line2: address?.line2 || "",
+      city: address?.city || "",
+      postcode: address?.postcode || "",
+      instructions: address?.instructions || "",
+    });
+  }, [address, form]);
 
   const handleSave = async (values: AddressFormValues) => {
     setIsLoading(true);

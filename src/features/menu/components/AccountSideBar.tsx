@@ -70,6 +70,7 @@ export default function AnchorTemporaryDrawer({
   const handleLogout = async () => {
     await dispatch(logOutUser());
     toggleDrawer(false);
+    navigate("/");
   };
 
   const list = () => (

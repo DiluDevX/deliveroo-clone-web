@@ -7,6 +7,11 @@ import {
   List,
   ListItem,
   ListItemButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Skeleton,
 } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,9 +25,14 @@ import TextInput from "../features/menu/components/TextInput";
 import ClickableSwitch from "../features/menu/components/ClickableSwitch";
 import { useAppSelector, useAppDispatch } from "../store/hooks/cartHooks";
 import {
+  createUserAddress,
+  deleteUserAddress,
+  getUserAddresses,
   getUserProfile,
-  updateUserProfile,
+  setDefaultUserAddress,
   deleteUserAccount,
+  updateUserAddress,
+  updateUserProfile,
   updatePassword,
 } from "../services/user.service";
 import {
@@ -134,6 +144,11 @@ const ProfilePage = () => {
     promotions: false,
     newsletter: false,
   });
+  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
+  const [deletingAddressId, setDeletingAddressId] = useState<string | null>(
+    null,
+  );
+  const [addressesLoading, setAddressesLoading] = useState(false);
 
   useEffect(() => {
     if (location.state?.selectedItem) {
@@ -144,6 +159,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const loadProfile = async () => {
       setIsLoading(true);
+      setAddressesLoading(true);
       const profile = await getUserProfile();
       if (profile) {
         dispatch(
@@ -167,6 +183,7 @@ const ProfilePage = () => {
       }
       setAddresses([]);
       setIsLoading(false);
+      setAddressesLoading(false);
     };
     loadProfile();
   }, [dispatch]);
@@ -226,22 +243,63 @@ const ProfilePage = () => {
     });
   };
 
-  const setDefaultAddress = (items: Address[], addressId: string) =>
-    items.map((address) => ({
-      ...address,
-      isDefault: address.id === addressId,
-    }));
-
-  const handleSetDefaultDummyAddress = (addressId: string) => {
-    setDummyAddresses((currentAddresses) =>
-      setDefaultAddress(currentAddresses, addressId),
-    );
+  const refreshAddresses = async () => {
+    setAddressesLoading(true);
+    setAddresses(await getUserAddresses());
+    setAddressesLoading(false);
   };
 
-  const handleSetDefaultAddress = (addressId: string) => {
-    setAddresses((currentAddresses) =>
-      setDefaultAddress(currentAddresses, addressId),
-    );
+  const handleSetDefaultAddress = async (addressId: string) => {
+    const updatedAddress = await setDefaultUserAddress(addressId);
+    if (!updatedAddress) {
+      setError("Failed to update default address");
+      return;
+    }
+
+    await refreshAddresses();
+  };
+
+  const handleDeleteAddress = async (addressId: string) => {
+    setDeletingAddressId(addressId);
+    setShowDeleteConfirmDialog(true);
+  };
+
+  const confirmDeleteAddress = async () => {
+    if (!deletingAddressId) return;
+
+    const success = await deleteUserAddress(deletingAddressId);
+    if (!success) {
+      setError("Failed to remove address");
+      setShowDeleteConfirmDialog(false);
+      setDeletingAddressId(null);
+      return;
+    }
+
+    await refreshAddresses();
+    setShowDeleteConfirmDialog(false);
+    setDeletingAddressId(null);
+  };
+
+  const handleSaveAddress = async (address: {
+    label: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    postcode: string;
+    instructions?: string;
+  }) => {
+    const savedAddress = editingAddress
+      ? await updateUserAddress(editingAddress.id, address)
+      : await createUserAddress({ ...address, country: "UK" });
+
+    if (!savedAddress) {
+      setError("Failed to save address");
+      return false;
+    }
+
+    await refreshAddresses();
+    setEditingAddress(null);
+    return true;
   };
 
   const loadPaymentMethods = async () => {
@@ -562,8 +620,12 @@ const ProfilePage = () => {
                 bg: Colors.status.onTheWay.bg,
                 color: Colors.status.onTheWay.text,
               };
-            case "PREPARING":
             case "CONFIRMED":
+              return {
+                bg: `${Colors.background.brand}20`,
+                color: Colors.background.brand,
+              };
+            case "PREPARING":
             case "PENDING":
               return {
                 bg: Colors.status.pending.bg,
@@ -586,8 +648,9 @@ const ProfilePage = () => {
               return <CancelRounded />;
             case "ON_THE_WAY":
               return <BikeScooter />;
-            case "PREPARING":
             case "CONFIRMED":
+              return <CheckCircle />;
+            case "PREPARING":
             case "PENDING":
               return <RestaurantMenu />;
             default:
@@ -642,8 +705,50 @@ const ProfilePage = () => {
             </Box>
 
             {ordersLoading ? (
-              <Box sx={{ textAlign: "center", py: 4 }}>
-                <Typography>Loading orders...</Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {[1, 2, 3].map((i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      display: "flex",
+                      gap: 2,
+                      p: 2,
+                      border: `1px solid ${Colors.border.subtle}`,
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Skeleton
+                      variant="rectangular"
+                      width={80}
+                      height={80}
+                      sx={{ borderRadius: 1 }}
+                    />
+                    <Box sx={{ flex: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          mb: 1,
+                        }}
+                      >
+                        <Skeleton variant="text" width="50%" height={24} />
+                        <Skeleton
+                          variant="rectangular"
+                          width={80}
+                          height={24}
+                          sx={{ borderRadius: 2 }}
+                        />
+                      </Box>
+                      <Skeleton
+                        variant="text"
+                        width="80%"
+                        height={20}
+                        sx={{ mb: 0.5 }}
+                      />
+                      <Skeleton variant="text" width="70%" height={20} />
+                    </Box>
+                  </Box>
+                ))}
               </Box>
             ) : orders.length === 0 ? (
               <Box sx={{ textAlign: "center", py: 4 }}>
@@ -655,7 +760,15 @@ const ProfilePage = () => {
                 </Typography>
               </Box>
             ) : (
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  maxHeight: "600px",
+                  overflow: "auto",
+                }}
+              >
                 {orders.map((order) => {
                   const statusColors = getOrderStatusColor(order.status);
                   return (
@@ -887,97 +1000,42 @@ const ProfilePage = () => {
                 <AddIcon sx={{ mr: 0.5 }} /> Add New
               </Button>
             </Box>
-            {addresses.length === 0 ? (
+            {addressesLoading ? (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {dummyAddresses.map((addr) => (
+                {[1, 2, 3].map((i) => (
                   <Box
-                    key={addr.id}
+                    key={i}
                     sx={{
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
                       p: 2,
-                      border: `1px solid ${Colors.border.subtle}`,
-                      borderRadius: 2,
+                      gap: 2,
                     }}
                   >
-                    <Box>
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <Typography sx={{ fontWeight: 600 }}>
-                          {addr.label}
-                        </Typography>
-                        {addr.isDefault && (
-                          <CheckCircleIcon
-                            sx={{
-                              color: Colors.background.brand,
-                              fontSize: "1.2rem",
-                            }}
-                          />
-                        )}
-                      </Box>
-                      <Typography
-                        sx={{
-                          color: Colors.text.placeholder,
-                          fontSize: "0.85rem",
-                        }}
-                      >
-                        {addr.line1}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          color: Colors.text.placeholder,
-                          fontSize: "0.85rem",
-                        }}
-                      >
-                        {addr.city}, {addr.postcode}
-                      </Typography>
-                      {addr.instructions && (
-                        <Typography
-                          sx={{
-                            mt: 1,
-                            fontSize: "0.8rem",
-                            color: Colors.text.placeholder,
-                            fontStyle: "italic",
-                          }}
-                        >
-                          📍 {addr.instructions}
-                        </Typography>
-                      )}
-                      {!addr.isDefault && (
-                        <Typography
-                          onClick={() => handleSetDefaultDummyAddress(addr.id)}
-                          sx={{
-                            mt: 1,
-                            fontSize: "0.85rem",
-                            color: Colors.background.brand,
-                            fontWeight: 500,
-                            cursor: "pointer",
-                            "&:hover": { textDecoration: "underline" },
-                          }}
-                        >
-                          Set as Default
-                        </Typography>
-                      )}
+                    <Box sx={{ flex: 1 }}>
+                      <Skeleton
+                        variant="text"
+                        width="40%"
+                        height={24}
+                        sx={{ mb: 1 }}
+                      />
+                      <Skeleton
+                        variant="text"
+                        width="80%"
+                        height={20}
+                        sx={{ mb: 0.5 }}
+                      />
+                      <Skeleton variant="text" width="60%" height={20} />
                     </Box>
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <IconButton
-                        onClick={() => {
-                          setEditingAddress(addr);
-                          setShowAddressModal(true);
-                        }}
-                        size="small"
-                      >
-                        <EditIcon sx={{ fontSize: "1.2rem" }} />
-                      </IconButton>
-                      <IconButton size="small">
-                        <DeleteIcon sx={{ fontSize: "1.2rem" }} />
-                      </IconButton>
-                    </Box>
+                    <Skeleton variant="rectangular" width={80} height={32} />
                   </Box>
                 ))}
               </Box>
+            ) : addresses.length === 0 ? (
+              <Typography sx={{ color: Colors.text.placeholder }}>
+                You do not have any saved addresses yet.
+              </Typography>
             ) : (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {addresses.map((addr) => (
@@ -1062,7 +1120,10 @@ const ProfilePage = () => {
                       >
                         <EditIcon sx={{ fontSize: "1.2rem" }} />
                       </IconButton>
-                      <IconButton size="small">
+                      <IconButton
+                        onClick={() => handleDeleteAddress(addr.id)}
+                        size="small"
+                      >
                         <DeleteIcon sx={{ fontSize: "1.2rem" }} />
                       </IconButton>
                     </Box>
@@ -1600,10 +1661,7 @@ const ProfilePage = () => {
           setEditingAddress(null);
         }}
         address={editingAddress}
-        onSave={async () => {
-          setShowAddressModal(false);
-          return true;
-        }}
+        onSave={handleSaveAddress}
       />
 
       <PaymentModal
@@ -1649,6 +1707,34 @@ const ProfilePage = () => {
         loading={isDeletingAccount}
         disableClose={isDeletingAccount}
       />
+
+      <Dialog
+        open={showDeleteConfirmDialog}
+        onClose={() => setShowDeleteConfirmDialog(false)}
+      >
+        <DialogTitle sx={{ fontWeight: "bold" }}>Remove Address</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to remove this address? This action cannot be
+            undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setShowDeleteConfirmDialog(false)}
+            variant="outlined"
+          >
+            Cancel
+          </Button>
+          <Button
+            sx={{ marginLeft: "none" }}
+            onClick={confirmDeleteAddress}
+            variant="filled"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

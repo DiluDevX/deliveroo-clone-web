@@ -164,7 +164,7 @@ const AllRestaurantsPage = () => {
             <LoadingIndicator />
           </Box>
         ) : (
-          <Grid container spacing={2} justifyContent="center">
+          <Grid container spacing={2} justifyContent="flex-start">
             {filteredRestaurants.map((restaurant) => (
               <Grid size={{ xs: 12, sm: 6, md: 6 }} key={restaurant.id}>
                 <RestaurantView restaurant={restaurant} />

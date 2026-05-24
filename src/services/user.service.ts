@@ -1,7 +1,18 @@
 import { apiClient } from "./api.client";
 import { isAxiosError } from "axios";
-import { UserProfile, IUser } from "../types/user.types";
+import { Address, UserProfile, IUser } from "../types/user.types";
 import { getAuthHeader } from "./auth-headers";
+
+export type AddressPayload = {
+  label: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  postcode: string;
+  country?: string;
+  instructions?: string;
+  isDefault?: boolean;
+};
 
 export const getUserProfile = async (): Promise<UserProfile | null> => {
   try {
@@ -102,6 +113,97 @@ export const updatePassword = async ({
       console.error("Error updating password:", error.response?.data);
     }
     return false;
+  }
+};
+
+export const getUserAddresses = async (): Promise<Address[]> => {
+  try {
+    const response = await apiClient.get<{
+      success: boolean;
+      data: Address[];
+    }>("/users/me/addresses", { headers: getAuthHeader() });
+
+    return response.data.data || [];
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error fetching addresses:", error.response?.data);
+    }
+    return [];
+  }
+};
+
+export const createUserAddress = async (
+  data: AddressPayload,
+): Promise<Address | null> => {
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      data: Address;
+    }>("/users/me/addresses", data, { headers: getAuthHeader() });
+
+    return response.data.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error creating address:", error.response?.data);
+    }
+    return null;
+  }
+};
+
+export const updateUserAddress = async (
+  addressId: string,
+  data: Partial<AddressPayload>,
+): Promise<Address | null> => {
+  try {
+    const response = await apiClient.patch<{
+      success: boolean;
+      data: Address;
+    }>(`/users/me/addresses/${addressId}`, data, { headers: getAuthHeader() });
+
+    return response.data.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error updating address:", error.response?.data);
+    }
+    return null;
+  }
+};
+
+export const deleteUserAddress = async (
+  addressId: string,
+): Promise<boolean> => {
+  try {
+    await apiClient.delete(`/users/me/addresses/${addressId}`, {
+      headers: getAuthHeader(),
+    });
+    return true;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error deleting address:", error.response?.data);
+    }
+    return false;
+  }
+};
+
+export const setDefaultUserAddress = async (
+  addressId: string,
+): Promise<Address | null> => {
+  try {
+    const response = await apiClient.patch<{
+      success: boolean;
+      data: Address;
+    }>(
+      `/users/me/addresses/${addressId}/default`,
+      {},
+      { headers: getAuthHeader() },
+    );
+
+    return response.data.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      console.error("Error setting default address:", error.response?.data);
+    }
+    return null;
   }
 };
 
