@@ -164,7 +164,7 @@ const SignUpPage = ({
         flexDirection: "column",
       }}
     >
-      <Box>
+      <Box sx={{ width: "100%", minWidth: "200px", maxWidth: "400px" }}>
         <Button
           onClick={() => navigate("/account")}
           PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
@@ -175,7 +175,6 @@ const SignUpPage = ({
             fontWeight: "normal",
             borderRadius: "150px",
             mb: 3,
-            left: "-200px",
             "&:hover": {
               border: "none",
             },

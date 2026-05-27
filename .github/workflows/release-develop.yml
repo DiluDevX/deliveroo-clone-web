@@ -14,7 +14,7 @@ permissions:
 jobs:
   release-development:
     name: Release to Development
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/deploy-to-azure-static-web-apps.yml
     with:
       environment: development
     secrets: inherit

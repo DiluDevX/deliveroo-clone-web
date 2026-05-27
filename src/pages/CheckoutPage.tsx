@@ -37,6 +37,8 @@ import {
 import { DeliveryDiningSharp, ShoppingBagOutlined } from "@mui/icons-material";
 import { checkoutCart } from "../services/order.service";
 import { showErrorSnackbar } from "../utils/notifications";
+import { createUserAddress, getUserAddresses } from "../services/user.service";
+import { Address } from "../types/user.types";
 
 type PaymentMethod = "CARD" | "CASH_ON_DELIVERY";
 
@@ -193,9 +195,7 @@ const CheckoutPage = () => {
       });
 
       if (!savedAddress) {
-        enqueueSnackbar("Failed to save address. Please try again.", {
-          variant: "error",
-        });
+        showErrorSnackbar("Failed to save address. Please try again.");
         return;
       }
     }

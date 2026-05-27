@@ -2,11 +2,11 @@
 
 ### Features
 
-* enhance Dish component with cart management and dialog for replacing cart ([5a6d675](https://github.com/DiluDevX/deliveroo-clone-web/commit/5a6d675bb5f618fb302a4ef51405db711b974822))
-* enhance payment and profile management features ([cd42ed9](https://github.com/DiluDevX/deliveroo-clone-web/commit/cd42ed950d5b8cbe325eef580c0eb83d63dffc06))
-* improve payment profile and notification flows ([72dcf59](https://github.com/DiluDevX/deliveroo-clone-web/commit/72dcf59b41733caca612506dba904c1155a17d29))
-* **payment:** add Zod validation for payment method setup and ID ([f7f03a6](https://github.com/DiluDevX/deliveroo-clone-web/commit/f7f03a699155eeab82f62ad79b4dfb16261fb7bc))
-* replace notistack with Sonner for notifications and update related components ([6c7a701](https://github.com/DiluDevX/deliveroo-clone-web/commit/6c7a701c84c9ae9f04bd96daa100f490ab163780))
+- enhance Dish component with cart management and dialog for replacing cart ([5a6d675](https://github.com/DiluDevX/deliveroo-clone-web/commit/5a6d675bb5f618fb302a4ef51405db711b974822))
+- enhance payment and profile management features ([cd42ed9](https://github.com/DiluDevX/deliveroo-clone-web/commit/cd42ed950d5b8cbe325eef580c0eb83d63dffc06))
+- improve payment profile and notification flows ([72dcf59](https://github.com/DiluDevX/deliveroo-clone-web/commit/72dcf59b41733caca612506dba904c1155a17d29))
+- **payment:** add Zod validation for payment method setup and ID ([f7f03a6](https://github.com/DiluDevX/deliveroo-clone-web/commit/f7f03a699155eeab82f62ad79b4dfb16261fb7bc))
+- replace notistack with Sonner for notifications and update related components ([6c7a701](https://github.com/DiluDevX/deliveroo-clone-web/commit/6c7a701c84c9ae9f04bd96daa100f490ab163780))
 
 ## [1.1.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.0.0...v1.1.0) (2026-05-21)
 

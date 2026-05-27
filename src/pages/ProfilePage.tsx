@@ -45,29 +45,6 @@ import { Order } from "../types/order.types";
 import { Address } from "../types/user.types";
 import { UserPaymentMethod } from "../types/payment.types";
 
-const DUMMY_ADDRESSES: Address[] = [
-  {
-    id: "addr_1",
-    label: "Home",
-    line1: "123 Main Street",
-    line2: "Flat 4B",
-    city: "London",
-    postcode: "SW1A 1AA",
-    country: "UK",
-    instructions: "Ring the bell twice",
-    isDefault: true,
-  },
-  {
-    id: "addr_2",
-    label: "Work",
-    line1: "45 Office Tower",
-    city: "London",
-    postcode: "EC2A 1AB",
-    country: "UK",
-    isDefault: false,
-  },
-];
-
 import { setCredentials } from "../store/authSlice";
 import { logOutUser } from "../store/authThunks";
 import PersonIcon from "@mui/icons-material/Person";
@@ -120,8 +97,6 @@ const ProfilePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<string>("Personal details");
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [dummyAddresses, setDummyAddresses] =
-    useState<Address[]>(DUMMY_ADDRESSES);
   const [payments, setPayments] = useState<UserPaymentMethod[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);

@@ -169,7 +169,7 @@ export default function Login() {
         flexDirection: "column",
       }}
     >
-      <Box>
+      <Box sx={{ width: "100%", minWidth: "200px", maxWidth: "400px" }}>
         <Button
           variant="border"
           onClick={() => navigate("/account")}
@@ -181,7 +181,6 @@ export default function Login() {
             fontWeight: "normal",
             borderRadius: "150px",
             mb: 3,
-            left: "-200px",
             "&:hover": {
               border: "none",
             },

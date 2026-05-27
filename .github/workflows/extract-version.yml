@@ -26,10 +26,22 @@ jobs:
       - name: Extract version
         id: extract
         run: |
-          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          git fetch --tags
+
+          TAG=$(git tag --sort=-creatordate | head -n 1)
 
           if [ -z "$TAG" ]; then
             echo "No tags found"
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          TAG_DATE=$(git log -1 --format="%ct" "$TAG")
+          NOW=$(date +%s)
+          DIFF=$((NOW - TAG_DATE))
+
+          if [ "$DIFF" -ge 300 ]; then
+            echo "No new release in this run"
             echo "published=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
