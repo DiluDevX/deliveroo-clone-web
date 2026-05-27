@@ -2,9 +2,9 @@
 
 ### Features
 
-* add customer address management ([85a92a2](https://github.com/DiluDevX/deliveroo-clone-web/commit/85a92a2326daebf3f7f953f6be1fa66b98c0e5c0))
-* implement user address CRUD functionality and enhance related components ([3255c47](https://github.com/DiluDevX/deliveroo-clone-web/commit/3255c47cba6f0199ac3da93d56b40335c2414d8e))
-* update environment variable names and improve CI/CD workflows ([32dac53](https://github.com/DiluDevX/deliveroo-clone-web/commit/32dac53c2538250580795203e7a0d647d045b8c7))
+- add customer address management ([85a92a2](https://github.com/DiluDevX/deliveroo-clone-web/commit/85a92a2326daebf3f7f953f6be1fa66b98c0e5c0))
+- implement user address CRUD functionality and enhance related components ([3255c47](https://github.com/DiluDevX/deliveroo-clone-web/commit/3255c47cba6f0199ac3da93d56b40335c2414d8e))
+- update environment variable names and improve CI/CD workflows ([32dac53](https://github.com/DiluDevX/deliveroo-clone-web/commit/32dac53c2538250580795203e7a0d647d045b8c7))
 
 ## [1.2.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.1.0...v1.2.0) (2026-05-24)
 
