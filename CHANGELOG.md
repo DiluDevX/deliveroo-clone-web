@@ -1,3 +1,9 @@
+## [1.4.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.3.1...v1.4.0) (2026-05-28)
+
+### Features
+
+* enhance Cart component with layout prop and mobile drawer functionality ([be9a9d6](https://github.com/DiluDevX/deliveroo-clone-web/commit/be9a9d6b5e52c0c37642bd8bcf5ab85e39151570))
+
 ## [1.3.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.3.0...v1.3.1) (2026-05-27)
 
 ### Bug Fixes
