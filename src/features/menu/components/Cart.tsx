@@ -87,10 +87,6 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
     navigate("/account/login");
   };
 
-  const handleBrowseRestaurants = () => {
-    navigate("/filtered-restaurants");
-  };
-
   const containerSx = {
     marginTop: isDrawer ? 0 : "2rem",
     mb: isDrawer ? 0 : 2,
@@ -107,6 +103,9 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
     border: isDrawer ? "none" : `1px solid ${Colors.border.subtle}`,
     backgroundColor: Colors.background.defaultLight,
     overflow: "hidden",
+    "::-webkit-scrollbar": {
+      display: "none",
+    },
   } as const;
 
   // Login Dialog Component
@@ -157,16 +156,6 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
             <Typography sx={{ color: Colors.text.light, fontWeight: "bold" }}>
               Your Basket is Empty
             </Typography>
-            <Typography
-              sx={{
-                color: Colors.text.lighter,
-                fontSize: "0.9rem",
-                textAlign: "center",
-                px: 3,
-              }}
-            >
-              Browse restaurants and add something before checkout.
-            </Typography>
           </Box>
 
           {/* Footer */}
@@ -179,8 +168,7 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
             }}
           >
             <Button
-              onClick={handleBrowseRestaurants}
-              variant="filled"
+              disabled={cartItems.length === 0}
               sx={{
                 width: "100%",
                 fontWeight: "bold",
@@ -188,7 +176,7 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
                 py: 1.5,
               }}
             >
-              Browse Restaurants
+              Go to Checkout
             </Button>
           </Box>
         </Box>

@@ -56,15 +56,6 @@ const renderCart = (
             </>
           }
         />
-        <Route
-          path="/filtered-restaurants"
-          element={
-            <>
-              <div>Restaurants page</div>
-              <LocationDisplay />
-            </>
-          }
-        />
       </Routes>
     </MemoryRouter>,
     {
@@ -114,19 +105,5 @@ describe("Cart", () => {
 
     expect(screen.getByText("Checkout page")).toBeInTheDocument();
     expect(screen.getByText("Current route: /checkout")).toBeInTheDocument();
-  });
-
-  it("sends empty carts to the restaurant browser without search params", async () => {
-    const user = userEvent.setup();
-    renderCart(true, []);
-
-    await user.click(
-      screen.getByRole("button", { name: "Browse Restaurants" }),
-    );
-
-    expect(screen.getByText("Restaurants page")).toBeInTheDocument();
-    expect(
-      screen.getByText("Current route: /filtered-restaurants"),
-    ).toBeInTheDocument();
   });
 });

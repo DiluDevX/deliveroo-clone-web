@@ -17,8 +17,8 @@ import { ICategory, IDish } from "../data/Sides";
 import { useParams } from "react-router-dom";
 import { getSingleRestaurant } from "../services/restaurant.service";
 import { Restaurant } from "../types/restaurants";
-import ShoppingBasketOutlinedIcon from "@mui/icons-material/ShoppingBasketOutlined";
 import { useAppSelector } from "../store/hooks/cartHooks";
+import { ShoppingCart } from "@mui/icons-material";
 
 type RestaurantCategory = {
   id: string;
@@ -192,6 +192,7 @@ const MenuPage = () => {
             display: { xs: "flex", md: "none" },
             color: Colors.text.inverse,
             backgroundColor: Colors.background.brand,
+            borderRadius: "12px",
             "&:hover": {
               backgroundColor: Colors.background.brandHover,
             },
@@ -199,7 +200,7 @@ const MenuPage = () => {
         >
           <Badge
             badgeContent={cartItemCount}
-            color="error"
+            color="default"
             sx={{
               "& .MuiBadge-badge": {
                 fontWeight: 700,
@@ -208,7 +209,7 @@ const MenuPage = () => {
               },
             }}
           >
-            <ShoppingBasketOutlinedIcon />
+            <ShoppingCart />
           </Badge>
         </Fab>
       )}

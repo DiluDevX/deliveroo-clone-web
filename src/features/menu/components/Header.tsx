@@ -1,20 +1,22 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Box, Container } from "@mui/material";
 import Button from "./Button";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import SearchBar from "./SearchBar";
 import { Colors, Paddings, Svgs } from "../../../theme";
 import AnchorTemporaryDrawer from "./AccountSideBar";
 import React from "react";
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PartnerWithUs from "./PartnerWithUs";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store/store";
 
 const Header = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isTransparent = location.pathname === "/";
+  const isRestaurantMenuPage =
+    location.pathname.startsWith("/restaurants/") &&
+    location.pathname.endsWith("/menu");
   const notShowing =
     location.pathname === "/Account/login" ||
     location.pathname === "/Account/signup" ||
@@ -28,6 +30,11 @@ const Header = () => {
 
   const user = useSelector((state: RootState) => state.auth.user);
 
+  const handleAccountNavigation = () => {
+    sessionStorage.removeItem("redirectAfterLogin");
+    navigate("/account");
+  };
+
   const title = user?.firstName || "Guest";
   return (
     <Box
@@ -38,7 +45,7 @@ const Header = () => {
         width: "100%",
         height: "60px",
         display: "flex",
-        p: "0 1rem",
+        px: { xs: "0.5rem", sm: "1rem" },
         alignItems: "center",
         justifyContent: "center",
         position: isTransparent ? "absolute" : "fixed",
@@ -59,6 +66,7 @@ const Header = () => {
           display: "flex",
           alignItems: "flex-start",
           position: "relative",
+          px: { xs: 0, sm: 2 },
         }}
       >
         <Box
@@ -81,22 +89,6 @@ const Header = () => {
           </Link>
         </Box>
 
-        {location.pathname.startsWith("/restaurants/") &&
-          location.pathname.endsWith("/menu") && (
-            <Box
-              sx={{
-                flex: 2,
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                paddingTop: "1rem",
-              }}
-            >
-              <SearchBar />
-            </Box>
-          )}
-
         <Box
           sx={{
             flex: 1,
@@ -109,23 +101,38 @@ const Header = () => {
           }}
         >
           {location.pathname === "/" && <PartnerWithUs />}
-          {location.pathname === "/menu" && (
+
+          {!user && isRestaurantMenuPage && (
             <Button
+              PrefixIcon={HomeOutlinedIcon}
               variant="border"
+              onClick={handleAccountNavigation}
               sx={{
-                display: {
-                  xs: "flex",
-                  sm: "none",
-                  md: "none",
-                  lg: "none",
+                backgroundColor: Colors.background.light,
+                display: { xs: "flex", md: "none" },
+                alignItems: "center",
+                justifyContent: "center",
+                px: { xs: "0.65rem", sm: "1rem" },
+                minWidth: { xs: 42, sm: 148 },
+                maxWidth: { xs: "48vw", sm: "none" },
+                overflow: "hidden",
+                "& span": {
+                  display: { xs: "none", sm: "inline-flex" },
+                },
+                "@media (min-width:360px)": {
+                  "& span": {
+                    display: "inline-flex",
+                  },
                 },
               }}
-              PrefixComponent={<SearchOutlinedIcon />}
-            ></Button>
+            >
+              <Box component="span">Sign up or login</Box>
+            </Button>
           )}
 
           {!user &&
             !notShowing &&
+            !isRestaurantMenuPage &&
             location.pathname !== "/account/login" &&
             location.pathname !== "/account/signup" && (
               <Button
@@ -155,7 +162,7 @@ const Header = () => {
                 alignItems: "center",
                 justifyContent: "center",
                 padding: "6px",
-                mr: "-0.4rem",
+                mr: { xs: 0, sm: "-0.4rem" },
               }}
               onClick={() => toggleDrawer(true)}
             />
