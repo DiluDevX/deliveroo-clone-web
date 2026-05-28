@@ -180,45 +180,51 @@ const MenuPage = () => {
           </Grid>
         </Container>
       </Box>
-      {cartItemCount > 0 && (
-        <Fab
-          aria-label={`Open cart with ${cartItemCount} item${cartItemCount === 1 ? "" : "s"}`}
-          onClick={() => setIsMobileCartOpen(true)}
+      <Fab
+        aria-label={
+          cartItemCount > 0
+            ? `Open cart with ${cartItemCount} item${cartItemCount === 1 ? "" : "s"}`
+            : "Open empty cart"
+        }
+        onClick={() => setIsMobileCartOpen(true)}
+        sx={{
+          position: "fixed",
+          right: 18,
+          bottom: 24,
+          zIndex: 120,
+          display: { xs: "flex", md: "none" },
+          width: 64,
+          height: 64,
+          minHeight: 64,
+          color: Colors.text.inverse,
+          backgroundColor: Colors.background.brand,
+          borderRadius: "14px",
+          boxShadow: `0px 8px 22px ${Colors.boxShadow.default}`,
+          "&:hover": {
+            backgroundColor: Colors.background.brandHover,
+          },
+        }}
+      >
+        <Badge
+          badgeContent={cartItemCount}
+          color="error"
+          invisible={cartItemCount === 0}
           sx={{
-            position: "fixed",
-            right: 16,
-            bottom: 20,
-            zIndex: 120,
-            display: { xs: "flex", md: "none" },
-            color: Colors.text.inverse,
-            backgroundColor: Colors.background.brand,
-            borderRadius: "12px",
-            "&:hover": {
-              backgroundColor: Colors.background.brandHover,
+            "& .MuiBadge-badge": {
+              fontWeight: 700,
+              minWidth: 22,
+              height: 22,
+              borderRadius: "50%",
+              top: 2,
+              right: 1,
+              color: Colors.text.inverse,
+              border: `2px solid ${Colors.background.light}`,
             },
           }}
         >
-          <Badge
-            badgeContent={cartItemCount}
-            color="default"
-            sx={{
-              "& .MuiBadge-badge": {
-                fontWeight: 700,
-                minWidth: 20,
-                height: 20,
-                borderRadius: "50%",
-                top: 2,
-                right: 2,
-                backgroundColor: Colors.background.light,
-                color: Colors.text.default,
-                border: `1px solid ${Colors.border.subtle}`,
-              },
-            }}
-          >
-            <ShoppingCart />
-          </Badge>
-        </Fab>
-      )}
+          <ShoppingCart sx={{ fontSize: 30 }} />
+        </Badge>
+      </Fab>
       <Drawer
         anchor="bottom"
         open={isMobileCartOpen}

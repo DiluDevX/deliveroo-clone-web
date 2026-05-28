@@ -140,14 +140,18 @@ const Header = () => {
                 onClick={() => sessionStorage.removeItem("redirectAfterLogin")}
                 title="Sign up or login"
                 linkTo="/account"
+                showTitleOnMobile={location.pathname === "/"}
                 sx={{
                   backgroundColor: Colors.background.light,
                   display: {
-                    xs: "none",
+                    xs: location.pathname === "/" ? "flex" : "none",
                     sm: "none",
                     md: "flex",
                     lg: "flex",
                   },
+                  px: { xs: "0.65rem", md: "1rem" },
+                  maxWidth: { xs: "48vw", md: "none" },
+                  overflow: "hidden",
                 }}
               />
             )}

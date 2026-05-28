@@ -70,7 +70,11 @@ export const syncCartToServer = createAsyncThunk(
     const state = getState() as RootState;
     if (!state.auth.isAuthenticated) return false;
 
-    const { restaurantId, restaurantName } = getSelectedRestaurant();
+    const selectedRestaurant = getSelectedRestaurant();
+    const restaurantId =
+      state.cart.restaurantId ?? selectedRestaurant.restaurantId;
+    const restaurantName =
+      state.cart.restaurantName ?? selectedRestaurant.restaurantName;
     if (!restaurantId) return false;
 
     const { syncCart } = await import("../services/cart.service");

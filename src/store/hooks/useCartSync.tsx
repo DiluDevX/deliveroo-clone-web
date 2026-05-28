@@ -13,11 +13,11 @@ export const useCartSync = () => {
     if (isAuthenticated && !previousAuthState.current) {
       const hadLocalCartBeforeLogin = cartItems.length > 0;
 
-      dispatch(fetchCart()).then(() => {
-        if (hadLocalCartBeforeLogin) {
-          dispatch(syncCartToServer());
-        }
-      });
+      if (hadLocalCartBeforeLogin) {
+        dispatch(syncCartToServer());
+      } else {
+        dispatch(fetchCart());
+      }
     }
 
     previousAuthState.current = isAuthenticated;

@@ -58,7 +58,6 @@ export default function AnchorTemporaryDrawer({
       icon: SettingsIcon,
       label: "Settings",
       path: "/profile",
-      section: "Personal details",
     },
   ];
 

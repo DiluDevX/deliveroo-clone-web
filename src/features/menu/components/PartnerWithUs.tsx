@@ -27,7 +27,9 @@ const PartnerWithUs = () => {
         title="Partner with Us"
         sx={{
           backgroundColor: Colors.background.light,
-          px: { xs: "0.5rem", sm: "1rem" },
+          minWidth: { xs: 42, sm: "auto" },
+          width: { xs: 42, sm: "auto" },
+          px: { xs: 0, sm: "1rem" },
         }}
         onClick={handlePartnerMenuOpen}
         PrefixComponent={
@@ -35,7 +37,7 @@ const PartnerWithUs = () => {
             sx={{
               fontSize: "27px",
               ml: { xs: 0, sm: "-8px" },
-              mr: { xs: 0, sm: 0 },
+              mr: 0,
               color: Colors.background.brand,
               transform: partnerMenuAnchor ? "rotate(180deg)" : "rotate(0deg)",
               transition: "transform 0.3s ease-in-out",

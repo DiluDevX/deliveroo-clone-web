@@ -60,15 +60,12 @@ const OrderDetailsModal = ({
       onClose={onClose}
       PaperProps={{
         sx: {
-          borderRadius: "12px",
-          position: "fixed",
-          top: "40%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: { xs: "90%", sm: "600px" },
+          borderRadius: { xs: "10px", sm: "12px" },
+          width: { xs: "calc(100vw - 24px)", sm: "600px" },
           maxWidth: "600px",
-          maxHeight: "85vh",
-          overflowY: "auto",
+          maxHeight: { xs: "calc(100dvh - 24px)", sm: "85vh" },
+          m: { xs: 1.5, sm: 4 },
+          overflow: "hidden",
         },
       }}
     >

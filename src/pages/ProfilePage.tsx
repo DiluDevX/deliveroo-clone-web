@@ -1546,135 +1546,146 @@ const ProfilePage = () => {
     <Box
       sx={{
         mt: 7,
-        minHeight: "calc(100vh - 130px)",
+        minHeight: { xs: "auto", md: "calc(100vh - 130px)" },
         backgroundColor: Colors.background.default,
-        py: 4,
+        pt: { xs: 2, md: 4 },
+        pb: { xs: 1, md: 4 },
       }}
     >
-      <Box sx={{ maxWidth: "1200px", mx: "auto", px: 3 }}>
+      <Box sx={{ maxWidth: "1200px", mx: "auto", px: { xs: 2, md: 3 } }}>
         <Grid container spacing={4}>
           {showProfileMenu && (
             <Grid item xs={12} md={4}>
-              <Box sx={{ mb: 3 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 2,
-                    mb: 1,
-                  }}
-                >
+              <Card
+                sx={{
+                  backgroundColor: Colors.background.light,
+                  border: `1px solid ${Colors.border.subtle}`,
+                  borderRadius: "12px",
+                  boxShadow: "none",
+                  overflow: "hidden",
+                }}
+              >
+                <Box sx={{ p: 3, pb: 2 }}>
                   <Box
                     sx={{
-                      width: 72,
-                      height: 72,
-                      borderRadius: "50%",
-                      backgroundColor: Colors.background.brand,
                       display: "flex",
+                      flexDirection: "column",
                       alignItems: "center",
-                      justifyContent: "center",
+                      gap: 2,
+                      mb: 1,
                     }}
                   >
-                    <Typography
+                    <Box
                       sx={{
-                        color: Colors.text.inverse,
-                        fontWeight: "bold",
-                        fontSize: "1.8rem",
+                        width: 72,
+                        height: 72,
+                        borderRadius: "50%",
+                        backgroundColor: Colors.background.brand,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      {user?.firstName?.[0]}
-                      {user?.lastName?.[0]}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ textAlign: "center" }}>
-                    <Typography
-                      sx={{ fontWeight: "bold", color: Colors.text.default }}
-                    >
-                      {user?.firstName} {user?.lastName}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        color: Colors.text.placeholder,
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      {user?.email}
-                    </Typography>
+                      <Typography
+                        sx={{
+                          color: Colors.text.inverse,
+                          fontWeight: "bold",
+                          fontSize: "1.8rem",
+                        }}
+                      >
+                        {user?.firstName?.[0]}
+                        {user?.lastName?.[0]}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: "center" }}>
+                      <Typography
+                        sx={{ fontWeight: "bold", color: Colors.text.default }}
+                      >
+                        {user?.firstName} {user?.lastName}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          color: Colors.text.placeholder,
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {user?.email}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
 
-              <List
-                disablePadding
-                sx={{ borderTop: `1px solid ${Colors.border.subtle}` }}
-              >
-                {menuItems.map((item) => (
-                  <ListItem key={item.label} disablePadding>
-                    <ListItemButton
-                      selected={selectedItem === item.label}
-                      onClick={() => handleProfileMenuItemClick(item.label)}
-                      sx={{
-                        py: 1.5,
-                        borderBottom: `1px solid ${Colors.border.subtle}`,
-                        transition: "background-color 0.2s ease",
-                        "&.Mui-selected": {
-                          backgroundColor: "transparent",
-                        },
-                        "&.Mui-selected:hover": {
-                          backgroundColor: "rgba(0, 0, 0, 0.03)",
-                        },
-                        "&:hover": {
-                          backgroundColor: "rgba(0, 0, 0, 0.02)",
-                        },
-                      }}
-                    >
-                      <item.icon
+                <List
+                  disablePadding
+                  sx={{ borderTop: `1px solid ${Colors.border.subtle}` }}
+                >
+                  {menuItems.map((item) => (
+                    <ListItem key={item.label} disablePadding>
+                      <ListItemButton
+                        selected={selectedItem === item.label}
+                        onClick={() => handleProfileMenuItemClick(item.label)}
+                        sx={{
+                          py: 1.5,
+                          borderBottom: `1px solid ${Colors.border.subtle}`,
+                          transition: "background-color 0.2s ease",
+                          "&.Mui-selected": {
+                            backgroundColor: "transparent",
+                          },
+                          "&.Mui-selected:hover": {
+                            backgroundColor: "rgba(0, 0, 0, 0.03)",
+                          },
+                          "&:hover": {
+                            backgroundColor: "rgba(0, 0, 0, 0.02)",
+                          },
+                        }}
+                      >
+                        <item.icon
+                          sx={{
+                            mr: 2,
+                            color: item.danger
+                              ? Colors.background.danger
+                              : selectedItem === item.label
+                                ? Colors.background.brand
+                                : Colors.text.default,
+                            fontSize: "1.3rem",
+                          }}
+                        />
+                        <Typography
+                          sx={{
+                            fontWeight: 500,
+                            color: item.danger
+                              ? Colors.background.danger
+                              : selectedItem === item.label
+                                ? Colors.background.brand
+                                : Colors.text.default,
+                          }}
+                        >
+                          {item.label}
+                        </Typography>
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+
+                <List disablePadding>
+                  <ListItem disablePadding>
+                    <ListItemButton onClick={handleLogout} sx={{ py: 1.5 }}>
+                      <LogoutIcon
                         sx={{
                           mr: 2,
-                          color: item.danger
-                            ? Colors.background.danger
-                            : selectedItem === item.label
-                              ? Colors.background.brand
-                              : Colors.text.default,
+                          color: Colors.text.default,
                           fontSize: "1.3rem",
                         }}
                       />
                       <Typography
-                        sx={{
-                          fontWeight: 500,
-                          color: item.danger
-                            ? Colors.background.danger
-                            : selectedItem === item.label
-                              ? Colors.background.brand
-                              : Colors.text.default,
-                        }}
+                        sx={{ fontWeight: 500, color: Colors.text.default }}
                       >
-                        {item.label}
+                        Log out
                       </Typography>
                     </ListItemButton>
                   </ListItem>
-                ))}
-              </List>
-
-              <List disablePadding>
-                <ListItem disablePadding>
-                  <ListItemButton onClick={handleLogout} sx={{ py: 1.5 }}>
-                    <LogoutIcon
-                      sx={{
-                        mr: 2,
-                        color: Colors.text.default,
-                        fontSize: "1.3rem",
-                      }}
-                    />
-                    <Typography
-                      sx={{ fontWeight: 500, color: Colors.text.default }}
-                    >
-                      Log out
-                    </Typography>
-                  </ListItemButton>
-                </ListItem>
-              </List>
+                </List>
+              </Card>
             </Grid>
           )}
 
