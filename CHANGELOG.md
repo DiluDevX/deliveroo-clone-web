@@ -2,7 +2,7 @@
 
 ### Features
 
-* update titles and improve UI in Menu and Profile pages ([38ebda1](https://github.com/DiluDevX/deliveroo-clone-web/commit/38ebda128fe486dca5d959eabdd59be26dfc0052))
+- update titles and improve UI in Menu and Profile pages ([38ebda1](https://github.com/DiluDevX/deliveroo-clone-web/commit/38ebda128fe486dca5d959eabdd59be26dfc0052))
 
 ## [1.7.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.6.0...v1.7.0) (2026-05-28)
 

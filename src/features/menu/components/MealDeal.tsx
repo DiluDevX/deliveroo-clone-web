@@ -7,7 +7,7 @@ const MealDeal = () => {
       sx={{
         width: "100%",
         maxHeight: "365px",
-        padding: "2rem 0",
+        padding: { xs: "1rem 0", sm: "2rem 0" },
         position: "relative",
         overflow: "hidden",
       }}
@@ -42,8 +42,8 @@ const MealDeal = () => {
           color: Colors.text.inverse,
           zIndex: 2,
           position: "relative",
-          padding: "2rem",
-          paddingBottom: "4rem",
+          padding: { xs: "1rem", sm: "2rem" },
+          paddingBottom: { xs: "3rem", sm: "4rem" },
         }}
       >
         <Box
@@ -62,7 +62,7 @@ const MealDeal = () => {
           <Typography
             sx={{
               fontWeight: "bold",
-              fontSize: { xs: "1.5rem", sm: "2.5rem", md: "3rem" },
+              fontSize: { xs: "1.75rem", sm: "2.5rem", md: "3rem" },
               paddingLeft: "0.1rem",
               paddingRight: "0.1rem",
               textAlign: "center",
@@ -87,9 +87,9 @@ const MealDeal = () => {
         <Typography
           sx={{
             textAlign: "center",
-            mb: "0.5rem",
-            mt: "1rem",
-            fontSize: { xs: "0.8rem", sm: "1rem", md: "1.2rem" },
+            mb: "0.4rem",
+            mt: { xs: "0.6rem", sm: "1rem" },
+            fontSize: { xs: "0.9rem", sm: "1rem", md: "1.2rem" },
             color: Colors.text.inverse,
           }}
         >
@@ -100,8 +100,8 @@ const MealDeal = () => {
         <Typography
           sx={{
             textAlign: "center",
-            mb: "1.3rem",
-            fontSize: { xs: "0.7rem", sm: "0.9rem", md: "1rem" },
+            mb: { xs: "0.7rem", sm: "1.3rem" },
+            fontSize: { xs: "0.78rem", sm: "0.9rem", md: "1rem" },
             color: Colors.text.inverse,
           }}
         >

@@ -15,7 +15,7 @@ const MainCard: React.FC<MainCardProps> = ({ image, title, description }) => {
         display: "flex",
         flexDirection: "column",
         width: "100%",
-        height: "450px",
+        height: { xs: "auto", sm: "450px" },
         mt: 2,
         mb: 2,
       }}
@@ -23,7 +23,7 @@ const MainCard: React.FC<MainCardProps> = ({ image, title, description }) => {
       <Box
         sx={{
           width: "100%",
-          height: "250px",
+          height: { xs: "210px", sm: "250px" },
           overflow: "hidden",
           borderRadius: "10px",
           marginBottom: "10px",
@@ -47,7 +47,7 @@ const MainCard: React.FC<MainCardProps> = ({ image, title, description }) => {
         />
       </Box>
 
-      <Box sx={{ flexGrow: 1 }}>
+      <Box sx={{ flexGrow: { xs: 0, sm: 1 } }}>
         <Typography
           sx={{
             fontSize: "1.5rem",
@@ -66,7 +66,7 @@ const MainCard: React.FC<MainCardProps> = ({ image, title, description }) => {
             fontSize: "0.8rem",
             color: Colors.text.default,
             fontSmoothing: "antialiased",
-            marginBottom: "1px",
+            marginBottom: { xs: "0.75rem", sm: "1px" },
             textAlign: "left",
           }}
         >
@@ -80,12 +80,11 @@ const MainCard: React.FC<MainCardProps> = ({ image, title, description }) => {
           fontSize: "0.9rem",
           fontWeight: "bold",
           borderRadius: "3px",
-          width: "50%",
+          width: { xs: "100%", sm: "50%" },
           maxWidth: "100%",
           fontSmoothing: "antialiased",
-          paddingTop: "-10px",
-          paddingBottom: "10px",
-          marginTop: "-20px",
+          py: "0.7rem",
+          marginTop: { xs: 0, sm: "-20px" },
         }}
       >
         Get Started

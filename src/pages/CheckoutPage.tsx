@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Colors } from "../theme/colors";
 import { useNavigate } from "react-router-dom";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ChangeEvent } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Button from "../features/menu/components/Button";
 import TextInput from "../features/menu/components/TextInput";
@@ -48,6 +48,13 @@ const phoneSchema = z.object({
     .min(1, "Phone is required")
     .max(10, "Phone number should be at most 10 digits"),
 });
+
+const discountCodeSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(20)
+  .regex(/^[A-Z0-9]+$/);
 
 type CheckoutFormValues = {
   phone?: string;
@@ -173,6 +180,28 @@ const CheckoutPage = () => {
     }
 
     applyAddressToForm(savedAddresses.find((addr) => addr.id === addressId));
+  };
+
+  const handleDiscountCodeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const normalizedCode = event.target.value
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 20);
+
+    setDiscountCode(normalizedCode);
+  };
+
+  const handleApplyDiscountCode = () => {
+    const validationResult = discountCodeSchema.safeParse(discountCode);
+
+    if (!validationResult.success) {
+      showErrorSnackbar("Invalid code!");
+      setDiscountCode("");
+      return;
+    }
+
+    showErrorSnackbar("Invalid code!");
+    setDiscountCode("");
   };
 
   const handlePlaceOrder = form.handleSubmit(async (data) => {
@@ -330,11 +359,19 @@ const CheckoutPage = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            gap: { xs: 1, sm: 2 },
+            gap: { xs: 1.5, sm: 2 },
+            width: "100%",
+            maxWidth: { xs: "420px", sm: "none" },
+            mx: "auto",
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <CheckCircleIcon sx={{ color: Colors.background.brand }} />
+            <CheckCircleIcon
+              sx={{
+                color: Colors.background.brand,
+                fontSize: { xs: 30, sm: 26 },
+              }}
+            />
             <Typography
               sx={{
                 color: Colors.text.default,
@@ -346,13 +383,20 @@ const CheckoutPage = () => {
           </Box>
           <Box
             sx={{
-              width: { xs: "30px", sm: "60px", md: "100px" },
-              height: "2px",
+              flex: 1,
+              minWidth: { xs: "56px", sm: "60px" },
+              maxWidth: { xs: "100px", sm: "100px" },
+              height: { xs: "3px", sm: "2px" },
               backgroundColor: Colors.background.brand,
             }}
           />
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <CheckCircleIcon sx={{ color: Colors.background.brand }} />
+            <CheckCircleIcon
+              sx={{
+                color: Colors.background.brand,
+                fontSize: { xs: 30, sm: 26 },
+              }}
+            />
             <Typography
               sx={{
                 color: Colors.text.default,
@@ -364,16 +408,18 @@ const CheckoutPage = () => {
           </Box>
           <Box
             sx={{
-              width: { xs: "30px", sm: "60px", md: "100px" },
-              height: "2px",
+              flex: 1,
+              minWidth: { xs: "56px", sm: "60px" },
+              maxWidth: { xs: "100px", sm: "100px" },
+              height: { xs: "3px", sm: "2px" },
               background: `linear-gradient(to right, ${Colors.background.brand} 50%, ${Colors.border.subtle} 50%)`,
             }}
           />
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box
               sx={{
-                width: 25,
-                height: 25,
+                width: { xs: 38, sm: 30 },
+                height: { xs: 38, sm: 30 },
                 borderRadius: "50%",
                 backgroundColor: Colors.background.brand,
                 color: "white",
@@ -382,10 +428,9 @@ const CheckoutPage = () => {
                 justifyContent: "center",
                 fontSize: "0.75rem",
                 fontWeight: "bold",
-                padding: "15px",
               }}
             >
-              <ShoppingBagOutlined sx={{ scale: "0.8" }} />
+              <ShoppingBagOutlined sx={{ fontSize: { xs: 23, sm: 20 } }} />
             </Box>
             <Typography
               sx={{
@@ -959,14 +1004,19 @@ const CheckoutPage = () => {
                   fullWidth
                   size="medium"
                   value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value)}
+                  onChange={handleDiscountCodeChange}
                   placeholder="Discount code"
+                  inputProps={{
+                    maxLength: 20,
+                    inputMode: "text",
+                    pattern: "[A-Z0-9]*",
+                  }}
                   sx={{ "& .MuiOutlinedInput-root": { borderRadius: "4px" } }}
                 />
                 <Button
                   variant="filled"
                   sx={{ minWidth: "80px", fontWeight: "bold" }}
-                  onClick={() => console.log("Apply discount", discountCode)}
+                  onClick={handleApplyDiscountCode}
                   disabled={!discountCode.trim()}
                 >
                   Apply
@@ -1040,6 +1090,10 @@ const CheckoutPage = () => {
                 control={control}
                 render={({ field }) => (
                   <FormControlLabel
+                    sx={{
+                      mb: { xs: 2, sm: 1.5 },
+                      alignItems: "flex-start",
+                    }}
                     control={
                       <Checkbox
                         {...field}

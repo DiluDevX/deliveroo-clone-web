@@ -1,8 +1,12 @@
-import { Box, Container, Typography, Grid2 as Grid } from "@mui/material";
+import { Box, Container, Typography, useMediaQuery } from "@mui/material";
 import { GooglePlayButton, AppStoreButton } from "react-mobile-app-button";
 import { Colors } from "../../../theme";
 
 const LocationView = () => {
+  const isMobile = useMediaQuery("(max-width:599.95px)");
+  const storeButtonWidth = isMobile ? 150 : 200;
+  const storeButtonHeight = isMobile ? 44 : 50;
+
   return (
     <Container
       sx={{
@@ -51,26 +55,28 @@ const LocationView = () => {
             way. You’ll get a notification when they’re nearby, too.
           </Typography>
 
-          <Box sx={{ display: "flex", gap: "1rem" }}>
-            <Grid container spacing={2}>
-              <Grid>
-                <AppStoreButton
-                  theme={"dark"}
-                  width={200}
-                  height={50}
-                  url={""}
-                />
-              </Grid>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              gap: { xs: "0.5rem", sm: "1rem" },
+              flexWrap: "nowrap",
+              alignItems: "center",
+            }}
+          >
+            <AppStoreButton
+              theme={"dark"}
+              width={storeButtonWidth}
+              height={storeButtonHeight}
+              url={""}
+            />
 
-              <Grid>
-                <GooglePlayButton
-                  theme={"dark"}
-                  width={200}
-                  height={50}
-                  url={""}
-                />
-              </Grid>
-            </Grid>
+            <GooglePlayButton
+              theme={"dark"}
+              width={storeButtonWidth}
+              height={storeButtonHeight}
+              url={""}
+            />
           </Box>
         </Box>
 
