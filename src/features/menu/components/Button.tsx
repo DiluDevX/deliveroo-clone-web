@@ -12,6 +12,7 @@ type ButtonProps = ButtonBaseProps & {
   linkTo?: To;
   variant?: "border" | "filled" | "outlined" | undefined;
   borderOff?: boolean;
+  showTitleOnMobile?: boolean;
 };
 
 const getBackgroundColor = (disabled: boolean | undefined, variant: string) => {
@@ -45,6 +46,7 @@ function Button({
   linkTo,
   disabled,
   borderOff = false,
+  showTitleOnMobile = false,
   ...props
 }: ButtonProps) {
   const borderColor =
@@ -94,7 +96,7 @@ function Button({
             height: "auto",
             width: "1.6rem",
             aspectRatio: 1,
-            marginRight: 5,
+            marginRight: title || children ? 5 : 0,
           }}
         />
       )}
@@ -103,7 +105,7 @@ function Button({
       {title && linkTo ? (
         <Typography
           sx={{
-            display: { xs: "none", sm: "flex" },
+            display: { xs: showTitleOnMobile ? "flex" : "none", sm: "flex" },
             marginLeft: { md: "1rem", lg: "0.5rem" },
           }}
         >
@@ -120,7 +122,7 @@ function Button({
       ) : (
         <Typography
           sx={{
-            display: { xs: "none", sm: "flex" },
+            display: { xs: showTitleOnMobile ? "flex" : "none", sm: "flex" },
           }}
         >
           {title}

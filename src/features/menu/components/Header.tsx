@@ -156,12 +156,14 @@ const Header = () => {
               PrefixIcon={Person2OutlinedIcon}
               variant="border"
               title={title}
+              showTitleOnMobile
               sx={{
                 backgroundColor: Colors.background.light,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "6px",
+                px: { xs: "0.6rem", sm: "0.75rem" },
+                py: "6px",
                 mr: { xs: 0, sm: "-0.4rem" },
               }}
               onClick={() => toggleDrawer(true)}

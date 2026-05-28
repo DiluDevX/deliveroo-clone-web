@@ -8,6 +8,7 @@ import { addItemAndSync, clearCartAndSync } from "../../../store/cartSlice";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import PopUpDialog from "./PopUpDialog";
+import { showSuccessSnackbar } from "../../../utils/notifications";
 
 type DishProps = {
   data: IDish;
@@ -35,13 +36,15 @@ const Dish = ({ data }: DishProps) => {
       return;
     }
 
-    dispatch(addItemAndSync(data));
+    await dispatch(addItemAndSync(data));
+    showSuccessSnackbar(`${data.name} added to cart`);
   };
 
   const handleStartNewCart = async () => {
     setIsReplaceCartDialogOpen(false);
     await dispatch(clearCartAndSync());
-    dispatch(addItemAndSync(data));
+    await dispatch(addItemAndSync(data));
+    showSuccessSnackbar(`${data.name} added to cart`);
   };
 
   return (
@@ -140,13 +143,15 @@ const Dish = ({ data }: DishProps) => {
             color: Colors.text.inverse,
             border: `1px solid ${Colors.border.subtle}`,
             borderRadius: "4px",
-            width: "auto",
-            maxWidth: "50px",
+            width: "50px",
+            minWidth: "50px",
             height: "100px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             ml: "10px",
+            px: 0,
+            py: 0,
           }}
         >
           <AddIcon
@@ -155,7 +160,6 @@ const Dish = ({ data }: DishProps) => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              mr: 1,
             }}
           />
         </Button>

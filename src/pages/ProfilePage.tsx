@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogActions,
   Skeleton,
+  useMediaQuery,
 } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -57,6 +58,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import {
@@ -96,6 +98,7 @@ const ProfilePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<string>("Personal details");
+  const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [payments, setPayments] = useState<UserPaymentMethod[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
@@ -124,10 +127,12 @@ const ProfilePage = () => {
     null,
   );
   const [addressesLoading, setAddressesLoading] = useState(false);
+  const isMobileProfile = useMediaQuery("(max-width:899.95px)");
 
   useEffect(() => {
     if (location.state?.selectedItem) {
       setSelectedItem(location.state.selectedItem);
+      setIsMobileDetailOpen(true);
     }
   }, [location]);
 
@@ -336,6 +341,16 @@ const ProfilePage = () => {
     { icon: NotificationsIcon, label: "Notifications" },
     { icon: DeleteIcon, label: "Delete account", danger: true },
   ];
+
+  const handleProfileMenuItemClick = (itemLabel: string) => {
+    setSelectedItem(itemLabel);
+    if (isMobileProfile) {
+      setIsMobileDetailOpen(true);
+    }
+  };
+
+  const showProfileMenu = !isMobileProfile || !isMobileDetailOpen;
+  const showProfileDetail = !isMobileProfile || isMobileDetailOpen;
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -1494,129 +1509,156 @@ const ProfilePage = () => {
     >
       <Box sx={{ maxWidth: "1200px", mx: "auto", px: 3 }}>
         <Grid container spacing={4}>
-          <Grid item xs={12} md={4}>
-            <Box sx={{ mb: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 2,
-                  mb: 1,
-                }}
-              >
+          {showProfileMenu && (
+            <Grid item xs={12} md={4}>
+              <Box sx={{ mb: 3 }}>
                 <Box
                   sx={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: "50%",
-                    backgroundColor: Colors.background.brand,
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
-                    justifyContent: "center",
+                    gap: 2,
+                    mb: 1,
                   }}
                 >
-                  <Typography
+                  <Box
                     sx={{
-                      color: Colors.text.inverse,
-                      fontWeight: "bold",
-                      fontSize: "1.8rem",
+                      width: 72,
+                      height: 72,
+                      borderRadius: "50%",
+                      backgroundColor: Colors.background.brand,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    {user?.firstName?.[0]}
-                    {user?.lastName?.[0]}
-                  </Typography>
-                </Box>
-                <Box sx={{ textAlign: "center" }}>
-                  <Typography
-                    sx={{ fontWeight: "bold", color: Colors.text.default }}
-                  >
-                    {user?.firstName} {user?.lastName}
-                  </Typography>
-                  <Typography
-                    sx={{ color: Colors.text.placeholder, fontSize: "0.85rem" }}
-                  >
-                    {user?.email}
-                  </Typography>
+                    <Typography
+                      sx={{
+                        color: Colors.text.inverse,
+                        fontWeight: "bold",
+                        fontSize: "1.8rem",
+                      }}
+                    >
+                      {user?.firstName?.[0]}
+                      {user?.lastName?.[0]}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: "center" }}>
+                    <Typography
+                      sx={{ fontWeight: "bold", color: Colors.text.default }}
+                    >
+                      {user?.firstName} {user?.lastName}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        color: Colors.text.placeholder,
+                        fontSize: "0.85rem",
+                      }}
+                    >
+                      {user?.email}
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
-            </Box>
 
-            <List
-              disablePadding
-              sx={{ borderTop: `1px solid ${Colors.border.subtle}` }}
-            >
-              {menuItems.map((item) => (
-                <ListItem key={item.label} disablePadding>
-                  <ListItemButton
-                    selected={selectedItem === item.label}
-                    onClick={() => setSelectedItem(item.label)}
-                    sx={{
-                      py: 1.5,
-                      borderBottom: `1px solid ${Colors.border.subtle}`,
-                      transition: "background-color 0.2s ease",
-                      "&.Mui-selected": {
-                        backgroundColor: "transparent",
-                      },
-                      "&.Mui-selected:hover": {
-                        backgroundColor: "rgba(0, 0, 0, 0.03)",
-                      },
-                      "&:hover": {
-                        backgroundColor: "rgba(0, 0, 0, 0.02)",
-                      },
-                    }}
-                  >
-                    <item.icon
+              <List
+                disablePadding
+                sx={{ borderTop: `1px solid ${Colors.border.subtle}` }}
+              >
+                {menuItems.map((item) => (
+                  <ListItem key={item.label} disablePadding>
+                    <ListItemButton
+                      selected={selectedItem === item.label}
+                      onClick={() => handleProfileMenuItemClick(item.label)}
+                      sx={{
+                        py: 1.5,
+                        borderBottom: `1px solid ${Colors.border.subtle}`,
+                        transition: "background-color 0.2s ease",
+                        "&.Mui-selected": {
+                          backgroundColor: "transparent",
+                        },
+                        "&.Mui-selected:hover": {
+                          backgroundColor: "rgba(0, 0, 0, 0.03)",
+                        },
+                        "&:hover": {
+                          backgroundColor: "rgba(0, 0, 0, 0.02)",
+                        },
+                      }}
+                    >
+                      <item.icon
+                        sx={{
+                          mr: 2,
+                          color: item.danger
+                            ? Colors.background.danger
+                            : selectedItem === item.label
+                              ? Colors.background.brand
+                              : Colors.text.default,
+                          fontSize: "1.3rem",
+                        }}
+                      />
+                      <Typography
+                        sx={{
+                          fontWeight: 500,
+                          color: item.danger
+                            ? Colors.background.danger
+                            : selectedItem === item.label
+                              ? Colors.background.brand
+                              : Colors.text.default,
+                        }}
+                      >
+                        {item.label}
+                      </Typography>
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+
+              <List disablePadding>
+                <ListItem disablePadding>
+                  <ListItemButton onClick={handleLogout} sx={{ py: 1.5 }}>
+                    <LogoutIcon
                       sx={{
                         mr: 2,
-                        color: item.danger
-                          ? Colors.background.danger
-                          : selectedItem === item.label
-                            ? Colors.background.brand
-                            : Colors.text.default,
+                        color: Colors.text.default,
                         fontSize: "1.3rem",
                       }}
                     />
                     <Typography
-                      sx={{
-                        fontWeight: 500,
-                        color: item.danger
-                          ? Colors.background.danger
-                          : selectedItem === item.label
-                            ? Colors.background.brand
-                            : Colors.text.default,
-                      }}
+                      sx={{ fontWeight: 500, color: Colors.text.default }}
                     >
-                      {item.label}
+                      Log out
                     </Typography>
                   </ListItemButton>
                 </ListItem>
-              ))}
-            </List>
+              </List>
+            </Grid>
+          )}
 
-            <List disablePadding>
-              <ListItem disablePadding>
-                <ListItemButton onClick={handleLogout} sx={{ py: 1.5 }}>
-                  <LogoutIcon
+          {showProfileDetail && (
+            <Grid item xs={12} md={8}>
+              {isMobileProfile && (
+                <Box sx={{ mb: 2 }}>
+                  <Button
+                    PrefixComponent={
+                      <ArrowBackIcon sx={{ height: "1.3rem" }} />
+                    }
+                    onClick={() => setIsMobileDetailOpen(false)}
                     sx={{
-                      mr: 2,
-                      color: Colors.text.default,
-                      fontSize: "1.3rem",
+                      border: "none",
+                      color: Colors.background.brand,
+                      fontSize: "1rem",
+                      fontWeight: "normal",
+                      justifyContent: "flex-start",
+                      px: 0,
                     }}
-                  />
-                  <Typography
-                    sx={{ fontWeight: 500, color: Colors.text.default }}
                   >
-                    Log out
-                  </Typography>
-                </ListItemButton>
-              </ListItem>
-            </List>
-          </Grid>
-
-          <Grid item xs={12} md={8}>
-            {renderRightContent()}
-          </Grid>
+                    Back
+                  </Button>
+                </Box>
+              )}
+              {renderRightContent()}
+            </Grid>
+          )}
         </Grid>
       </Box>
 

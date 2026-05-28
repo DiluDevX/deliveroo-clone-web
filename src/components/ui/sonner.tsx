@@ -21,6 +21,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           marginTop: "4rem",
           fontFamily: "IBM Plex Sans, serif",
           borderColor: Colors.border.subtle,
+          width: "min(360px, calc(100vw - 32px))",
         },
       }}
       {...props}

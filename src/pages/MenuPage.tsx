@@ -206,6 +206,12 @@ const MenuPage = () => {
                 fontWeight: 700,
                 minWidth: 20,
                 height: 20,
+                borderRadius: "50%",
+                top: 2,
+                right: 2,
+                backgroundColor: Colors.background.light,
+                color: Colors.text.default,
+                border: `1px solid ${Colors.border.subtle}`,
               },
             }}
           >
@@ -223,6 +229,7 @@ const MenuPage = () => {
             borderRadius: "16px 16px 0 0",
             backgroundColor: Colors.background.light,
             maxHeight: "88vh",
+            p: { xs: 1.5, sm: 2 },
           },
         }}
       >

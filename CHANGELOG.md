@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* trigger azure static web app deployment ([13dc396](https://github.com/DiluDevX/deliveroo-clone-web/commit/13dc3961e0a38a5c8e0d583447d1360c1d5c95b8))
+- trigger azure static web app deployment ([13dc396](https://github.com/DiluDevX/deliveroo-clone-web/commit/13dc3961e0a38a5c8e0d583447d1360c1d5c95b8))
 
 ## [1.4.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.3.1...v1.4.0) (2026-05-28)
 

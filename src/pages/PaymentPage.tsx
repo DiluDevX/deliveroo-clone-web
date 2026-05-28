@@ -633,7 +633,7 @@ const PaymentPage = () => {
         }}
       >
         <Grid container spacing={4}>
-          <Grid item xs={12} md={7}>
+          <Grid item xs={12} md={7} sx={{ order: { xs: 2, md: 1 } }}>
             <Card
               sx={{
                 p: 3,
@@ -716,15 +716,15 @@ const PaymentPage = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={5}>
+          <Grid item xs={12} md={5} sx={{ order: { xs: 1, md: 2 } }}>
             <Card
               sx={{
                 p: 3,
                 borderRadius: "12px",
                 border: `1px solid ${Colors.border.subtle}`,
                 boxShadow: "none",
-                position: "sticky",
-                top: 20,
+                position: { xs: "static", md: "sticky" },
+                top: { md: 20 },
               }}
             >
               <Typography

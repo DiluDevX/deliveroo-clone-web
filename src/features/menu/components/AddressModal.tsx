@@ -91,15 +91,12 @@ const AddressModal = ({
       onClose={onClose}
       PaperProps={{
         sx: {
-          borderRadius: "12px",
-          position: "fixed",
-          top: "40%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: { xs: "90%", sm: "500px" },
+          borderRadius: { xs: "10px", sm: "12px" },
+          width: { xs: "calc(100vw - 24px)", sm: "500px" },
           maxWidth: "500px",
-          maxHeight: "85vh",
-          overflowY: "auto",
+          maxHeight: { xs: "calc(100dvh - 24px)", sm: "85vh" },
+          m: { xs: 1.5, sm: 4 },
+          overflow: "hidden",
         },
       }}
     >
@@ -166,7 +163,13 @@ const AddressModal = ({
             )}
           />
 
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 2,
+            }}
+          >
             <Controller
               name="city"
               control={form.control}
@@ -218,7 +221,14 @@ const AddressModal = ({
 
         <Divider />
 
-        <Box sx={{ p: 2, display: "flex", gap: 2 }}>
+        <Box
+          sx={{
+            p: 2,
+            display: "flex",
+            flexDirection: { xs: "column-reverse", sm: "row" },
+            gap: 2,
+          }}
+        >
           <Button variant="border" onClick={onClose} sx={{ flex: 1 }}>
             Cancel
           </Button>

@@ -103,6 +103,7 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
     border: isDrawer ? "none" : `1px solid ${Colors.border.subtle}`,
     backgroundColor: Colors.background.defaultLight,
     overflow: "hidden",
+    width: "100%",
     "::-webkit-scrollbar": {
       display: "none",
     },
@@ -192,7 +193,7 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
             sx={{
               flex: 1,
               overflowY: "auto",
-              p: 2,
+              p: isDrawer ? 2.5 : 2,
               "::-webkit-scrollbar": {
                 display: "none",
               },
