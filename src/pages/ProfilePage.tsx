@@ -13,6 +13,7 @@ import {
   DialogActions,
   Skeleton,
   useMediaQuery,
+  Pagination,
 } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -97,13 +98,14 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedItem, setSelectedItem] = useState<string>("Personal details");
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [payments, setPayments] = useState<UserPaymentMethod[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [orderHistoryPage, setOrderHistoryPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -128,6 +130,7 @@ const ProfilePage = () => {
   );
   const [addressesLoading, setAddressesLoading] = useState(false);
   const isMobileProfile = useMediaQuery("(max-width:899.95px)");
+  const ordersPerPage = 5;
 
   useEffect(() => {
     if (location.state?.selectedItem) {
@@ -172,6 +175,7 @@ const ProfilePage = () => {
     if (selectedItem === "Order history") {
       loadOrders();
     }
+    setOrderHistoryPage(1);
   }, [selectedItem]);
 
   const loadOrders = async () => {
@@ -350,7 +354,8 @@ const ProfilePage = () => {
   };
 
   const showProfileMenu = !isMobileProfile || !isMobileDetailOpen;
-  const showProfileDetail = !isMobileProfile || isMobileDetailOpen;
+  const showProfileDetail =
+    Boolean(selectedItem) && (!isMobileProfile || isMobileDetailOpen);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -665,6 +670,18 @@ const ProfilePage = () => {
             return `${items[0].dishName} & ${items[1].dishName}`;
           return `${items[0].dishName} +${items.length - 1} more`;
         };
+        const sortedOrders = [...orders].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+        const totalOrderPages = Math.max(
+          1,
+          Math.ceil(sortedOrders.length / ordersPerPage),
+        );
+        const visibleOrders = sortedOrders.slice(
+          (orderHistoryPage - 1) * ordersPerPage,
+          orderHistoryPage * ordersPerPage,
+        );
 
         return (
           <Card
@@ -759,7 +776,7 @@ const ProfilePage = () => {
                   overflow: "auto",
                 }}
               >
-                {orders.map((order) => {
+                {visibleOrders.map((order) => {
                   const statusColors = getOrderStatusColor(order.status);
                   return (
                     <Box
@@ -951,6 +968,33 @@ const ProfilePage = () => {
                     </Box>
                   );
                 })}
+                {totalOrderPages > 1 && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      pt: 1,
+                    }}
+                  >
+                    <Pagination
+                      count={totalOrderPages}
+                      page={orderHistoryPage}
+                      onChange={(_, page) => {
+                        setOrderHistoryPage(page);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      sx={{
+                        "& .MuiButtonBase-root": {
+                          color: Colors.background.brand,
+                          "&.Mui-selected": {
+                            backgroundColor: `${Colors.background.brand} !important`,
+                            color: `${Colors.text.inverse} !important`,
+                          },
+                        },
+                      }}
+                    />
+                  </Box>
+                )}
               </Box>
             )}
           </Card>
@@ -1642,7 +1686,10 @@ const ProfilePage = () => {
                     PrefixComponent={
                       <ArrowBackIcon sx={{ height: "1.3rem" }} />
                     }
-                    onClick={() => setIsMobileDetailOpen(false)}
+                    onClick={() => {
+                      setSelectedItem(null);
+                      setIsMobileDetailOpen(false);
+                    }}
                     sx={{
                       border: "none",
                       color: Colors.background.brand,

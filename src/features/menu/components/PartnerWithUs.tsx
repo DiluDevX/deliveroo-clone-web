@@ -25,13 +25,17 @@ const PartnerWithUs = () => {
       <Button
         variant="border"
         title="Partner with Us"
-        sx={{ backgroundColor: Colors.background.light }}
+        sx={{
+          backgroundColor: Colors.background.light,
+          px: { xs: "0.5rem", sm: "1rem" },
+        }}
         onClick={handlePartnerMenuOpen}
         PrefixComponent={
           <ExpandMoreIcon
             sx={{
               fontSize: "27px",
-              ml: "-8px",
+              ml: { xs: 0, sm: "-8px" },
+              mr: { xs: 0, sm: 0 },
               color: Colors.background.brand,
               transform: partnerMenuAnchor ? "rotate(180deg)" : "rotate(0deg)",
               transition: "transform 0.3s ease-in-out",
