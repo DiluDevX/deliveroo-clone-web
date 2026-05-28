@@ -1105,7 +1105,7 @@ const CheckoutPage = () => {
                 render={({ field }) => (
                   <FormControlLabel
                     sx={{
-                      mb: { xs: 2, sm: 1.5 },
+                      mb: { xs: 2, sm: 0 },
                       alignItems: "flex-start",
                     }}
                     control={

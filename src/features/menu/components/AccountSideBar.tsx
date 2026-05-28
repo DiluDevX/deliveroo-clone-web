@@ -6,8 +6,7 @@ import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
 import { IconButton, Typography, Divider } from "@mui/material";
 import Button from "./Button";
 
-import { store } from "../../../store/store";
-import { useAppDispatch } from "../../../store/hooks/cartHooks";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks/cartHooks";
 import { logOutUser } from "../../../store/authThunks";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -25,7 +24,10 @@ export default function AnchorTemporaryDrawer({
   open,
   toggleDrawer,
 }: Readonly<AnchorTemporaryDrawerProps>) {
-  const user = store.getState().auth.user;
+  const user = useAppSelector((state) => state.auth.user);
+  const cartItemCount = useAppSelector((state) =>
+    state.cart.items.reduce((total, item) => total + item.quantity, 0),
+  );
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -35,6 +37,7 @@ export default function AnchorTemporaryDrawer({
       label: "Cart",
       path: "/checkout",
       section: "Cart",
+      hidden: cartItemCount === 0,
     },
     {
       icon: ReceiptIcon,
@@ -179,21 +182,23 @@ export default function AnchorTemporaryDrawer({
           <Divider />
 
           <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1 }}>
-            {menuItems.map((item) => (
-              <Button
-                key={item.label}
-                onClick={() => handleNavigation(item.path, item.section)}
-                style={{
-                  justifyContent: "flex-start",
-                  width: "100%",
-                  backgroundColor: Colors.background.brand,
-                  color: Colors.text.inverse,
-                }}
-              >
-                <item.icon sx={{ mr: 1.5, fontSize: "1.25rem" }} />
-                {item.label}
-              </Button>
-            ))}
+            {menuItems
+              .filter((item) => !item.hidden)
+              .map((item) => (
+                <Button
+                  key={item.label}
+                  onClick={() => handleNavigation(item.path, item.section)}
+                  style={{
+                    justifyContent: "flex-start",
+                    width: "100%",
+                    backgroundColor: Colors.background.brand,
+                    color: Colors.text.inverse,
+                  }}
+                >
+                  <item.icon sx={{ mr: 1.5, fontSize: "1.25rem" }} />
+                  {item.label}
+                </Button>
+              ))}
           </Box>
 
           <Box sx={{ flex: 1 }} />

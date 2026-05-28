@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* adjust dimensions in MainCard and LocationView; refactor CheckoutPage for better order handling ([f134010](https://github.com/DiluDevX/deliveroo-clone-web/commit/f1340102e088bd2b70fd67a28c2317c8a967ce4b))
+- adjust dimensions in MainCard and LocationView; refactor CheckoutPage for better order handling ([f134010](https://github.com/DiluDevX/deliveroo-clone-web/commit/f1340102e088bd2b70fd67a28c2317c8a967ce4b))
 
 ## [1.11.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.10.0...v1.11.0) (2026-05-28)
 
