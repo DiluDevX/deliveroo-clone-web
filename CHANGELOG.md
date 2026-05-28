@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.4.1...v1.5.0) (2026-05-28)
+
+### Features
+
+* enhance UI components and improve responsiveness across various pages ([dc45aef](https://github.com/DiluDevX/deliveroo-clone-web/commit/dc45aef6f025877e1889519deaadcd8fb49ed6e4))
+
 ## [1.4.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.4.0...v1.4.1) (2026-05-28)
 
 ### Bug Fixes
