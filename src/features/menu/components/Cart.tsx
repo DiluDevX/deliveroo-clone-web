@@ -155,7 +155,7 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
               sx={{ height: "90px", width: "90px", color: Colors.text.light }}
             />
             <Typography sx={{ color: Colors.text.light, fontWeight: "bold" }}>
-              Your Basket is Empty
+              Cart is empty
             </Typography>
           </Box>
 
@@ -205,7 +205,7 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
                   sx={{
                     display: "flex",
                     flexDirection: "row",
-                    alignItems: "flex-start",
+                    alignItems: "center",
                     gap: 2,
                   }}
                 >
@@ -232,25 +232,9 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
 
                   {/* Info */}
                   <Box sx={{ flex: 1 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      <Typography
-                        sx={{ fontWeight: "500", fontSize: "0.9rem" }}
-                      >
-                        {item.name}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleRemove(getCartItemActionId(item))}
-                      >
-                        <DeleteOutlineIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
+                    <Typography sx={{ fontWeight: "500", fontSize: "0.9rem" }}>
+                      {item.name}
+                    </Typography>
 
                     <Typography
                       sx={{ color: Colors.text.default, fontSize: "0.85rem" }}
@@ -298,6 +282,13 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
                       </IconButton>
                     </Box>
                   </Box>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleRemove(getCartItemActionId(item))}
+                    sx={{ alignSelf: "center" }}
+                  >
+                    <DeleteOutlineIcon fontSize="small" />
+                  </IconButton>
                 </Box>
                 <Divider sx={{ mt: 2 }} />
               </Box>

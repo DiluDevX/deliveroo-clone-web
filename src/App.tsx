@@ -58,7 +58,7 @@ const App = () => {
           <Route
             path="/restaurants/:orgId/menu"
             element={
-              <WithPageTitle title="Tossed">
+              <WithPageTitle title="Menu">
                 <MenuPage />
               </WithPageTitle>
             }

@@ -353,9 +353,11 @@ const ProfilePage = () => {
     }
   };
 
+  const activeProfileItem =
+    selectedItem ?? (isMobileProfile ? null : "Personal details");
   const showProfileMenu = !isMobileProfile || !isMobileDetailOpen;
   const showProfileDetail =
-    Boolean(selectedItem) && (!isMobileProfile || isMobileDetailOpen);
+    Boolean(activeProfileItem) && (!isMobileProfile || isMobileDetailOpen);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -400,7 +402,7 @@ const ProfilePage = () => {
   });
 
   const renderRightContent = () => {
-    switch (selectedItem) {
+    switch (activeProfileItem) {
       case "Personal details":
         return (
           <Card
@@ -1548,8 +1550,8 @@ const ProfilePage = () => {
         mt: 7,
         minHeight: { xs: "auto", md: "calc(100vh - 130px)" },
         backgroundColor: Colors.background.default,
-        pt: { xs: 2, md: 4 },
-        pb: { xs: 1, md: 4 },
+        pt: { xs: 3, md: 4 },
+        pb: { xs: 3, md: 4 },
       }}
     >
       <Box sx={{ maxWidth: "1200px", mx: "auto", px: { xs: 2, md: 3 } }}>
@@ -1617,16 +1619,29 @@ const ProfilePage = () => {
 
                 <List
                   disablePadding
-                  sx={{ borderTop: `1px solid ${Colors.border.subtle}` }}
+                  sx={{
+                    "& .profile-menu-divider": {
+                      position: "relative",
+                    },
+                    "& .profile-menu-divider::after": {
+                      content: '""',
+                      position: "absolute",
+                      left: 24,
+                      right: 24,
+                      bottom: 0,
+                      height: "1px",
+                      backgroundColor: Colors.border.subtle,
+                    },
+                  }}
                 >
                   {menuItems.map((item) => (
                     <ListItem key={item.label} disablePadding>
                       <ListItemButton
-                        selected={selectedItem === item.label}
+                        selected={activeProfileItem === item.label}
                         onClick={() => handleProfileMenuItemClick(item.label)}
+                        className="profile-menu-divider"
                         sx={{
                           py: 1.5,
-                          borderBottom: `1px solid ${Colors.border.subtle}`,
                           transition: "background-color 0.2s ease",
                           "&.Mui-selected": {
                             backgroundColor: "transparent",
@@ -1644,7 +1659,7 @@ const ProfilePage = () => {
                             mr: 2,
                             color: item.danger
                               ? Colors.background.danger
-                              : selectedItem === item.label
+                              : activeProfileItem === item.label
                                 ? Colors.background.brand
                                 : Colors.text.default,
                             fontSize: "1.3rem",
@@ -1655,7 +1670,7 @@ const ProfilePage = () => {
                             fontWeight: 500,
                             color: item.danger
                               ? Colors.background.danger
-                              : selectedItem === item.label
+                              : activeProfileItem === item.label
                                 ? Colors.background.brand
                                 : Colors.text.default,
                           }}
@@ -1669,7 +1684,22 @@ const ProfilePage = () => {
 
                 <List disablePadding>
                   <ListItem disablePadding>
-                    <ListItemButton onClick={handleLogout} sx={{ py: 1.5 }}>
+                    <ListItemButton
+                      onClick={handleLogout}
+                      sx={{
+                        py: 1.5,
+                        position: "relative",
+                        "&::before": {
+                          content: '""',
+                          position: "absolute",
+                          left: 24,
+                          right: 24,
+                          top: 0,
+                          height: "1px",
+                          backgroundColor: Colors.border.subtle,
+                        },
+                      }}
+                    >
                       <LogoutIcon
                         sx={{
                           mr: 2,

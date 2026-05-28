@@ -125,6 +125,12 @@ const MenuPage = () => {
     fetchRestaurantAndCategories();
   }, [orgId]);
 
+  useEffect(() => {
+    if (restaurant?.name) {
+      document.title = `Deliveroo | ${restaurant.name}`;
+    }
+  }, [restaurant?.name]);
+
   if (error) {
     return <Typography>{error}</Typography>;
   }

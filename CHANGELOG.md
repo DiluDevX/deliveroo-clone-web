@@ -2,7 +2,7 @@
 
 ### Features
 
-* enhance UI components and improve responsiveness across various pages ([79181f0](https://github.com/DiluDevX/deliveroo-clone-web/commit/79181f037f5e0ec4970a16a8f568db86457e429a))
+- enhance UI components and improve responsiveness across various pages ([79181f0](https://github.com/DiluDevX/deliveroo-clone-web/commit/79181f037f5e0ec4970a16a8f568db86457e429a))
 
 ## [1.6.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.5.0...v1.6.0) (2026-05-28)
 
