@@ -255,7 +255,7 @@ const CheckoutPage = () => {
         deliveryFee: shippingFee,
         serviceFee: 0.99,
         discountAmount: 0,
-        paymentMethod: "cash_on_delivery",
+        paymentMethod: "cash",
       };
 
       const orderResponse = await checkoutCart(checkoutRequest);
@@ -782,56 +782,57 @@ const CheckoutPage = () => {
                       />
                     </RadioGroup>
                   )}
-                  <Controller
-                    name="address"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                      <TextInput
-                        {...field}
-                        fullWidth
-                        label="Address"
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        error={fieldState.error?.message}
-                        placeholder="Enter delivery address"
-                        disabled={selectedAddressId !== "new"}
+                  {selectedAddressId === "new" && (
+                    <>
+                      <Controller
+                        name="address"
+                        control={control}
+                        render={({ field, fieldState }) => (
+                          <TextInput
+                            {...field}
+                            fullWidth
+                            label="Address"
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(e.target.value)}
+                            error={fieldState.error?.message}
+                            placeholder="Enter delivery address"
+                          />
+                        )}
                       />
-                    )}
-                  />
-                  <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-                    <Controller
-                      name="city"
-                      control={control}
-                      render={({ field, fieldState }) => (
-                        <TextInput
-                          {...field}
-                          fullWidth
-                          label="City"
-                          value={field.value || ""}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          error={fieldState.error?.message}
-                          placeholder="Enter city"
-                          disabled={selectedAddressId !== "new"}
+                      <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+                        <Controller
+                          name="city"
+                          control={control}
+                          render={({ field, fieldState }) => (
+                            <TextInput
+                              {...field}
+                              fullWidth
+                              label="City"
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value)}
+                              error={fieldState.error?.message}
+                              placeholder="Enter city"
+                            />
+                          )}
                         />
-                      )}
-                    />
-                    <Controller
-                      name="zipCode"
-                      control={control}
-                      render={({ field, fieldState }) => (
-                        <TextInput
-                          {...field}
-                          fullWidth
-                          label="ZIP Code"
-                          value={field.value || ""}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          error={fieldState.error?.message}
-                          placeholder="Enter ZIP code"
-                          disabled={selectedAddressId !== "new"}
+                        <Controller
+                          name="zipCode"
+                          control={control}
+                          render={({ field, fieldState }) => (
+                            <TextInput
+                              {...field}
+                              fullWidth
+                              label="ZIP Code"
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value)}
+                              error={fieldState.error?.message}
+                              placeholder="Enter ZIP code"
+                            />
+                          )}
                         />
-                      )}
-                    />
-                  </Box>
+                      </Box>
+                    </>
+                  )}
                   {selectedAddressId === "new" && (
                     <FormControlLabel
                       sx={{ mt: 2 }}

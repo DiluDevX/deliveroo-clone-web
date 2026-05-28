@@ -164,7 +164,7 @@ const ProfilePage = () => {
       } finally {
         setPaymentsLoading(false);
       }
-      setAddresses([]);
+      setAddresses(await getUserAddresses());
       setIsLoading(false);
       setAddressesLoading(false);
     };

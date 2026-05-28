@@ -12,6 +12,7 @@ import {
   getUserPaymentMethods,
 } from "../src/services/payment.service";
 import { syncCart } from "../src/services/cart.service";
+import { showErrorSnackbar } from "../src/utils/notifications";
 import { renderWithProviders } from "./test-utils";
 import { CheckoutResult, Order } from "../src/types/order.types";
 import { CartItemData } from "../src/types/cart.types";
@@ -48,6 +49,10 @@ vi.mock("../src/services/payment.service", () => ({
 
 vi.mock("../src/services/cart.service", () => ({
   syncCart: vi.fn(),
+}));
+
+vi.mock("../src/utils/notifications", () => ({
+  showErrorSnackbar: vi.fn(),
 }));
 
 const OrderConfirmation = () => {
@@ -285,9 +290,9 @@ describe("PaymentPage", () => {
   it("does not create an order when delivery address is missing", async () => {
     renderPaymentPage({ city: "London", zipCode: "SW1A 1AA" });
 
-    expect(
-      await screen.findByText("Missing delivery address"),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(showErrorSnackbar).toHaveBeenCalledWith("Something went wrong!");
+    });
     expect(checkoutCart).not.toHaveBeenCalled();
     expect(createPaymentIntent).not.toHaveBeenCalled();
   });

@@ -26,21 +26,22 @@ const OrderConfirmationPage = () => {
       <Box
         sx={{
           mt: 7,
-          minHeight: "calc(100vh - 130px)",
+          minHeight: { xs: "auto", md: "calc(100vh - 130px)" },
           backgroundColor: Colors.background.default,
-          py: 4,
+          pt: { xs: 3, md: 4 },
+          pb: { xs: 3, md: 4 },
         }}
       >
         <Box
           sx={{
             maxWidth: "600px",
             mx: "auto",
-            px: 3,
+            px: { xs: 2, md: 3 },
           }}
         >
           <Card
             sx={{
-              p: 4,
+              p: { xs: 3, md: 4 },
               borderRadius: "12px",
               border: `1px solid ${Colors.border.subtle}`,
               boxShadow: "none",
@@ -97,21 +98,22 @@ const OrderConfirmationPage = () => {
     <Box
       sx={{
         mt: 7,
-        minHeight: "calc(100vh - 130px)",
+        minHeight: { xs: "auto", md: "calc(100vh - 130px)" },
         backgroundColor: Colors.background.default,
-        py: 4,
+        pt: { xs: 3, md: 4 },
+        pb: { xs: 3, md: 4 },
       }}
     >
       <Box
         sx={{
           maxWidth: "600px",
           mx: "auto",
-          px: 3,
+          px: { xs: 2, md: 3 },
         }}
       >
         <Card
           sx={{
-            p: 4,
+            p: { xs: 3, md: 4 },
             borderRadius: "12px",
             border: `1px solid ${Colors.border.subtle}`,
             boxShadow: "none",

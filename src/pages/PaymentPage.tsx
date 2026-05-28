@@ -26,6 +26,7 @@ import { stripePromise } from "../config/stripe";
 import { StripeCardForm } from "../features/menu/components/StripeCardForm";
 import { CheckoutRequest, Order } from "../types/order.types";
 import { UserPaymentMethod } from "../types/payment.types";
+import { showErrorSnackbar } from "../utils/notifications";
 
 type CheckoutData = {
   address?: string;
@@ -107,7 +108,6 @@ const PaymentPage = () => {
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [processingStep, setProcessingStep] = useState<string>("");
   const [progress, setProgress] = useState(50);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -241,7 +241,7 @@ const PaymentPage = () => {
     }
 
     if (!hasRequiredDeliveryAddress()) {
-      setError("Missing delivery address");
+      showErrorSnackbar("Something went wrong!");
       return false;
     }
 
@@ -311,12 +311,7 @@ const PaymentPage = () => {
   );
 
   const handlePaymentError = useCallback((err: unknown, context: string) => {
-    const message =
-      err instanceof Error
-        ? err.message
-        : "An unexpected error occurred. Please try again.";
-
-    setError(message);
+    showErrorSnackbar("Something went wrong!");
     console.error(context, err);
   }, []);
 
@@ -336,7 +331,6 @@ const PaymentPage = () => {
       try {
         orderCreatedRef.current = true;
         setIsProcessing(true);
-        setError(null);
 
         // For resuming a previous payment, recreate/retrieve the PaymentIntent.
         // The backend is idempotent by orderId, so this returns the existing Stripe intent.
@@ -504,7 +498,7 @@ const PaymentPage = () => {
 
   const handleStripePaymentSucceeded = async (): Promise<boolean> => {
     if (!paymentId) {
-      setError("Payment setup failed. Please try again.");
+      showErrorSnackbar("Something went wrong!");
       return false;
     }
 
@@ -656,7 +650,7 @@ const PaymentPage = () => {
                       <StripeCardForm
                         clientSecret={clientSecret}
                         onPaymentSuccess={handleStripePaymentSucceeded}
-                        onPaymentError={setError}
+                        onPaymentError={() => undefined}
                         totalAmount={displayTotal}
                         savedPaymentMethods={savedPaymentMethods}
                       />
@@ -821,22 +815,6 @@ const PaymentPage = () => {
                   </Typography>
                 </Box>
               </Box>
-
-              {error && (
-                <Box
-                  sx={{
-                    mt: 2,
-                    p: 2,
-                    backgroundColor: "rgba(229, 57, 53, 0.1)",
-                    borderRadius: "8px",
-                    textAlign: "center",
-                  }}
-                >
-                  <Typography sx={{ color: "#e53935", fontSize: "0.9rem" }}>
-                    {error}
-                  </Typography>
-                </Box>
-              )}
 
               <Box
                 sx={{
