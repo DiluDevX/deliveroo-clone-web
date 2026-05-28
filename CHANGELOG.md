@@ -1,3 +1,9 @@
+## [1.6.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.5.0...v1.6.0) (2026-05-28)
+
+### Features
+
+* add pagination to order history and improve profile page state management ([e854e1f](https://github.com/DiluDevX/deliveroo-clone-web/commit/e854e1f206e44360979a0acbd57b46551afe4eb8))
+
 ## [1.5.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.4.1...v1.5.0) (2026-05-28)
 
 ### Features
