@@ -15,12 +15,17 @@ import Button from "./Button";
 import { useNavigate } from "react-router-dom";
 import PopUpDialog from "./PopUpDialog";
 
-const Cart = () => {
+type CartProps = {
+  layout?: "sidebar" | "drawer";
+};
+
+const Cart = ({ layout = "sidebar" }: CartProps) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const cartItems = useAppSelector((state) => state.cart.items);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const isDrawer = layout === "drawer";
 
   const totalPrice = cartItems.reduce(
     (total, item) => total + Number(item.price) * Number(item.quantity),
@@ -82,6 +87,28 @@ const Cart = () => {
     navigate("/account/login");
   };
 
+  const handleBrowseRestaurants = () => {
+    navigate("/filtered-restaurants");
+  };
+
+  const containerSx = {
+    marginTop: isDrawer ? 0 : "2rem",
+    mb: isDrawer ? 0 : 2,
+    marginLeft: isDrawer ? 0 : "0.5rem",
+    marginBottom: isDrawer ? 0 : 6,
+    minHeight: isDrawer ? "auto" : "78vh",
+    maxHeight: isDrawer ? "82vh" : "78vh",
+    display: "flex",
+    flexDirection: "column",
+    position: isDrawer ? "relative" : "sticky",
+    top: isDrawer ? "auto" : "170px",
+    zIndex: isDrawer ? "auto" : "90",
+    borderRadius: isDrawer ? "16px 16px 0 0" : "5px",
+    border: isDrawer ? "none" : `1px solid ${Colors.border.subtle}`,
+    backgroundColor: Colors.background.defaultLight,
+    overflow: "hidden",
+  } as const;
+
   // Login Dialog Component
   const LoginDialog = () => (
     <PopUpDialog
@@ -104,23 +131,14 @@ const Cart = () => {
         <LoginDialog />
         <Box
           sx={{
-            marginTop: "2rem",
-            mb: 2,
-            marginLeft: "0.5rem",
-            marginBottom: 6,
-            maxHeight: "80vh",
-            minHeight: "78vh",
+            ...containerSx,
+            maxHeight: isDrawer ? "70vh" : "80vh",
+            minHeight: isDrawer ? "360px" : "78vh",
             display: "flex",
             flexDirection: "column",
             gap: "1rem",
             alignItems: "center",
             justifyContent: "center",
-            position: "sticky",
-            top: "170px",
-            zIndex: "90",
-            borderRadius: "5px",
-            border: `1px solid ${Colors.border.subtle}`,
-            backgroundColor: Colors.background.defaultLight,
           }}
         >
           <Box
@@ -139,6 +157,16 @@ const Cart = () => {
             <Typography sx={{ color: Colors.text.light, fontWeight: "bold" }}>
               Your Basket is Empty
             </Typography>
+            <Typography
+              sx={{
+                color: Colors.text.lighter,
+                fontSize: "0.9rem",
+                textAlign: "center",
+                px: 3,
+              }}
+            >
+              Browse restaurants and add something before checkout.
+            </Typography>
           </Box>
 
           {/* Footer */}
@@ -151,7 +179,8 @@ const Cart = () => {
             }}
           >
             <Button
-              disabled={cartItems.length === 0}
+              onClick={handleBrowseRestaurants}
+              variant="filled"
               sx={{
                 width: "100%",
                 fontWeight: "bold",
@@ -159,7 +188,7 @@ const Cart = () => {
                 py: 1.5,
               }}
             >
-              Go to Checkout
+              Browse Restaurants
             </Button>
           </Box>
         </Box>
@@ -169,25 +198,7 @@ const Cart = () => {
     return (
       <>
         <LoginDialog />
-        <Box
-          sx={{
-            marginTop: "2rem",
-            mb: 2,
-            marginLeft: "0.5rem",
-            marginBottom: 6,
-            minHeight: "78vh",
-            maxHeight: "78vh",
-            display: "flex",
-            flexDirection: "column",
-            position: "sticky",
-            top: "170px",
-            zIndex: "90",
-            borderRadius: "5px",
-            border: `1px solid ${Colors.border.subtle}`,
-            backgroundColor: Colors.background.defaultLight,
-            overflow: "hidden",
-          }}
-        >
+        <Box sx={containerSx}>
           {/* Cart Items */}
           <Box
             sx={{

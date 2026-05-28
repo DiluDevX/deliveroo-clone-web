@@ -11,18 +11,21 @@ const LocationDisplay = () => {
   return <div>Current route: {location.pathname}</div>;
 };
 
-const renderCart = (isAuthenticated: boolean) => {
-  const cartItem: CartItem = {
-    _id: "dish-1",
-    name: "Margherita Pizza",
-    description: "Tomato and mozzarella",
-    price: "12.50",
-    image: "/pizza.jpg",
-    categoryId: "pizza",
-    quantity: 2,
-    cartItemId: "cart-item-1",
-  };
+const cartItem: CartItem = {
+  _id: "dish-1",
+  name: "Margherita Pizza",
+  description: "Tomato and mozzarella",
+  price: "12.50",
+  image: "/pizza.jpg",
+  categoryId: "pizza",
+  quantity: 2,
+  cartItemId: "cart-item-1",
+};
 
+const renderCart = (
+  isAuthenticated: boolean,
+  cartItems: CartItem[] = [cartItem],
+) => {
   return renderWithProviders(
     <MemoryRouter initialEntries={["/menu"]}>
       <Routes>
@@ -53,6 +56,15 @@ const renderCart = (isAuthenticated: boolean) => {
             </>
           }
         />
+        <Route
+          path="/filtered-restaurants"
+          element={
+            <>
+              <div>Restaurants page</div>
+              <LocationDisplay />
+            </>
+          }
+        />
       </Routes>
     </MemoryRouter>,
     {
@@ -62,7 +74,7 @@ const renderCart = (isAuthenticated: boolean) => {
           isAuthInitialized: true,
         },
         cart: {
-          items: [cartItem],
+          items: cartItems,
         },
       },
     },
@@ -102,5 +114,19 @@ describe("Cart", () => {
 
     expect(screen.getByText("Checkout page")).toBeInTheDocument();
     expect(screen.getByText("Current route: /checkout")).toBeInTheDocument();
+  });
+
+  it("sends empty carts to the restaurant browser without search params", async () => {
+    const user = userEvent.setup();
+    renderCart(true, []);
+
+    await user.click(
+      screen.getByRole("button", { name: "Browse Restaurants" }),
+    );
+
+    expect(screen.getByText("Restaurants page")).toBeInTheDocument();
+    expect(
+      screen.getByText("Current route: /filtered-restaurants"),
+    ).toBeInTheDocument();
   });
 });

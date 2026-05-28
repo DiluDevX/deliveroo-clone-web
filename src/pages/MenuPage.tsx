@@ -1,4 +1,12 @@
-import { Box, Container, Grid2 as Grid, Typography } from "@mui/material";
+import {
+  Badge,
+  Box,
+  Container,
+  Drawer,
+  Fab,
+  Grid2 as Grid,
+  Typography,
+} from "@mui/material";
 import RestaurantInfoView from "../features/menu/views/RestaurantInfoView";
 import CategoriesBar from "../features/menu/components/CategoriesBar";
 import MenuView from "../features/menu/views/MenuView";
@@ -9,6 +17,8 @@ import { ICategory, IDish } from "../data/Sides";
 import { useParams } from "react-router-dom";
 import { getSingleRestaurant } from "../services/restaurant.service";
 import { Restaurant } from "../types/restaurants";
+import ShoppingBasketOutlinedIcon from "@mui/icons-material/ShoppingBasketOutlined";
+import { useAppSelector } from "../store/hooks/cartHooks";
 
 type RestaurantCategory = {
   id: string;
@@ -65,6 +75,12 @@ const MenuPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isRestaurantLoading, setIsRestaurantLoading] = useState(true);
   const [isDishesLoading, setIsDishesLoading] = useState(true);
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  const cartItems = useAppSelector((state) => state.cart.items);
+  const cartItemCount = cartItems.reduce(
+    (total, item) => total + Number(item.quantity || 0),
+    0,
+  );
 
   const handleDishesLoadingChange = useCallback((isLoading: boolean) => {
     setIsDishesLoading(isLoading);
@@ -164,6 +180,53 @@ const MenuPage = () => {
           </Grid>
         </Container>
       </Box>
+      {cartItemCount > 0 && (
+        <Fab
+          aria-label={`Open cart with ${cartItemCount} item${cartItemCount === 1 ? "" : "s"}`}
+          onClick={() => setIsMobileCartOpen(true)}
+          sx={{
+            position: "fixed",
+            right: 16,
+            bottom: 20,
+            zIndex: 120,
+            display: { xs: "flex", md: "none" },
+            color: Colors.text.inverse,
+            backgroundColor: Colors.background.brand,
+            "&:hover": {
+              backgroundColor: Colors.background.brandHover,
+            },
+          }}
+        >
+          <Badge
+            badgeContent={cartItemCount}
+            color="error"
+            sx={{
+              "& .MuiBadge-badge": {
+                fontWeight: 700,
+                minWidth: 20,
+                height: 20,
+              },
+            }}
+          >
+            <ShoppingBasketOutlinedIcon />
+          </Badge>
+        </Fab>
+      )}
+      <Drawer
+        anchor="bottom"
+        open={isMobileCartOpen}
+        onClose={() => setIsMobileCartOpen(false)}
+        sx={{
+          display: { xs: "block", md: "none" },
+          "& .MuiDrawer-paper": {
+            borderRadius: "16px 16px 0 0",
+            backgroundColor: Colors.background.light,
+            maxHeight: "88vh",
+          },
+        }}
+      >
+        <Cart layout="drawer" />
+      </Drawer>
     </Box>
   );
 };
