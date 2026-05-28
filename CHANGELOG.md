@@ -2,7 +2,7 @@
 
 ### Features
 
-* update payment method to 'cash' and enhance error handling in PaymentPage ([2c7d705](https://github.com/DiluDevX/deliveroo-clone-web/commit/2c7d705303bb80a03942ce7d8ba32ae7fb632b5c))
+- update payment method to 'cash' and enhance error handling in PaymentPage ([2c7d705](https://github.com/DiluDevX/deliveroo-clone-web/commit/2c7d705303bb80a03942ce7d8ba32ae7fb632b5c))
 
 ## [1.9.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.8.0...v1.9.0) (2026-05-28)
 

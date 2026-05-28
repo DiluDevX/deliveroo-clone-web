@@ -11,7 +11,9 @@ const OrderConfirmationPage = () => {
 
   const orderId = location.state?.orderId || null;
   const orderDetails = location.state?.orderDetails;
+  const paymentMethod = location.state?.paymentMethod;
   const isSuccess = orderId !== null;
+  const isCashOnDelivery = paymentMethod === "cash";
 
   // Use passed orderDetails, fallback to calculating from empty cart (will be 0)
   const subtotal = orderDetails?.subtotal ?? 0;
@@ -144,7 +146,9 @@ const OrderConfirmationPage = () => {
           </Typography>
 
           <Typography sx={{ mb: 3, color: Colors.text.default }}>
-            Thank you for your order. Your food is being prepared!
+            {isCashOnDelivery
+              ? "Thank you for your order. Your food is being prepared, and you can pay when it arrives."
+              : "Thank you for your order. Your food is being prepared!"}
           </Typography>
 
           <Typography sx={{ mb: 1, color: Colors.text.default }}>
@@ -166,11 +170,22 @@ const OrderConfirmationPage = () => {
             </Typography>
 
             <Typography sx={{ mb: 1, color: Colors.text.default }}>
-              Total Paid
+              {isCashOnDelivery ? "Have this amount ready" : "Total Paid"}
             </Typography>
             <Typography variant="h5" sx={{ fontWeight: "bold" }}>
               £{total.toFixed(2)}
             </Typography>
+            {isCashOnDelivery && (
+              <Typography
+                sx={{
+                  mt: 1,
+                  color: Colors.text.placeholder,
+                  fontSize: "0.9rem",
+                }}
+              >
+                Please pay the rider in cash when your order arrives.
+              </Typography>
+            )}
           </Box>
 
           <Button

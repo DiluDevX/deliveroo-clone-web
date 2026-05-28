@@ -304,6 +304,7 @@ const PaymentPage = () => {
         state: {
           orderId: confirmationOrderId,
           orderDetails: confirmedOrderDetails ?? getOrderDetails(),
+          paymentMethod: "card",
         },
       });
     },

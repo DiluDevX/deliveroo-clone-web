@@ -274,6 +274,7 @@ const CheckoutPage = () => {
               discount: 0,
               total: subtotal + shippingFee + 0.99,
             },
+            paymentMethod: "cash",
           },
         });
       } else {
