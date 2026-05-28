@@ -23,7 +23,7 @@ const MainCard: React.FC<MainCardProps> = ({ image, title, description }) => {
       <Box
         sx={{
           width: "100%",
-          height: { xs: "210px", sm: "250px" },
+          height: "250px",
           overflow: "hidden",
           borderRadius: "10px",
           marginBottom: "10px",

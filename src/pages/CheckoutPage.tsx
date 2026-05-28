@@ -15,7 +15,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Colors } from "../theme/colors";
 import { useNavigate } from "react-router-dom";
-import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from "react";
 import { useForm, Controller } from "react-hook-form";
 import Button from "../features/menu/components/Button";
 import TextInput from "../features/menu/components/TextInput";
@@ -76,6 +82,7 @@ const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CARD");
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const isCompletingOrderRef = useRef(false);
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("new");
   const [saveAddressForFuture, setSaveAddressForFuture] = useState(false);
@@ -262,8 +269,8 @@ const CheckoutPage = () => {
       setIsProcessing(false);
 
       if (orderResponse?.orderId) {
+        isCompletingOrderRef.current = true;
         setOrderPlaced(true);
-        dispatch(clearCartAndSync());
         navigate("/order-confirmation", {
           state: {
             orderId: orderResponse.orderNumber,
@@ -277,6 +284,7 @@ const CheckoutPage = () => {
             paymentMethod: "cash",
           },
         });
+        void dispatch(clearCartAndSync());
       } else {
         showErrorSnackbar("Failed to place order. Please try again.");
       }
@@ -324,7 +332,11 @@ const CheckoutPage = () => {
   };
 
   useEffect(() => {
-    if (cartItems.length === 0 && !orderPlaced) {
+    if (
+      cartItems.length === 0 &&
+      !orderPlaced &&
+      !isCompletingOrderRef.current
+    ) {
       navigate("/");
     }
   }, [cartItems, navigate, orderPlaced]);

@@ -2,7 +2,7 @@
 
 ### Features
 
-* add cash payment method and update order confirmation messages ([55b28d3](https://github.com/DiluDevX/deliveroo-clone-web/commit/55b28d36448d01ab477ed6b69c537951dd5f8631))
+- add cash payment method and update order confirmation messages ([55b28d3](https://github.com/DiluDevX/deliveroo-clone-web/commit/55b28d36448d01ab477ed6b69c537951dd5f8631))
 
 ## [1.10.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.9.0...v1.10.0) (2026-05-28)
 

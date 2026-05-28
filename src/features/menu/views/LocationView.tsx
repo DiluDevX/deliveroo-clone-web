@@ -4,14 +4,14 @@ import { Colors } from "../../../theme";
 
 const LocationView = () => {
   const isMobile = useMediaQuery("(max-width:599.95px)");
-  const storeButtonWidth = isMobile ? 150 : 200;
-  const storeButtonHeight = isMobile ? 44 : 50;
+  const storeButtonWidth = isMobile ? 124 : 200;
+  const storeButtonHeight = isMobile ? 42 : 50;
 
   return (
     <Container
       sx={{
         width: "100%",
-        padding: "2rem",
+        padding: { xs: "1rem", sm: "2rem" },
         backgroundColor: Colors.background.light,
       }}
     >
@@ -31,7 +31,7 @@ const LocationView = () => {
             flexDirection: "column",
             gap: "1.5rem",
             maxWidth: "100%",
-            padding: "2rem",
+            padding: { xs: "1rem", sm: "2rem" },
             flexGrow: 1,
           }}
         >
@@ -62,6 +62,26 @@ const LocationView = () => {
               gap: { xs: "0.5rem", sm: "1rem" },
               flexWrap: "nowrap",
               alignItems: "center",
+              "& .landing-store-button": {
+                boxSizing: "border-box",
+                flexShrink: 0,
+                gap: { xs: "0.35rem", sm: "0.625rem" },
+                padding: { xs: "0.4rem 0.45rem", sm: "0.625rem" },
+              },
+              "& .landing-store-button img": {
+                width: { xs: "1.25rem", sm: "auto" },
+                height: { xs: "1.25rem", sm: "auto" },
+              },
+              "& .landing-store-button .button-title": {
+                fontSize: { xs: "0.5rem", sm: "0.75rem" },
+                lineHeight: 1,
+                whiteSpace: "nowrap",
+              },
+              "& .landing-store-button .button-store-name": {
+                fontSize: { xs: "0.82rem", sm: "1.25rem" },
+                lineHeight: 1.05,
+                whiteSpace: "nowrap",
+              },
             }}
           >
             <AppStoreButton
@@ -69,6 +89,7 @@ const LocationView = () => {
               width={storeButtonWidth}
               height={storeButtonHeight}
               url={""}
+              className="landing-store-button"
             />
 
             <GooglePlayButton
@@ -76,6 +97,7 @@ const LocationView = () => {
               width={storeButtonWidth}
               height={storeButtonHeight}
               url={""}
+              className="landing-store-button"
             />
           </Box>
         </Box>
