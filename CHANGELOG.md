@@ -1,3 +1,9 @@
+## [1.11.2](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.1...v1.11.2) (2026-05-28)
+
+### Bug Fixes
+
+* update spacing in CheckoutPage and improve menu item visibility in AccountSideBar ([3ae9307](https://github.com/DiluDevX/deliveroo-clone-web/commit/3ae930712d83a6bd3ae5b1573f6613202764da3a))
+
 ## [1.11.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.0...v1.11.1) (2026-05-28)
 
 ### Bug Fixes
