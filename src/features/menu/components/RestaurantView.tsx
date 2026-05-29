@@ -142,18 +142,24 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
             </Box>
 
             {/* Info Pills */}
-            <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap" }}>
+            <Box
+              sx={{ display: "flex", gap: 0.8, flexWrap: "wrap", minWidth: 0 }}
+            >
               <Chip
                 icon={<LocalShippingIcon sx={{ fontSize: "0.9rem" }} />}
                 label={`$${restaurant.deliveryCharge} delivery`}
                 size="small"
                 sx={{
                   height: "24px",
-                  fontSize: "0.75rem",
+                  fontSize: { xs: "0.65rem", sm: "0.75rem" },
                   backgroundColor: `${Colors.background.brand}15`,
                   color: Colors.background.brand,
                   fontWeight: 600,
                   "& .MuiChip-icon": { fontSize: "0.9rem", marginLeft: "4px" },
+                  "& .MuiChip-label": { px: { xs: "4px", sm: "8px" } },
+                  maxWidth: "100%",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                 }}
               />
               <Chip
@@ -162,11 +168,15 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
                 size="small"
                 sx={{
                   height: "24px",
-                  fontSize: "0.75rem",
+                  fontSize: { xs: "0.65rem", sm: "0.75rem" },
                   backgroundColor: `${Colors.text.placeholder}15`,
                   color: Colors.text.placeholder,
                   fontWeight: 600,
                   "& .MuiChip-icon": { fontSize: "0.9rem", marginLeft: "4px" },
+                  "& .MuiChip-label": { px: { xs: "4px", sm: "8px" } },
+                  maxWidth: "100%",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                 }}
               />
             </Box>

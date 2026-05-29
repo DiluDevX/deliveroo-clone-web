@@ -75,7 +75,7 @@ function Button({
         minHeight: "42px",
         alignItems: "center",
         justifyContent: "center",
-        paddingRight: { xs: "0.5rem", sm: "1rem" },
+        paddingRight: { xs: "0.2rem", sm: "1rem" },
         paddingLeft: { xs: "0.5rem", sm: "1rem" },
         color: disabled
           ? Colors.text.placeholder
@@ -107,6 +107,7 @@ function Button({
           sx={{
             display: { xs: showTitleOnMobile ? "flex" : "none", sm: "flex" },
             marginLeft: { md: "1rem", lg: "0.5rem" },
+            color: Colors.text.default,
           }}
         >
           <Link
@@ -123,6 +124,7 @@ function Button({
         <Typography
           sx={{
             display: { xs: showTitleOnMobile ? "flex" : "none", sm: "flex" },
+            color: Colors.text.default,
           }}
         >
           {title}

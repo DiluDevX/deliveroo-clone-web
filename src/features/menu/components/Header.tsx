@@ -109,7 +109,7 @@ const Header = () => {
               onClick={handleAccountNavigation}
               sx={{
                 backgroundColor: Colors.background.light,
-                display: { xs: "flex", md: "none" },
+                display: { xs: "flex", md: "flex", lg: "flex" },
                 alignItems: "center",
                 justifyContent: "center",
                 px: { xs: "0.65rem", sm: "1rem" },
@@ -136,22 +136,22 @@ const Header = () => {
             location.pathname !== "/account/login" &&
             location.pathname !== "/account/signup" && (
               <Button
-                PrefixIcon={HomeOutlinedIcon}
-                onClick={() => sessionStorage.removeItem("redirectAfterLogin")}
-                title="Sign up or login"
-                linkTo="/account"
-                showTitleOnMobile={location.pathname === "/"}
+                PrefixIcon={Person2OutlinedIcon}
+                title="Login or Signup"
+                onClick={() => {
+                  sessionStorage.removeItem("redirectAfterLogin");
+                  navigate("/account/login");
+                }}
+                showTitleOnMobile={false}
                 sx={{
                   backgroundColor: Colors.background.light,
-                  display: {
-                    xs: location.pathname === "/" ? "flex" : "none",
-                    sm: "none",
-                    md: "flex",
-                    lg: "flex",
+                  display: "flex",
+                  "& > .MuiTypography-root": {
+                    display: "none !important",
+                    "@media (min-width:380px)": {
+                      display: "flex !important",
+                    },
                   },
-                  px: { xs: "0.65rem", md: "1rem" },
-                  maxWidth: { xs: "48vw", md: "none" },
-                  overflow: "hidden",
                 }}
               />
             )}
