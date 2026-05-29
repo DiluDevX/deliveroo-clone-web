@@ -45,6 +45,11 @@ import { checkoutCart } from "../services/order.service";
 import { showErrorSnackbar } from "../utils/notifications";
 import { createUserAddress, getUserAddresses } from "../services/user.service";
 import { Address } from "../types/user.types";
+import {
+  clearSelectedDeliveryAddress,
+  getSelectedDeliveryAddress,
+  setSelectedDeliveryAddress,
+} from "../utils/selected-delivery-address";
 
 type PaymentMethod = "CARD" | "CASH_ON_DELIVERY";
 
@@ -168,10 +173,16 @@ const CheckoutPage = () => {
       const addresses = await getUserAddresses();
       setSavedAddresses(addresses);
 
+      const selectedDeliveryAddressId = getSelectedDeliveryAddress()?.addressId;
+      const selectedDeliveryAddress = addresses.find(
+        (address) => address.id === selectedDeliveryAddressId,
+      );
       const defaultAddress = addresses.find((addr) => addr.isDefault);
-      if (defaultAddress) {
-        setSelectedAddressId(defaultAddress.id);
-        applyAddressToForm(defaultAddress);
+      const addressToApply = selectedDeliveryAddress ?? defaultAddress;
+
+      if (addressToApply) {
+        setSelectedAddressId(addressToApply.id);
+        applyAddressToForm(addressToApply);
       }
     };
 
@@ -182,11 +193,16 @@ const CheckoutPage = () => {
     setSelectedAddressId(addressId);
 
     if (addressId === "new") {
+      clearSelectedDeliveryAddress();
       applyAddressToForm();
       return;
     }
 
-    applyAddressToForm(savedAddresses.find((addr) => addr.id === addressId));
+    const addressToApply = savedAddresses.find((addr) => addr.id === addressId);
+    if (addressToApply) {
+      setSelectedDeliveryAddress(addressToApply);
+    }
+    applyAddressToForm(addressToApply);
   };
 
   const handleDiscountCodeChange = (event: ChangeEvent<HTMLInputElement>) => {

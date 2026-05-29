@@ -4,7 +4,7 @@ import { Colors } from "../../../theme";
 import { useState } from "react";
 import { Restaurant } from "../../../types/restaurants";
 import StarIcon from "@mui/icons-material/Star";
-import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import DirectionsBikeOutlinedIcon from "@mui/icons-material/DirectionsBikeOutlined";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 interface RestaurantViewProps {
@@ -146,7 +146,11 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
               sx={{ display: "flex", gap: 0.8, flexWrap: "wrap", minWidth: 0 }}
             >
               <Chip
-                icon={<LocalShippingIcon sx={{ fontSize: "0.9rem" }} />}
+                icon={
+                  <DirectionsBikeOutlinedIcon
+                    sx={{ color: Colors.background.brand, fontSize: "0.9rem" }}
+                  />
+                }
                 label={`$${restaurant.deliveryCharge} delivery`}
                 size="small"
                 sx={{
@@ -189,7 +193,7 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
                   color: Colors.text.default,
                 }}
               >
-                ₹{restaurant.minimumValue}
+                ${restaurant.minimumValue}
               </Typography>
             </Box>
           </Box>

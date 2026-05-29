@@ -281,8 +281,8 @@ const RestaurantInfoView = ({
               </Typography>
               <Typography
                 sx={{
-                  mx: { xs: 0, sm: 1 },
-                  display: { xs: "none", sm: "inline" },
+                  mx: { xs: 0.15, sm: 1 },
+                  display: "inline",
                 }}
                 component="span"
               >
@@ -293,8 +293,8 @@ const RestaurantInfoView = ({
               </Typography>
               <Typography
                 sx={{
-                  mx: { xs: 0, sm: 1 },
-                  display: { xs: "none", sm: "inline" },
+                  mx: { xs: 0.15, sm: 1 },
+                  display: "inline",
                 }}
                 component="span"
               >
