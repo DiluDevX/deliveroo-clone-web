@@ -234,7 +234,9 @@ export const StripeCardForm = ({
             </RadioGroup>
           )}
 
-          {selectedPaymentMethodId === "new" && <PaymentElement />}
+          {selectedPaymentMethodId === "new" && (
+            <PaymentElement options={{ wallets: { link: "never" } }} />
+          )}
 
           <Typography
             sx={{
