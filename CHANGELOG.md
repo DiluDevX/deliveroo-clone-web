@@ -1,3 +1,9 @@
+## [1.11.6](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.5...v1.11.6) (2026-05-29)
+
+### Bug Fixes
+
+* remove fixed height from header and adjust padding for improved layout ([5963bae](https://github.com/DiluDevX/deliveroo-clone-web/commit/5963bae4bcdf30bb705e979f48c730ccc52a7097))
+
 ## [1.11.5](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.4...v1.11.5) (2026-05-29)
 
 ### Bug Fixes
