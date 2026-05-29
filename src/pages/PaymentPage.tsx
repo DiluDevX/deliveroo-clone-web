@@ -41,10 +41,14 @@ type ResumePaymentState = {
 const CardPaymentSkeleton = () => (
   <Card
     sx={{
-      p: 3,
-      borderRadius: "12px",
-      border: `1px solid ${Colors.border.subtle}`,
+      p: { xs: 0, sm: 3 },
+      borderRadius: { xs: 0, sm: "12px" },
+      border: {
+        xs: "none",
+        sm: `1px solid ${Colors.border.subtle}`,
+      },
       boxShadow: "none",
+      backgroundColor: Colors.background.light,
     }}
   >
     <Skeleton
@@ -631,7 +635,7 @@ const PaymentPage = () => {
           <Grid item xs={12} md={7} sx={{ order: { xs: 2, md: 1 } }}>
             <Card
               sx={{
-                p: 3,
+                p: { xs: 2, sm: 3 },
                 borderRadius: "12px",
                 border: `1px solid ${Colors.border.subtle}`,
                 boxShadow: "none",

@@ -372,19 +372,11 @@ const CheckoutPage = () => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            gap: { xs: 1.5, sm: 2 },
-            width: "100%",
-            maxWidth: { xs: "420px", sm: "none" },
-            mx: "auto",
+            gap: { xs: 1, sm: 2 },
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <CheckCircleIcon
-              sx={{
-                color: Colors.background.brand,
-                fontSize: { xs: 30, sm: 26 },
-              }}
-            />
+            <CheckCircleIcon sx={{ color: Colors.background.brand }} />
             <Typography
               sx={{
                 color: Colors.text.default,
@@ -396,20 +388,13 @@ const CheckoutPage = () => {
           </Box>
           <Box
             sx={{
-              flex: 1,
-              minWidth: { xs: "56px", sm: "60px" },
-              maxWidth: { xs: "100px", sm: "100px" },
-              height: { xs: "3px", sm: "2px" },
+              width: { xs: "30px", sm: "60px", md: "100px" },
+              height: "2px",
               backgroundColor: Colors.background.brand,
             }}
           />
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <CheckCircleIcon
-              sx={{
-                color: Colors.background.brand,
-                fontSize: { xs: 30, sm: 26 },
-              }}
-            />
+            <CheckCircleIcon sx={{ color: Colors.background.brand }} />
             <Typography
               sx={{
                 color: Colors.text.default,
@@ -421,18 +406,16 @@ const CheckoutPage = () => {
           </Box>
           <Box
             sx={{
-              flex: 1,
-              minWidth: { xs: "56px", sm: "60px" },
-              maxWidth: { xs: "100px", sm: "100px" },
-              height: { xs: "3px", sm: "2px" },
+              width: { xs: "30px", sm: "60px", md: "100px" },
+              height: "2px",
               background: `linear-gradient(to right, ${Colors.background.brand} 50%, ${Colors.border.subtle} 50%)`,
             }}
           />
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box
               sx={{
-                width: { xs: 38, sm: 30 },
-                height: { xs: 38, sm: 30 },
+                width: 25,
+                height: 25,
                 borderRadius: "50%",
                 backgroundColor: Colors.background.brand,
                 color: "white",
@@ -441,9 +424,10 @@ const CheckoutPage = () => {
                 justifyContent: "center",
                 fontSize: "0.75rem",
                 fontWeight: "bold",
+                padding: "15px",
               }}
             >
-              <ShoppingBagOutlined sx={{ fontSize: { xs: 23, sm: 20 } }} />
+              <ShoppingBagOutlined sx={{ scale: "0.8" }} />
             </Box>
             <Typography
               sx={{

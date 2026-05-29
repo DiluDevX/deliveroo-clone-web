@@ -126,7 +126,7 @@ const SaveCardForm = ({
 
         {error && <Alert severity="error">{error}</Alert>}
 
-        <PaymentElement />
+        <PaymentElement options={{ wallets: { link: "never" } }} />
 
         <FormControlLabel
           control={
