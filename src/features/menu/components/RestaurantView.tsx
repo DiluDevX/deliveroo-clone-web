@@ -151,15 +151,12 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
                 size="small"
                 sx={{
                   height: "24px",
-                  fontSize: { xs: "0.65rem", sm: "0.75rem" },
+                  fontSize: { xs: "0.5rem", sm: "0.75rem" },
                   backgroundColor: `${Colors.background.brand}15`,
                   color: Colors.background.brand,
                   fontWeight: 600,
                   "& .MuiChip-icon": { fontSize: "0.9rem", marginLeft: "4px" },
                   "& .MuiChip-label": { px: { xs: "4px", sm: "8px" } },
-                  maxWidth: "100%",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
                 }}
               />
               <Chip
@@ -168,15 +165,12 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
                 size="small"
                 sx={{
                   height: "24px",
-                  fontSize: { xs: "0.65rem", sm: "0.75rem" },
+                  fontSize: { xs: "0.5rem", sm: "0.75rem" },
                   backgroundColor: `${Colors.text.placeholder}15`,
                   color: Colors.text.placeholder,
                   fontWeight: 600,
                   "& .MuiChip-icon": { fontSize: "0.9rem", marginLeft: "4px" },
                   "& .MuiChip-label": { px: { xs: "4px", sm: "8px" } },
-                  maxWidth: "100%",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
                 }}
               />
             </Box>
