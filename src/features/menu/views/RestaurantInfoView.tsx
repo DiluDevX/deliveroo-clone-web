@@ -271,19 +271,33 @@ const RestaurantInfoView = ({
               sx={{
                 mt: 1,
                 display: "flex",
-                whiteSpace: "nowrap",
+                flexWrap: { xs: "wrap", sm: "nowrap" },
+                fontSize: { xs: "0.85rem", sm: "1rem" },
+                gap: { xs: "0.5rem", sm: 0 },
               }}
             >
               <Typography variant="body1" component="span">
                 Opens at {restaurant.openingAt}
               </Typography>
-              <Typography sx={{ mx: 1 }} component="span">
+              <Typography
+                sx={{
+                  mx: { xs: 0, sm: 1 },
+                  display: { xs: "none", sm: "inline" },
+                }}
+                component="span"
+              >
                 •
               </Typography>
               <Typography variant="body1" component="span">
                 ${restaurant.minimumValue} minimum
               </Typography>
-              <Typography sx={{ mx: 1 }} component="span">
+              <Typography
+                sx={{
+                  mx: { xs: 0, sm: 1 },
+                  display: { xs: "none", sm: "inline" },
+                }}
+                component="span"
+              >
                 •
               </Typography>
               <Typography variant="body1" component="span">

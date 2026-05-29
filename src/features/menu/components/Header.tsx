@@ -3,7 +3,7 @@ import { Box, Container } from "@mui/material";
 import Button from "./Button";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import { Colors, Svgs } from "../../../theme";
+import { Colors, Paddings, Svgs } from "../../../theme";
 import AnchorTemporaryDrawer from "./AccountSideBar";
 import React from "react";
 import PartnerWithUs from "./PartnerWithUs";
@@ -43,6 +43,7 @@ const Header = () => {
           ? "transparent"
           : Colors.background.light,
         width: "100%",
+        height: "60px",
         display: "flex",
         px: { xs: "0.5rem", sm: "1rem" },
         alignItems: "center",
@@ -50,7 +51,8 @@ const Header = () => {
         position: isTransparent ? "absolute" : "fixed",
         top: "0",
         zIndex: "101",
-        py: "0.75rem",
+        paddingBottom: "3.2rem",
+        paddingTop: "1rem",
         borderBottomWidth: isTransparent ? 0 : "0.5px",
         borderColor: Colors.border.subtle,
         borderStyle: "solid",
@@ -75,6 +77,7 @@ const Header = () => {
             alignItems: "center",
             width: { xs: "170px", sm: "auto", md: "auto", lg: "auto" },
             ml: { xs: 0, sm: 0, md: 0, lg: "-1.5rem" },
+            paddingTop: Paddings.Left.header.PaddingTop,
           }}
         >
           <Link to="/">
@@ -94,6 +97,7 @@ const Header = () => {
             alignItems: "center",
             justifyContent: "flex-end",
             gap: "8px",
+            paddingTop: Paddings.Left.header.PaddingTop,
           }}
         >
           {location.pathname === "/" && <PartnerWithUs />}

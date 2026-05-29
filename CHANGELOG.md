@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* remove unused paddingTop from header component ([a4038f9](https://github.com/DiluDevX/deliveroo-clone-web/commit/a4038f90ccd2a048d765a618c52bcb2bc21587aa))
+- remove unused paddingTop from header component ([a4038f9](https://github.com/DiluDevX/deliveroo-clone-web/commit/a4038f90ccd2a048d765a618c52bcb2bc21587aa))
 
 ## [1.11.6](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.5...v1.11.6) (2026-05-29)
 
