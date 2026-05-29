@@ -43,7 +43,6 @@ const Header = () => {
           ? "transparent"
           : Colors.background.light,
         width: "100%",
-        height: "60px",
         display: "flex",
         px: { xs: "0.5rem", sm: "1rem" },
         alignItems: "center",
@@ -51,8 +50,7 @@ const Header = () => {
         position: isTransparent ? "absolute" : "fixed",
         top: "0",
         zIndex: "101",
-        marginBottom: "3.2rem",
-        marginTop: "1rem",
+        py: "0.75rem",
         borderBottomWidth: isTransparent ? 0 : "0.5px",
         borderColor: Colors.border.subtle,
         borderStyle: "solid",
