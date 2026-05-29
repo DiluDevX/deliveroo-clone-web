@@ -1,3 +1,9 @@
+## [1.11.4](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.3...v1.11.4) (2026-05-29)
+
+### Bug Fixes
+
+* adjust button padding and header display properties; enhance restaurant view chip styles ([0154892](https://github.com/DiluDevX/deliveroo-clone-web/commit/01548922cc418665ff96364eeeca0eb935656a85))
+
 ## [1.11.3](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.2...v1.11.3) (2026-05-29)
 
 ### Bug Fixes
