@@ -1,3 +1,9 @@
+## [1.11.3](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.2...v1.11.3) (2026-05-29)
+
+### Bug Fixes
+
+* add options to PaymentElement in StripeCardForm for wallet configuration ([48eb1d5](https://github.com/DiluDevX/deliveroo-clone-web/commit/48eb1d5b431afbe11c946c4c24c086f9c4e23535))
+
 ## [1.11.2](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.1...v1.11.2) (2026-05-28)
 
 ### Bug Fixes
