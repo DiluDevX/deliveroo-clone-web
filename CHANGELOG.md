@@ -1,3 +1,9 @@
+## [1.11.8](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.7...v1.11.8) (2026-05-29)
+
+### Bug Fixes
+
+* update header component styles and improve restaurant info layout ([9e10b5a](https://github.com/DiluDevX/deliveroo-clone-web/commit/9e10b5ae6e20a324769777a7d2e3dffe57a3d3bb))
+
 ## [1.11.7](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.6...v1.11.7) (2026-05-29)
 
 ### Bug Fixes
