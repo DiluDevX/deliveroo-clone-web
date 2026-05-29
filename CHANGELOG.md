@@ -1,3 +1,9 @@
+## [1.11.9](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.8...v1.11.9) (2026-05-29)
+
+### Bug Fixes
+
+* update styles for PaymentModal, StripeCardForm, CheckoutPage, and PaymentPage components ([92ffa7e](https://github.com/DiluDevX/deliveroo-clone-web/commit/92ffa7e91a6c8ca51a0f495af572d8dcd489212a))
+
 ## [1.11.8](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.7...v1.11.8) (2026-05-29)
 
 ### Bug Fixes
