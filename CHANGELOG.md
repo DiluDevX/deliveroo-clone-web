@@ -1,3 +1,9 @@
+## [1.11.5](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.4...v1.11.5) (2026-05-29)
+
+### Bug Fixes
+
+* update header padding to margin and adjust chip font sizes in restaurant view ([b580dca](https://github.com/DiluDevX/deliveroo-clone-web/commit/b580dca6ec249e5c654a41fa6b6d473c57dee7ec))
+
 ## [1.11.4](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.3...v1.11.4) (2026-05-29)
 
 ### Bug Fixes
