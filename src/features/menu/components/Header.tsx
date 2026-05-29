@@ -3,7 +3,7 @@ import { Box, Container } from "@mui/material";
 import Button from "./Button";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import { Colors, Paddings, Svgs } from "../../../theme";
+import { Colors, Svgs } from "../../../theme";
 import AnchorTemporaryDrawer from "./AccountSideBar";
 import React from "react";
 import PartnerWithUs from "./PartnerWithUs";
@@ -75,7 +75,6 @@ const Header = () => {
             alignItems: "center",
             width: { xs: "170px", sm: "auto", md: "auto", lg: "auto" },
             ml: { xs: 0, sm: 0, md: 0, lg: "-1.5rem" },
-            paddingTop: Paddings.Left.header.PaddingTop,
           }}
         >
           <Link to="/">
@@ -95,7 +94,6 @@ const Header = () => {
             alignItems: "center",
             justifyContent: "flex-end",
             gap: "8px",
-            paddingTop: Paddings.Left.header.PaddingTop,
           }}
         >
           {location.pathname === "/" && <PartnerWithUs />}
