@@ -2,7 +2,7 @@
 
 ### Features
 
-* implement location selector with address management and improve restaurant view ([a8eca34](https://github.com/DiluDevX/deliveroo-clone-web/commit/a8eca347f2f9265ccb254d242abb467928be3f84))
+- implement location selector with address management and improve restaurant view ([a8eca34](https://github.com/DiluDevX/deliveroo-clone-web/commit/a8eca347f2f9265ccb254d242abb467928be3f84))
 
 ## [1.11.9](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.8...v1.11.9) (2026-05-29)
 

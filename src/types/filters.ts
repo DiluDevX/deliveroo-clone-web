@@ -39,10 +39,10 @@ export const PRICE_OPTIONS = [
 ];
 
 export const MINIMUM_ORDER_VALUE_THRESHOLDS = {
-  budgetMax: 50,
-  midMin: 51,
-  midMax: 150,
-  premiumMin: 151,
+  budgetMax: 12,
+  midMin: 13,
+  midMax: 20,
+  premiumMin: 21,
 } as const;
 
 export const RATING_OPTIONS: RatingOption[] = [

@@ -254,7 +254,7 @@ const PaymentPage = () => {
 
   const buildCheckoutRequest = useCallback(
     (checkoutPaymentMethod: "card" | "cash"): CheckoutRequest => {
-      return {
+      const checkoutRequest: CheckoutRequest = {
         deliveryAddress: {
           line1: checkoutData?.address || "",
           city: checkoutData?.city || "",
@@ -262,12 +262,17 @@ const PaymentPage = () => {
           country: "UK",
         },
         restaurantName,
-        restaurantAddress,
         deliveryFee: shippingFee,
         serviceFee,
         discountAmount: discount,
         paymentMethod: checkoutPaymentMethod,
       };
+
+      if (restaurantAddress.trim()) {
+        checkoutRequest.restaurantAddress = restaurantAddress.trim();
+      }
+
+      return checkoutRequest;
     },
     [
       checkoutData?.address,

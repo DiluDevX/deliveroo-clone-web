@@ -76,8 +76,8 @@ export interface CheckoutRequest {
     price: number;
   }>;
   deliveryAddress: DeliveryAddress;
-  restaurantName: string;
-  restaurantAddress: string;
+  restaurantName?: string;
+  restaurantAddress?: string;
   deliveryFee: number;
   serviceFee: number;
   discountAmount?: number;

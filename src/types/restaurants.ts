@@ -3,6 +3,7 @@ export interface Restaurant {
   orgId?: string;
   name: string;
   image: string;
+  address?: string | null;
   description: string | null;
   tags: string[];
   openingAt: string;

@@ -106,10 +106,14 @@ const MenuPage = () => {
         localStorage.setItem("restaurantName", restaurantData.name);
         localStorage.setItem("selected-restaurant-id", restaurantData.id);
         localStorage.setItem("selected-restaurant-name", restaurantData.name);
-        localStorage.setItem(
-          "selected-restaurant-address",
-          restaurantData.description || "",
-        );
+        if (restaurantData.address?.trim()) {
+          localStorage.setItem(
+            "selected-restaurant-address",
+            restaurantData.address.trim(),
+          );
+        } else {
+          localStorage.removeItem("selected-restaurant-address");
+        }
 
         const validCategories = getMenuCategories(restaurantData);
         setCategories(validCategories);

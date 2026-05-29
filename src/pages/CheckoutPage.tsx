@@ -45,6 +45,7 @@ import { checkoutCart } from "../services/order.service";
 import { showErrorSnackbar } from "../utils/notifications";
 import { createUserAddress, getUserAddresses } from "../services/user.service";
 import { Address } from "../types/user.types";
+import type { CheckoutRequest } from "../types/order.types";
 import {
   clearSelectedDeliveryAddress,
   getSelectedDeliveryAddress,
@@ -266,7 +267,7 @@ const CheckoutPage = () => {
       const restaurantAddress =
         localStorage.getItem("selected-restaurant-address") || "";
 
-      const checkoutRequest = {
+      const checkoutRequest: CheckoutRequest = {
         deliveryAddress: {
           line1: data.address || "",
           city: data.city || "",
@@ -274,12 +275,14 @@ const CheckoutPage = () => {
           country: "UK",
         },
         restaurantName,
-        restaurantAddress,
         deliveryFee: shippingFee,
         serviceFee: 0.99,
         discountAmount: 0,
         paymentMethod: "cash",
       };
+      if (restaurantAddress.trim()) {
+        checkoutRequest.restaurantAddress = restaurantAddress.trim();
+      }
 
       const orderResponse = await checkoutCart(checkoutRequest);
       setIsProcessing(false);
