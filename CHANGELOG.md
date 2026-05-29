@@ -1,3 +1,9 @@
+## [1.13.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.12.0...v1.13.0) (2026-05-29)
+
+### Features
+
+* update checkout and payment processes to handle optional restaurant address ([d2428ce](https://github.com/DiluDevX/deliveroo-clone-web/commit/d2428ce98553d6859808be6207f9e3bb878aceea))
+
 ## [1.12.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.11.9...v1.12.0) (2026-05-29)
 
 ### Features
