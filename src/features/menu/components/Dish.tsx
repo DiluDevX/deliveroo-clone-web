@@ -77,7 +77,7 @@ const Dish = ({ data }: DishProps) => {
           }}
         >
           <img
-            src="https://assets.dilum.me/deliveroo-clone/images/salad.jpeg"
+            src={data.image}
             alt={data.name}
             style={{
               width: "100%",
