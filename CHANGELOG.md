@@ -1,3 +1,9 @@
+## [1.13.2](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.13.1...v1.13.2) (2026-06-25)
+
+### Bug Fixes
+
+* trigger frontend statis web app deployment ([e2f6efe](https://github.com/DiluDevX/deliveroo-clone-web/commit/e2f6efeb169b15788ac7e240c28fc58ee78fb3a8))
+
 ## [1.13.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.13.0...v1.13.1) (2026-06-25)
 
 ### Bug Fixes
