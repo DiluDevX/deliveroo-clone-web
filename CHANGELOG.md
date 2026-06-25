@@ -1,3 +1,9 @@
+## [1.13.3](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.13.2...v1.13.3) (2026-06-25)
+
+### Bug Fixes
+
+* update Dish component to use dynamic image source ([b49202d](https://github.com/DiluDevX/deliveroo-clone-web/commit/b49202d913fec238c3956ce59c91ad97ef84eb3c))
+
 ## [1.13.2](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.13.1...v1.13.2) (2026-06-25)
 
 ### Bug Fixes
