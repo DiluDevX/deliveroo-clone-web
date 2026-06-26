@@ -180,6 +180,7 @@ export default function Login() {
             fontSize: "1rem",
             fontWeight: "normal",
             borderRadius: "150px",
+            pl: 0,
             mb: 3,
             "&:hover": {
               border: "none",

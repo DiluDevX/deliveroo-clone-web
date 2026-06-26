@@ -8,6 +8,8 @@ interface SpecialViewProps {
   onLoadingChange?: (isLoading: boolean) => void;
 }
 
+const SPECIAL_OFFERS_CATEGORY_ID = "special-offers";
+
 const getSpecialItems = (categories: ICategory[]): IDish[] =>
   categories
     .flatMap((category) => category.dishes ?? [])
@@ -25,7 +27,11 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
   }
 
   return (
-    <Container disableGutters sx={{ mt: 2, mb: 2 }}>
+    <Container
+      disableGutters
+      id={`categoryId-${SPECIAL_OFFERS_CATEGORY_ID}`}
+      sx={{ mt: 2, mb: 2 }}
+    >
       <Typography
         variant="h6"
         sx={{

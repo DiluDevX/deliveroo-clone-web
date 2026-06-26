@@ -12,7 +12,7 @@ import CategoriesBar from "../features/menu/components/CategoriesBar";
 import MenuView from "../features/menu/views/MenuView";
 import Cart from "../features/menu/components/Cart";
 import { Colors } from "../theme";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { ICategory, IDish } from "../data/Sides";
 import { useParams } from "react-router-dom";
 import { getSingleRestaurant } from "../services/restaurant.service";
@@ -37,6 +37,33 @@ type RestaurantCategory = {
 
 type RestaurantWithMenu = Restaurant & {
   categories?: RestaurantCategory[];
+};
+
+const SPECIAL_OFFERS_CATEGORY_ID = "special-offers";
+const POPULAR_CATEGORY_ID = "popular";
+
+const hasSpecialItems = (categories: ICategory[]) =>
+  categories.some((category) =>
+    (category.dishes ?? []).some(
+      (dish) => Number(dish.discountPercent ?? 0) > 0,
+    ),
+  );
+
+const hasPopularItems = (categories: ICategory[]) =>
+  categories.some((category) =>
+    (category.dishes ?? []).some((dish) => dish.isPopular === true),
+  );
+
+const getInitialSelectedCategoryId = (categories: ICategory[]) => {
+  if (hasSpecialItems(categories)) {
+    return SPECIAL_OFFERS_CATEGORY_ID;
+  }
+
+  if (hasPopularItems(categories)) {
+    return POPULAR_CATEGORY_ID;
+  }
+
+  return categories[0]?.id ?? null;
 };
 
 const mapRestaurantCategories = (
@@ -85,6 +112,18 @@ const MenuPage = () => {
     (total, item) => total + Number(item.quantity || 0),
     0,
   );
+  const navigationCategories = useMemo<ICategory[]>(
+    () => [
+      ...(hasSpecialItems(categories)
+        ? [{ id: SPECIAL_OFFERS_CATEGORY_ID, name: "Special offers" }]
+        : []),
+      ...(hasPopularItems(categories)
+        ? [{ id: POPULAR_CATEGORY_ID, name: "Popular now" }]
+        : []),
+      ...categories,
+    ],
+    [categories],
+  );
 
   const handleDishesLoadingChange = useCallback((isLoading: boolean) => {
     setIsDishesLoading(isLoading);
@@ -121,7 +160,7 @@ const MenuPage = () => {
 
         const validCategories = getMenuCategories(restaurantData);
         setCategories(validCategories);
-        setSelectedCategoryId(validCategories[0]?.id || null);
+        setSelectedCategoryId(getInitialSelectedCategoryId(validCategories));
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load restaurant or categories.");
@@ -150,7 +189,7 @@ const MenuPage = () => {
       />
       <CategoriesBar
         error={error}
-        categories={categories}
+        categories={navigationCategories}
         selectedCategoryId={selectedCategoryId}
         setSelectedCategoryId={setSelectedCategoryId}
       />

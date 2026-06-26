@@ -8,6 +8,8 @@ interface PopularViewProps {
   onLoadingChange?: (isLoading: boolean) => void;
 }
 
+const POPULAR_CATEGORY_ID = "popular";
+
 const getPopularItems = (categories: ICategory[]): IDish[] =>
   categories
     .flatMap((category) => category.dishes ?? [])
@@ -27,6 +29,7 @@ const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
   return (
     <Container
       disableGutters
+      id={`categoryId-${POPULAR_CATEGORY_ID}`}
       sx={{ height: "380px", marginBottom: "1rem", marginTop: "1rem" }}
     >
       <Typography
