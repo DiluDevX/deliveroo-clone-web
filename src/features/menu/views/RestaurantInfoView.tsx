@@ -175,14 +175,14 @@ const RestaurantInfoView = ({
       >
         <Box sx={{ paddingBottom: "1rem" }}>
           <Button
-            PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem", pl: 1 }} />}
+            PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
             onClick={() => globalThis.history.back()}
             sx={{
               "&:hover": {
                 border: "none",
               },
               border: "none",
-              gap: { xs: "0.2rem", sm: "0.3rem", md: 0 },
+              gap: { xs: "0.35rem", sm: "0.45rem", md: "0.5rem" },
               color: Colors.background.brand,
               fontSize: "1rem",
               fontWeight: "normal",
@@ -422,17 +422,19 @@ const RestaurantInfoView = ({
                 Questions about allergens, ingredients or cooking methods? Ask{" "}
                 {restaurant.name} before ordering.
               </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  color: Colors.background.brand,
-                  fontWeight: 700,
-                }}
-              >
-                <LocalPhoneOutlinedIcon />
-                Contact the store
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <LocalPhoneOutlinedIcon
+                  sx={{ color: Colors.background.brand, fontSize: "1.25rem" }}
+                />
+                <Typography
+                  sx={{
+                    color: Colors.background.brand,
+                    fontWeight: 700,
+                    fontSize: "1rem",
+                  }}
+                >
+                  Contact the store
+                </Typography>
               </Box>
             </Box>
             <Box
@@ -591,6 +593,21 @@ const RestaurantInfoView = ({
                   text: "Quick delivery and the order was packed neatly. Would order again.",
                   tags: ["Fast delivery", "Well packed"],
                 },
+                {
+                  date: "2 weeks ago",
+                  text: "Really fresh ingredients and the sauce had a good balance.",
+                  tags: ["Fresh ingredients", "Great flavour"],
+                },
+                {
+                  date: "3 weeks ago",
+                  text: "Good value for the price and the portion was enough for dinner.",
+                  tags: ["Good value", "Filling portion"],
+                },
+                {
+                  date: "1 month ago",
+                  text: "The food was tasty, but delivery took a little longer than expected.",
+                  tags: ["Tasty food"],
+                },
               ].map((review) => (
                 <Box
                   key={review.text}
@@ -618,16 +635,25 @@ const RestaurantInfoView = ({
                       <Box
                         key={tag}
                         sx={{
-                          px: 1,
-                          py: 0.35,
+                          px: 1.1,
+                          py: 0.4,
                           borderRadius: "4px",
-                          backgroundColor: "#d5f8c7",
-                          color: Colors.text.success,
-                          fontSize: "0.85rem",
-                          fontWeight: 600,
+                          backgroundColor: `${Colors.background.brand}1f`,
+                          display: "inline-flex",
+                          alignItems: "center",
                         }}
                       >
-                        {tag}
+                        <Typography
+                          component="span"
+                          sx={{
+                            color: Colors.background.brand,
+                            fontSize: "0.85rem",
+                            fontWeight: 700,
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {tag}
+                        </Typography>
                       </Box>
                     ))}
                   </Box>

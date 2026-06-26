@@ -56,9 +56,10 @@ const RestaurantMenuSearch = ({
           top: 14,
           left: "50%",
           transform: "translateX(-50%)",
-          width: { md: 420, lg: 560 },
+          width: { md: 720, lg: 860 },
+          maxWidth: "calc(100vw - 48px)",
           zIndex: 130,
-          display: { xs: "none", md: "block" },
+          display: { xs: "none", md: isOpen ? "none" : "block" },
         }}
       >
         <TextField
@@ -117,7 +118,7 @@ const RestaurantMenuSearch = ({
               boxShadow: "0 12px 40px rgba(0, 0, 0, 0.28)",
             }}
           >
-            <Box sx={{ p: 1.5, pb: 0 }}>
+            <Box>
               <TextField
                 autoFocus
                 fullWidth
@@ -147,6 +148,19 @@ const RestaurantMenuSearch = ({
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "999px",
+                    backgroundColor: Colors.background.light,
+                    "& fieldset": {
+                      borderColor: "transparent",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "transparent",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "transparent",
+                    },
+                  },
+                  "& .MuiInputBase-input": {
+                    py: 1.25,
                   },
                 }}
               />
