@@ -2,7 +2,7 @@
 
 ### Features
 
-* add Order Confirmation page and update routing ([fba7236](https://github.com/DiluDevX/deliveroo-clone-web/commit/fba7236b1c4e9b28aea9688179db3a98c0e659bc))
+- add Order Confirmation page and update routing ([fba7236](https://github.com/DiluDevX/deliveroo-clone-web/commit/fba7236b1c4e9b28aea9688179db3a98c0e659bc))
 
 ## [1.13.3](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.13.2...v1.13.3) (2026-06-25)
 

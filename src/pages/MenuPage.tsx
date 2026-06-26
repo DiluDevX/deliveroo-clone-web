@@ -30,6 +30,8 @@ type RestaurantCategory = {
     price: number;
     image?: string | null;
     categoryId?: string;
+    isPopular?: boolean | null;
+    discountPercent?: number | null;
   }>;
 };
 
@@ -52,6 +54,8 @@ const mapRestaurantCategories = (
         price: String(dish.price),
         image: dish.image ?? "",
         categoryId: category.id,
+        isPopular: dish.isPopular ?? false,
+        discountPercent: dish.discountPercent ?? null,
       }),
     ),
   }));

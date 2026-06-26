@@ -64,8 +64,14 @@ const MenuView = ({
           opacity: isReady ? 1 : 0,
         }}
       >
-        <SpecialView onLoadingChange={handleSpecialLoading} />
-        <PopularView onLoadingChange={handlePopularLoading} />
+        <SpecialView
+          categories={categories}
+          onLoadingChange={handleSpecialLoading}
+        />
+        <PopularView
+          categories={categories}
+          onLoadingChange={handlePopularLoading}
+        />
         <DishView
           categories={categories}
           onLoadingChange={handleDishesLoading}

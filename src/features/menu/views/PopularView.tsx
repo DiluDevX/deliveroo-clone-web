@@ -1,31 +1,28 @@
 import { Box, Container, Typography } from "@mui/material";
 import SpecialCard from "../components/SpecialCard";
-import { popular } from "../../../data/Sides";
-import { useEffect, useState } from "react";
+import { ICategory, IDish } from "../../../data/Sides";
+import { useEffect, useMemo } from "react";
 
 interface PopularViewProps {
+  categories: ICategory[];
   onLoadingChange?: (isLoading: boolean) => void;
 }
 
-const PopularView = ({ onLoadingChange }: PopularViewProps) => {
-  const [isLoading, setIsLoading] = useState(true);
+const getPopularItems = (categories: ICategory[]): IDish[] =>
+  categories
+    .flatMap((category) => category.dishes ?? [])
+    .filter((dish) => dish.isPopular === true);
+
+const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
+  const popularItems = useMemo(() => getPopularItems(categories), [categories]);
 
   useEffect(() => {
-    // Simulate loading or fetch data here
-    const loadData = async () => {
-      setIsLoading(true);
-      // If you fetch data, do it here
-      // For static data, just simulate a brief load
-      setIsLoading(false);
-    };
+    onLoadingChange?.(false);
+  }, [onLoadingChange]);
 
-    loadData();
-  }, []);
-
-  // Notify parent when loading state changes
-  useEffect(() => {
-    onLoadingChange?.(isLoading);
-  }, [isLoading, onLoadingChange]);
+  if (popularItems.length === 0) {
+    return null;
+  }
 
   return (
     <Container
@@ -52,8 +49,8 @@ const PopularView = ({ onLoadingChange }: PopularViewProps) => {
           },
         }}
       >
-        {popular.map((item) => (
-          <SpecialCard data={item} key={item.id} />
+        {popularItems.map((item) => (
+          <SpecialCard data={item} key={item.id ?? item._id} />
         ))}
       </Box>
     </Container>

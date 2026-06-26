@@ -1,11 +1,11 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import Button from "./Button";
-import { IDishFake } from "../../../data/Sides";
+import { IDish } from "../../../data/Sides";
 import AddIcon from "@mui/icons-material/Add";
 import { Colors } from "../../../theme";
 
 type SpecialCardProps = {
-  data: IDishFake;
+  data: IDish;
 };
 
 const SpecialCard = ({ data }: SpecialCardProps) => {
@@ -60,6 +60,17 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
         >
           {data.name}
         </Typography>
+        {Number(data.discountPercent ?? 0) > 0 && (
+          <Typography
+            sx={{
+              color: Colors.background.brand,
+              fontSize: "0.75rem",
+              fontWeight: "bold",
+            }}
+          >
+            {data.discountPercent}% off
+          </Typography>
+        )}
       </CardContent>
       <Box
         sx={{

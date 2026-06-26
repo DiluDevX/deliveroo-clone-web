@@ -1,31 +1,28 @@
 import { Box, Container, Typography } from "@mui/material";
 import SpecialCard from "../components/SpecialCard";
-import { specials } from "../../../data/Sides";
-import { useEffect, useState } from "react";
+import { ICategory, IDish } from "../../../data/Sides";
+import { useEffect, useMemo } from "react";
 
 interface SpecialViewProps {
+  categories: ICategory[];
   onLoadingChange?: (isLoading: boolean) => void;
 }
 
-const SpecialView = ({ onLoadingChange }: SpecialViewProps) => {
-  const [isLoading, setIsLoading] = useState(true);
+const getSpecialItems = (categories: ICategory[]): IDish[] =>
+  categories
+    .flatMap((category) => category.dishes ?? [])
+    .filter((dish) => Number(dish.discountPercent ?? 0) > 0);
+
+const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
+  const specialItems = useMemo(() => getSpecialItems(categories), [categories]);
 
   useEffect(() => {
-    // Simulate loading or fetch data here
-    const loadData = async () => {
-      setIsLoading(true);
-      // If you fetch data, do it here
-      // For static data, just simulate a brief load
-      setIsLoading(false);
-    };
+    onLoadingChange?.(false);
+  }, [onLoadingChange]);
 
-    loadData();
-  }, []);
-
-  // Notify parent when loading state changes
-  useEffect(() => {
-    onLoadingChange?.(isLoading);
-  }, [isLoading, onLoadingChange]);
+  if (specialItems.length === 0) {
+    return null;
+  }
 
   return (
     <Container disableGutters sx={{ mt: 2, mb: 2 }}>
@@ -35,11 +32,10 @@ const SpecialView = ({ onLoadingChange }: SpecialViewProps) => {
           fontWeight: "bold",
         }}
       >
-        20% off selected items
+        Special offers
       </Typography>
       <Typography variant="body2" sx={{ marginBottom: "0.7rem" }}>
-        Spend £15.00, get 20% off selected items – T&Cs apply. New customers
-        only.
+        Selected discounted dishes from this restaurant.
       </Typography>
       <Box
         sx={{
@@ -52,8 +48,8 @@ const SpecialView = ({ onLoadingChange }: SpecialViewProps) => {
           },
         }}
       >
-        {specials.map((item) => (
-          <SpecialCard data={item} key={item.id} />
+        {specialItems.map((item) => (
+          <SpecialCard data={item} key={item.id ?? item._id} />
         ))}
       </Box>
     </Container>

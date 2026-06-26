@@ -38,7 +38,9 @@ export const DishSchema = z.object({
   description: z.string(),
   price: z.string(),
   image: z.string(),
-  categoryId: z.number(),
+  categoryId: z.string(),
+  isPopular: z.boolean().nullable().optional(),
+  discountPercent: z.number().nullable().optional(),
 });
 
 export const CategorySchema = z.object({
