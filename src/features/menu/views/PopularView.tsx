@@ -22,10 +22,28 @@ const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
   const popularItems = useMemo(() => getPopularItems(categories), [categories]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [showBackArrow, setShowBackArrow] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
 
   useEffect(() => {
     onLoadingChange?.(false);
   }, [onLoadingChange]);
+
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) {
+      return;
+    }
+
+    const updateOverflow = () => {
+      setHasOverflow(scrollElement.scrollWidth > scrollElement.clientWidth + 1);
+    };
+
+    updateOverflow();
+    const resizeObserver = new ResizeObserver(updateOverflow);
+    resizeObserver.observe(scrollElement);
+
+    return () => resizeObserver.disconnect();
+  }, [popularItems.length]);
 
   if (popularItems.length === 0) {
     return null;
@@ -58,7 +76,7 @@ const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
         Popular with other people
       </Typography>
       <Box sx={{ position: "relative" }}>
-        {showBackArrow && (
+        {hasOverflow && showBackArrow && (
           <IconButton
             aria-label="Previous popular dishes"
             onClick={() => scrollByDishPage("back")}
@@ -78,24 +96,26 @@ const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
             <ArrowBackIcon sx={{ color: Colors.background.brand }} />
           </IconButton>
         )}
-        <IconButton
-          aria-label="Next popular dishes"
-          onClick={() => scrollByDishPage("forward")}
-          sx={{
-            display: { xs: "none", md: "flex" },
-            position: "absolute",
-            right: -22,
-            top: "42%",
-            zIndex: 3,
-            width: 48,
-            height: 48,
-            backgroundColor: Colors.background.light,
-            boxShadow: `0 3px 12px ${Colors.boxShadow.default}`,
-            "&:hover": { backgroundColor: Colors.background.default },
-          }}
-        >
-          <ArrowForwardIcon sx={{ color: Colors.background.brand }} />
-        </IconButton>
+        {hasOverflow && (
+          <IconButton
+            aria-label="Next popular dishes"
+            onClick={() => scrollByDishPage("forward")}
+            sx={{
+              display: { xs: "none", md: "flex" },
+              position: "absolute",
+              right: -22,
+              top: "42%",
+              zIndex: 3,
+              width: 48,
+              height: 48,
+              backgroundColor: Colors.background.light,
+              boxShadow: `0 3px 12px ${Colors.boxShadow.default}`,
+              "&:hover": { backgroundColor: Colors.background.default },
+            }}
+          >
+            <ArrowForwardIcon sx={{ color: Colors.background.brand }} />
+          </IconButton>
+        )}
         <Box
           ref={scrollRef}
           sx={{

@@ -89,9 +89,6 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
               backgroundColor: Colors.background.brand,
               color: Colors.text.inverse,
               textAlign: "center",
-              fontSize: "0.72rem",
-              fontWeight: 800,
-              lineHeight: 1.05,
               borderRadius: "0 0 4px 4px",
               boxShadow: "0 2px 6px rgba(0, 0, 0, 0.18)",
               "&::after": {
@@ -109,10 +106,32 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
               },
             }}
           >
-            {discountPercent}%
-            <Box component="span" sx={{ display: "block", fontSize: "0.6rem" }}>
+            <Typography
+              component="span"
+              sx={{
+                display: "block",
+                color: "inherit",
+                fontFamily: "IBM Plex Sans, serif",
+                fontSize: "0.95rem",
+                fontWeight: 800,
+                lineHeight: 1,
+              }}
+            >
+              {discountPercent}%
+            </Typography>
+            <Typography
+              component="span"
+              sx={{
+                display: "block",
+                color: "inherit",
+                fontFamily: "IBM Plex Sans, serif",
+                fontSize: "0.64rem",
+                fontWeight: 800,
+                lineHeight: 1.05,
+              }}
+            >
               off
-            </Box>
+            </Typography>
           </Box>
         )}
         <img

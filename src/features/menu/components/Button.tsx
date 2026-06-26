@@ -59,7 +59,7 @@ function Button({
       disabled={disabled}
       sx={{
         borderRadius: 1,
-        fontFamily: "IBM Plex Sans, serif;",
+        fontFamily: "IBM Plex Sans, serif",
         whiteSpace: "nowrap",
         border: borderOff ? "none" : `0.5px solid ${Colors.border.subtle}`,
         "&:hover": {

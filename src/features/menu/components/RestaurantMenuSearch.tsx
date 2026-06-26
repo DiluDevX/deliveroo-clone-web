@@ -1,7 +1,5 @@
 import {
   Box,
-  Dialog,
-  DialogContent,
   IconButton,
   InputAdornment,
   TextField,
@@ -87,74 +85,101 @@ const RestaurantMenuSearch = ({
         />
       </Box>
 
-      <Dialog
-        open={isOpen}
-        onClose={closeSearch}
-        fullWidth
-        maxWidth="md"
-        PaperProps={{
-          sx: {
-            borderRadius: "18px",
-            maxHeight: "calc(100dvh - 48px)",
-          },
-        }}
-      >
-        <DialogContent sx={{ p: 2 }}>
-          <TextField
-            autoFocus
-            fullWidth
-            size="small"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            placeholder={`Search ${restaurantName}`}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchOutlinedIcon sx={{ color: Colors.text.placeholder }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton aria-label="Close search" onClick={closeSearch}>
-                    <CloseIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              mb: 2,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "999px",
-              },
-            }}
-          />
-
-          {searchTerm.trim() && (
-            <Typography variant="h5" sx={{ fontWeight: 800, mb: 2 }}>
-              {results.length} results for "{searchTerm.trim()}"
-            </Typography>
-          )}
-
+      {isOpen && (
+        <Box
+          role="presentation"
+          onMouseDown={closeSearch}
+          sx={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1200,
+            backgroundColor: "rgba(0, 0, 0, 0.55)",
+            display: { xs: "none", md: "block" },
+          }}
+        >
           <Box
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Search ${restaurantName}`}
+            onMouseDown={(event) => event.stopPropagation()}
             sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "repeat(2, minmax(0, 1fr))",
-                sm: "repeat(3, minmax(0, 1fr))",
-                md: "repeat(4, minmax(0, 1fr))",
-              },
-              gap: 2,
-              maxHeight: "70dvh",
-              overflowY: "auto",
-              pb: 1,
+              position: "fixed",
+              top: 14,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: { md: 720, lg: 860 },
+              maxWidth: "calc(100vw - 48px)",
+              maxHeight: "calc(100dvh - 42px)",
+              overflow: "hidden",
+              backgroundColor: Colors.background.light,
+              border: `2px solid ${Colors.border.dark}`,
+              borderRadius: "18px",
+              boxShadow: "0 12px 40px rgba(0, 0, 0, 0.28)",
             }}
           >
-            {results.map((dish) => (
-              <SpecialCard key={dish._id} data={dish} />
-            ))}
+            <Box sx={{ p: 1.5, pb: 0 }}>
+              <TextField
+                autoFocus
+                fullWidth
+                size="small"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder={`Search ${restaurantName}`}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchOutlinedIcon
+                        sx={{ color: Colors.text.placeholder }}
+                      />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="Close search"
+                        onClick={closeSearch}
+                      >
+                        <CloseIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "999px",
+                  },
+                }}
+              />
+            </Box>
+
+            <Box sx={{ px: 2, py: 1.5 }}>
+              {searchTerm.trim() && (
+                <Typography variant="h5" sx={{ fontWeight: 800, mb: 2 }}>
+                  {results.length} results for "{searchTerm.trim()}"
+                </Typography>
+              )}
+
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    md: "repeat(4, minmax(0, 1fr))",
+                    lg: "repeat(5, minmax(0, 1fr))",
+                  },
+                  gap: 2,
+                  maxHeight: "calc(100dvh - 150px)",
+                  overflowY: "auto",
+                  pb: 1,
+                }}
+              >
+                {results.map((dish) => (
+                  <SpecialCard key={dish._id} data={dish} />
+                ))}
+              </Box>
+            </Box>
           </Box>
-        </DialogContent>
-      </Dialog>
+        </Box>
+      )}
     </>
   );
 };

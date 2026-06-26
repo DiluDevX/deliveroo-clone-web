@@ -22,10 +22,28 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
   const specialItems = useMemo(() => getSpecialItems(categories), [categories]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [showBackArrow, setShowBackArrow] = useState(false);
+  const [hasOverflow, setHasOverflow] = useState(false);
 
   useEffect(() => {
     onLoadingChange?.(false);
   }, [onLoadingChange]);
+
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) {
+      return;
+    }
+
+    const updateOverflow = () => {
+      setHasOverflow(scrollElement.scrollWidth > scrollElement.clientWidth + 1);
+    };
+
+    updateOverflow();
+    const resizeObserver = new ResizeObserver(updateOverflow);
+    resizeObserver.observe(scrollElement);
+
+    return () => resizeObserver.disconnect();
+  }, [specialItems.length]);
 
   if (specialItems.length === 0) {
     return null;
@@ -60,7 +78,7 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
         Selected discounted dishes from this restaurant.
       </Typography>
       <Box sx={{ position: "relative" }}>
-        {showBackArrow && (
+        {hasOverflow && showBackArrow && (
           <IconButton
             aria-label="Previous special offers"
             onClick={() => scrollByDishPage("back")}
@@ -80,24 +98,26 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
             <ArrowBackIcon sx={{ color: Colors.background.brand }} />
           </IconButton>
         )}
-        <IconButton
-          aria-label="Next special offers"
-          onClick={() => scrollByDishPage("forward")}
-          sx={{
-            display: { xs: "none", md: "flex" },
-            position: "absolute",
-            right: -22,
-            top: "42%",
-            zIndex: 3,
-            width: 48,
-            height: 48,
-            backgroundColor: Colors.background.light,
-            boxShadow: `0 3px 12px ${Colors.boxShadow.default}`,
-            "&:hover": { backgroundColor: Colors.background.default },
-          }}
-        >
-          <ArrowForwardIcon sx={{ color: Colors.background.brand }} />
-        </IconButton>
+        {hasOverflow && (
+          <IconButton
+            aria-label="Next special offers"
+            onClick={() => scrollByDishPage("forward")}
+            sx={{
+              display: { xs: "none", md: "flex" },
+              position: "absolute",
+              right: -22,
+              top: "42%",
+              zIndex: 3,
+              width: 48,
+              height: 48,
+              backgroundColor: Colors.background.light,
+              boxShadow: `0 3px 12px ${Colors.boxShadow.default}`,
+              "&:hover": { backgroundColor: Colors.background.default },
+            }}
+          >
+            <ArrowForwardIcon sx={{ color: Colors.background.brand }} />
+          </IconButton>
+        )}
         <Box
           ref={scrollRef}
           sx={{

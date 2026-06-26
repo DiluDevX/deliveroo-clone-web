@@ -12,6 +12,7 @@ import {
 import InfoButton from "../components/InfoButton";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import StarOutlinedIcon from "@mui/icons-material/StarOutlined";
+import StarIcon from "@mui/icons-material/Star";
 import LocationSelector from "../components/LocationSelector";
 import Button from "../components/Button";
 import PeopleOutlineOutlinedIcon from "@mui/icons-material/PeopleOutlineOutlined";
@@ -33,6 +34,7 @@ const RestaurantInfoView = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isReviewsOpen, setIsReviewsOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -173,8 +175,8 @@ const RestaurantInfoView = ({
       >
         <Box sx={{ paddingBottom: "1rem" }}>
           <Button
-            PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
-            onClick={() => window.history.back()}
+            PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem", pl: 1 }} />}
+            onClick={() => globalThis.history.back()}
             sx={{
               "&:hover": {
                 border: "none",
@@ -323,6 +325,7 @@ const RestaurantInfoView = ({
               title="4.8 Excellent (500+)"
               description="Tasty Food"
               Icon={<StarOutlinedIcon sx={{ color: Colors.icon.star }} />}
+              onClick={() => setIsReviewsOpen(true)}
             />
             <Box
               sx={{
@@ -466,6 +469,177 @@ const RestaurantInfoView = ({
                 {restaurant.description ||
                   `${restaurant.name} serves ${restaurant.cuisine || "fresh meals"}.`}
               </Typography>
+            </Box>
+          </DialogContent>
+        </Dialog>
+        <Dialog
+          open={isReviewsOpen}
+          onClose={() => setIsReviewsOpen(false)}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              borderRadius: { xs: 0, sm: "8px" },
+              maxHeight: { xs: "100dvh", sm: "calc(100dvh - 48px)" },
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderBottom: `1px solid ${Colors.border.default}`,
+              fontWeight: 800,
+              position: "relative",
+            }}
+          >
+            Reviews
+            <IconButton
+              aria-label="Close restaurant reviews"
+              onClick={() => setIsReviewsOpen(false)}
+              sx={{ position: "absolute", right: 12 }}
+            >
+              <CloseIcon sx={{ color: Colors.background.brand }} />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent sx={{ p: 0 }}>
+            <Box
+              sx={{ p: 3, borderBottom: `1px solid ${Colors.border.default}` }}
+            >
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "150px 1fr" },
+                  gap: 3,
+                  alignItems: "center",
+                }}
+              >
+                <Box sx={{ textAlign: { xs: "left", sm: "center" } }}>
+                  <Typography
+                    sx={{
+                      color: Colors.background.brand,
+                      fontSize: "2.6rem",
+                      fontWeight: 800,
+                      lineHeight: 1,
+                    }}
+                  >
+                    4.8
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: { xs: "flex-start", sm: "center" },
+                      color: Colors.background.brand,
+                    }}
+                  >
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <StarIcon key={index} sx={{ fontSize: 18 }} />
+                    ))}
+                  </Box>
+                  <Typography sx={{ color: Colors.text.placeholder }}>
+                    128 reviews
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  {[5, 4, 3, 2, 1].map((rating, index) => (
+                    <Box
+                      key={rating}
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: "20px 1fr",
+                        gap: 1,
+                        alignItems: "center",
+                      }}
+                    >
+                      <Typography sx={{ color: Colors.text.placeholder }}>
+                        {rating}
+                      </Typography>
+                      <Box
+                        sx={{
+                          height: 8,
+                          borderRadius: "999px",
+                          backgroundColor: Colors.border.default,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: `${[86, 34, 12, 6, 18][index]}%`,
+                            height: "100%",
+                            backgroundColor: Colors.background.brand,
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            </Box>
+            <Box sx={{ p: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
+                All reviews
+              </Typography>
+              {[
+                {
+                  date: "2 days ago",
+                  text: "Food arrived warm, portions were generous, and the flavours were spot on.",
+                  tags: ["Tasty food", "Good portion size"],
+                },
+                {
+                  date: "1 week ago",
+                  text: "Quick delivery and the order was packed neatly. Would order again.",
+                  tags: ["Fast delivery", "Well packed"],
+                },
+              ].map((review) => (
+                <Box
+                  key={review.text}
+                  sx={{
+                    py: 2,
+                    borderBottom: `1px solid ${Colors.border.default}`,
+                  }}
+                >
+                  <Typography sx={{ fontWeight: 700 }}>
+                    Deliveroo customer
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box sx={{ color: Colors.icon.star }}>
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <StarIcon key={index} sx={{ fontSize: 16 }} />
+                      ))}
+                    </Box>
+                    <Typography sx={{ color: Colors.text.placeholder }}>
+                      {review.date}
+                    </Typography>
+                  </Box>
+                  <Typography sx={{ my: 1 }}>{review.text}</Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {review.tags.map((tag) => (
+                      <Box
+                        key={tag}
+                        sx={{
+                          px: 1,
+                          py: 0.35,
+                          borderRadius: "4px",
+                          backgroundColor: "#d5f8c7",
+                          color: Colors.text.success,
+                          fontSize: "0.85rem",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {tag}
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              ))}
+              <Button
+                variant="filled"
+                onClick={() => setIsReviewsOpen(false)}
+                sx={{ width: "100%", mt: 3, py: 1.5, fontWeight: 800 }}
+              >
+                Back to menu
+              </Button>
             </Box>
           </DialogContent>
         </Dialog>
