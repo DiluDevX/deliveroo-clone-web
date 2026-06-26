@@ -1,3 +1,9 @@
+## [1.20.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.19.0...v1.20.0) (2026-06-26)
+
+### Features
+
+* enhance menu components with new features and UI improvements ([38229b3](https://github.com/DiluDevX/deliveroo-clone-web/commit/38229b32b69846bb4ce2ed5d4b1ba544a24db947))
+
 ## [1.19.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.18.0...v1.19.0) (2026-06-26)
 
 ### Features
