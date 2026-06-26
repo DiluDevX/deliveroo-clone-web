@@ -178,7 +178,13 @@ export const StripeCardForm = ({
               onChange={(event) =>
                 setSelectedPaymentMethodId(event.target.value)
               }
-              sx={{ mb: 2, gap: 1 }}
+              sx={{
+                mb: 2,
+                gap: 1,
+                maxHeight: { xs: "220px", sm: "260px" },
+                overflowY: "auto",
+                pr: 0.5,
+              }}
             >
               {savedPaymentMethods.map((paymentMethod) => (
                 <Box

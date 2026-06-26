@@ -85,6 +85,9 @@ const MainCard: React.FC<MainCardProps> = ({ image, title, description }) => {
           fontSmoothing: "antialiased",
           py: "0.7rem",
           marginTop: { xs: 0, sm: "-20px" },
+          "&:hover": {
+            backgroundColor: Colors.background.brandHover,
+          },
         }}
       >
         Get Started

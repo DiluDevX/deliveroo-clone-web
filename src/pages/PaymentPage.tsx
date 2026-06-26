@@ -637,10 +637,16 @@ const PaymentPage = () => {
         }}
       >
         <Grid container spacing={4}>
-          <Grid item xs={12} md={7} sx={{ order: { xs: 2, md: 1 } }}>
+          <Grid
+            item
+            xs={12}
+            md={7}
+            sx={{ order: { xs: 2, md: 1 }, display: "flex" }}
+          >
             <Card
               sx={{
                 p: { xs: 2, sm: 3 },
+                width: "100%",
                 borderRadius: "12px",
                 border: `1px solid ${Colors.border.subtle}`,
                 boxShadow: "none",
@@ -720,10 +726,19 @@ const PaymentPage = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={5} sx={{ order: { xs: 1, md: 2 } }}>
+          <Grid
+            item
+            xs={12}
+            md={5}
+            sx={{ order: { xs: 1, md: 2 }, display: "flex" }}
+          >
             <Card
               sx={{
                 p: 3,
+                width: "100%",
+                height: { md: "100%" },
+                display: "flex",
+                flexDirection: "column",
                 borderRadius: "12px",
                 border: `1px solid ${Colors.border.subtle}`,
                 boxShadow: "none",
@@ -738,7 +753,14 @@ const PaymentPage = () => {
                 Order Summary
               </Typography>
 
-              <Box sx={{ mb: 3 }}>
+              <Box
+                sx={{
+                  mb: 3,
+                  maxHeight: { xs: "none", md: "360px" },
+                  overflowY: { xs: "visible", md: "auto" },
+                  pr: { md: 0.5 },
+                }}
+              >
                 {summaryItems.map((item) => (
                   <Box
                     key={item.id}

@@ -43,7 +43,11 @@ import {
 import { DeliveryDiningSharp, ShoppingBagOutlined } from "@mui/icons-material";
 import { checkoutCart } from "../services/order.service";
 import { showErrorSnackbar } from "../utils/notifications";
-import { createUserAddress, getUserAddresses } from "../services/user.service";
+import {
+  createUserAddress,
+  getUserAddresses,
+  updateUserProfile,
+} from "../services/user.service";
 import { Address } from "../types/user.types";
 import type { CheckoutRequest } from "../types/order.types";
 import {
@@ -51,6 +55,7 @@ import {
   getSelectedDeliveryAddress,
   setSelectedDeliveryAddress,
 } from "../utils/selected-delivery-address";
+import { setCredentials } from "../store/authSlice";
 
 type PaymentMethod = "CARD" | "CASH_ON_DELIVERY";
 
@@ -92,6 +97,7 @@ const CheckoutPage = () => {
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("new");
   const [saveAddressForFuture, setSaveAddressForFuture] = useState(false);
+  const [savePhoneForFuture, setSavePhoneForFuture] = useState(false);
 
   const effectiveDeliveryMethod =
     paymentMethod === "CASH_ON_DELIVERY" ? "delivery" : deliveryMethod;
@@ -229,91 +235,121 @@ const CheckoutPage = () => {
   };
 
   const handlePlaceOrder = form.handleSubmit(async (data) => {
+    if (isProcessing) {
+      return;
+    }
+
     if (!hasRequiredAddress) {
       showErrorSnackbar("Please enter a delivery address.");
       return;
     }
 
-    if (
-      effectiveDeliveryMethod === "delivery" &&
-      selectedAddressId === "new" &&
-      saveAddressForFuture
-    ) {
-      const savedAddress = await createUserAddress({
-        label: "Delivery",
-        line1: data.address || "",
-        city: data.city || "",
-        postcode: data.zipCode || "",
-        country: "UK",
-      });
-
-      if (!savedAddress) {
-        showErrorSnackbar("Failed to save address. Please try again.");
-        return;
-      }
-    }
-
     setIsProcessing(true);
-    const syncResult = await dispatch(syncCartToServer());
-    if (syncCartToServer.rejected.match(syncResult) || !syncResult.payload) {
-      setIsProcessing(false);
-      showErrorSnackbar("Failed to sync cart. Please try again.");
-      return;
-    }
 
-    if (paymentMethod === "CASH_ON_DELIVERY") {
-      const restaurantName =
-        localStorage.getItem("selected-restaurant-name") || "Restaurant";
-      const restaurantAddress =
-        localStorage.getItem("selected-restaurant-address") || "";
+    try {
+      if (isPhoneMissing && savePhoneForFuture && data.phone?.trim()) {
+        const updatedProfile = await updateUserProfile({
+          phone: data.phone.trim(),
+        });
 
-      const checkoutRequest: CheckoutRequest = {
-        deliveryAddress: {
+        if (!updatedProfile) {
+          showErrorSnackbar("Failed to save phone number. Please try again.");
+          return;
+        }
+
+        if (user) {
+          dispatch(
+            setCredentials({
+              user: {
+                ...user,
+                phone: updatedProfile.phone,
+              },
+            }),
+          );
+        }
+      }
+
+      if (
+        effectiveDeliveryMethod === "delivery" &&
+        selectedAddressId === "new" &&
+        saveAddressForFuture
+      ) {
+        const savedAddress = await createUserAddress({
+          label: "Delivery",
           line1: data.address || "",
           city: data.city || "",
           postcode: data.zipCode || "",
           country: "UK",
-        },
-        restaurantName,
-        deliveryFee: shippingFee,
-        serviceFee: 0.99,
-        discountAmount: 0,
-        paymentMethod: "cash",
-      };
-      if (restaurantAddress.trim()) {
-        checkoutRequest.restaurantAddress = restaurantAddress.trim();
-      }
-
-      const orderResponse = await checkoutCart(checkoutRequest);
-      setIsProcessing(false);
-
-      if (orderResponse?.orderId) {
-        isCompletingOrderRef.current = true;
-        setOrderPlaced(true);
-        navigate("/order-confirmation", {
-          state: {
-            orderId: orderResponse.orderNumber,
-            orderDetails: {
-              subtotal,
-              shippingFee,
-              serviceFee: 0.99,
-              discount: 0,
-              total: subtotal + shippingFee + 0.99,
-            },
-            paymentMethod: "cash",
-          },
         });
-        void dispatch(clearCartAndSync());
-      } else {
-        showErrorSnackbar("Failed to place order. Please try again.");
-      }
-      return;
-    }
 
-    setIsProcessing(false);
-    navigate("/payment", {
-      state: { checkoutData: data, deliveryMethod, paymentMethod },
-    });
+        if (!savedAddress) {
+          showErrorSnackbar("Failed to save address. Please try again.");
+          return;
+        }
+      }
+
+      const syncResult = await dispatch(syncCartToServer());
+      if (syncCartToServer.rejected.match(syncResult) || !syncResult.payload) {
+        showErrorSnackbar("Failed to sync cart. Please try again.");
+        return;
+      }
+
+      if (paymentMethod === "CASH_ON_DELIVERY") {
+        const restaurantName =
+          localStorage.getItem("selected-restaurant-name") || "Restaurant";
+        const restaurantAddress =
+          localStorage.getItem("selected-restaurant-address") || "";
+
+        const checkoutRequest: CheckoutRequest = {
+          deliveryAddress: {
+            line1: data.address || "",
+            city: data.city || "",
+            postcode: data.zipCode || "",
+            country: "UK",
+          },
+          restaurantName,
+          deliveryFee: shippingFee,
+          serviceFee: 0.99,
+          discountAmount: 0,
+          paymentMethod: "cash",
+        };
+        if (restaurantAddress.trim()) {
+          checkoutRequest.restaurantAddress = restaurantAddress.trim();
+        }
+
+        const orderResponse = await checkoutCart(checkoutRequest);
+
+        if (orderResponse?.orderId) {
+          isCompletingOrderRef.current = true;
+          setOrderPlaced(true);
+          navigate("/order-confirmation", {
+            state: {
+              orderId: orderResponse.orderNumber,
+              orderDetails: {
+                subtotal,
+                shippingFee,
+                serviceFee: 0.99,
+                discount: 0,
+                total: subtotal + shippingFee + 0.99,
+              },
+              paymentMethod: "cash",
+            },
+          });
+          void dispatch(clearCartAndSync());
+        } else {
+          showErrorSnackbar("Failed to place order. Please try again.");
+        }
+        return;
+      }
+
+      navigate("/payment", {
+        state: { checkoutData: data, deliveryMethod, paymentMethod },
+      });
+    } finally {
+      if (!isCompletingOrderRef.current) {
+        setIsProcessing(false);
+      }
+    }
   });
 
   const handleIncrement = (itemId: string) => {
@@ -463,10 +499,11 @@ const CheckoutPage = () => {
 
       <Box sx={{ maxWidth: "1200px", mx: "auto", px: 3 }}>
         <Grid container spacing={4}>
-          <Grid item xs={12} md={7}>
+          <Grid item xs={12} md={7} sx={{ display: "flex" }}>
             <Card
               sx={{
                 p: 3,
+                width: "100%",
                 borderRadius: "12px",
                 border: `1px solid ${Colors.border.subtle}`,
                 boxShadow: "none",
@@ -719,6 +756,30 @@ const CheckoutPage = () => {
                           {user?.phone}
                         </Typography>
                       )}
+                      {isPhoneMissing && (
+                        <FormControlLabel
+                          sx={{ mt: 1, alignItems: "center" }}
+                          control={
+                            <Checkbox
+                              checked={savePhoneForFuture}
+                              onChange={(event) =>
+                                setSavePhoneForFuture(event.target.checked)
+                              }
+                              sx={{
+                                color: Colors.background.brand,
+                                "&.Mui-checked": {
+                                  color: Colors.background.brand,
+                                },
+                              }}
+                            />
+                          }
+                          label={
+                            <Typography sx={{ fontSize: "0.9rem" }}>
+                              Save this phone number for future orders
+                            </Typography>
+                          }
+                        />
+                      )}
                     </Box>
                   </Box>
                 </Box>
@@ -876,10 +937,14 @@ const CheckoutPage = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={5}>
+          <Grid item xs={12} md={5} sx={{ display: "flex" }}>
             <Card
               sx={{
                 p: 3,
+                width: "100%",
+                height: { md: "100%" },
+                display: "flex",
+                flexDirection: "column",
                 borderRadius: "12px",
                 border: `1px solid ${Colors.border.subtle}`,
                 boxShadow: "none",
@@ -891,7 +956,14 @@ const CheckoutPage = () => {
               >
                 Review your cart
               </Typography>
-              <Box sx={{ mb: 3 }}>
+              <Box
+                sx={{
+                  mb: 3,
+                  maxHeight: { xs: "none", md: "390px" },
+                  overflowY: { xs: "visible", md: "auto" },
+                  pr: { md: 0.5 },
+                }}
+              >
                 {cartItems.map((item) => (
                   <Box
                     key={item.cartItemId || item._id}
@@ -1109,7 +1181,7 @@ const CheckoutPage = () => {
                   <FormControlLabel
                     sx={{
                       mb: { xs: 2, sm: 0 },
-                      alignItems: "flex-start",
+                      alignItems: "center",
                     }}
                     control={
                       <Checkbox

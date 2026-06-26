@@ -2,7 +2,7 @@
 
 ### Features
 
-* update SpecialCard and PopularView to handle cart logic and add category IDs ([30ad6dc](https://github.com/DiluDevX/deliveroo-clone-web/commit/30ad6dca093f4e26956adb174f6bc51c080d3441))
+- update SpecialCard and PopularView to handle cart logic and add category IDs ([30ad6dc](https://github.com/DiluDevX/deliveroo-clone-web/commit/30ad6dca093f4e26956adb174f6bc51c080d3441))
 
 ## [1.15.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.14.0...v1.15.0) (2026-06-26)
 

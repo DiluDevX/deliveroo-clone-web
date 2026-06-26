@@ -4,7 +4,7 @@ const PrivacyPolicyPage = () => {
   return (
     <Typography sx={{ padding: "10rem" }}>
       <h1>Privacy Policy</h1>
-      <p>Last updated: March 04, 2025</p>
+      <p>Last updated: March 04, 2026</p>
       <p>
         This Privacy Policy describes Our policies and procedures on the
         collection, use and disclosure of Your information when You use the

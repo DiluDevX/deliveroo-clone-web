@@ -83,6 +83,8 @@ const profileSchema = z.object({
   phone: z.string().optional(),
 });
 
+const MAX_SAVED_PAYMENT_METHODS = 2;
+
 type ProfileFormValues = {
   firstName: string;
   lastName: string;
@@ -1196,10 +1198,23 @@ const ProfilePage = () => {
                 variant="filled"
                 sx={{ fontSize: "0.85rem", py: 0.5 }}
                 onClick={() => setShowPaymentModal(true)}
+                disabled={payments.length >= MAX_SAVED_PAYMENT_METHODS}
               >
                 <AddIcon sx={{ mr: 0.5 }} /> Add New
               </Button>
             </Box>
+            {payments.length >= MAX_SAVED_PAYMENT_METHODS && (
+              <Typography
+                sx={{
+                  color: Colors.text.placeholder,
+                  fontSize: "0.85rem",
+                  mb: 2,
+                }}
+              >
+                You can save up to {MAX_SAVED_PAYMENT_METHODS} payment methods.
+                Delete one to add another.
+              </Typography>
+            )}
             {paymentsLoading ? (
               <Typography sx={{ color: Colors.text.placeholder }}>
                 Loading payment methods...

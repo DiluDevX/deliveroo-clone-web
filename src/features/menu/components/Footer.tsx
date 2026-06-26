@@ -252,7 +252,7 @@ const Footer = () => {
                 mt: "1rem",
               }}
             >
-              © 2025 Deliveroo
+              © 2026 Deliveroo
             </Typography>
           </Box>
         </Box>
