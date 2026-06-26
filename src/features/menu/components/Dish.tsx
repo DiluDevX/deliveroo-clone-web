@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import PopUpDialog from "./PopUpDialog";
 import { showSuccessSnackbar } from "../../../utils/notifications";
+import DishDetailsDialog from "./DishDetailsDialog";
 
 type DishProps = {
   data: IDish;
@@ -17,6 +18,7 @@ type DishProps = {
 const Dish = ({ data }: DishProps) => {
   const dispatch = useAppDispatch();
   const [isReplaceCartDialogOpen, setIsReplaceCartDialogOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const cartItems = useAppSelector((state) => state.cart.items);
   const cartRestaurantId = useAppSelector((state) => state.cart.restaurantId);
   const cartRestaurantName = useAppSelector(
@@ -50,6 +52,7 @@ const Dish = ({ data }: DishProps) => {
   return (
     <>
       <Card
+        onClick={() => setIsDetailsOpen(true)}
         sx={{
           border: `1px solid ${Colors.border.default}`,
           borderRadius: "12px",
@@ -65,6 +68,7 @@ const Dish = ({ data }: DishProps) => {
           maxWidth: "600px",
           boxShadow: `0px 2px 8px ${Colors.boxShadow.default}`,
           backgroundColor: Colors.background.defaultLight,
+          cursor: "pointer",
         }}
       >
         <Box
@@ -137,7 +141,10 @@ const Dish = ({ data }: DishProps) => {
 
         <Button
           aria-label={`Add ${data.name} to cart`}
-          onClick={handleAddToCart}
+          onClick={(event) => {
+            event.stopPropagation();
+            void handleAddToCart();
+          }}
           sx={{
             backgroundColor: Colors.background.defaultLight,
             color: Colors.text.inverse,
@@ -164,6 +171,11 @@ const Dish = ({ data }: DishProps) => {
           />
         </Button>
       </Card>
+      <DishDetailsDialog
+        dish={data}
+        open={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(false)}
+      />
       <PopUpDialog
         open={isReplaceCartDialogOpen}
         onClose={() => setIsReplaceCartDialogOpen(false)}

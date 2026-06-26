@@ -1,7 +1,10 @@
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Container, IconButton, Typography } from "@mui/material";
 import SpecialCard from "../components/SpecialCard";
 import { ICategory, IDish } from "../../../data/Sides";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { Colors } from "../../../theme";
 
 interface PopularViewProps {
   categories: ICategory[];
@@ -17,6 +20,8 @@ const getPopularItems = (categories: ICategory[]): IDish[] =>
 
 const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
   const popularItems = useMemo(() => getPopularItems(categories), [categories]);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [showBackArrow, setShowBackArrow] = useState(false);
 
   useEffect(() => {
     onLoadingChange?.(false);
@@ -25,6 +30,17 @@ const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
   if (popularItems.length === 0) {
     return null;
   }
+
+  const scrollByDishPage = (direction: "back" | "forward") => {
+    scrollRef.current?.scrollBy({
+      left: direction === "forward" ? 560 : -560,
+      behavior: "smooth",
+    });
+
+    if (direction === "forward") {
+      setShowBackArrow(true);
+    }
+  };
 
   return (
     <Container
@@ -41,20 +57,62 @@ const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
       >
         Popular with other people
       </Typography>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          overflow: "scroll",
-          "::-webkit-scrollbar": {
-            display: "none",
-          },
-        }}
-      >
-        {popularItems.map((item) => (
-          <SpecialCard data={item} key={item.id ?? item._id} />
-        ))}
+      <Box sx={{ position: "relative" }}>
+        {showBackArrow && (
+          <IconButton
+            aria-label="Previous popular dishes"
+            onClick={() => scrollByDishPage("back")}
+            sx={{
+              display: { xs: "none", md: "flex" },
+              position: "absolute",
+              left: -22,
+              top: "42%",
+              zIndex: 3,
+              width: 48,
+              height: 48,
+              backgroundColor: Colors.background.light,
+              boxShadow: `0 3px 12px ${Colors.boxShadow.default}`,
+              "&:hover": { backgroundColor: Colors.background.default },
+            }}
+          >
+            <ArrowBackIcon sx={{ color: Colors.background.brand }} />
+          </IconButton>
+        )}
+        <IconButton
+          aria-label="Next popular dishes"
+          onClick={() => scrollByDishPage("forward")}
+          sx={{
+            display: { xs: "none", md: "flex" },
+            position: "absolute",
+            right: -22,
+            top: "42%",
+            zIndex: 3,
+            width: 48,
+            height: 48,
+            backgroundColor: Colors.background.light,
+            boxShadow: `0 3px 12px ${Colors.boxShadow.default}`,
+            "&:hover": { backgroundColor: Colors.background.default },
+          }}
+        >
+          <ArrowForwardIcon sx={{ color: Colors.background.brand }} />
+        </IconButton>
+        <Box
+          ref={scrollRef}
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            overflowX: { xs: "scroll", md: "hidden" },
+            overflowY: "hidden",
+            "::-webkit-scrollbar": {
+              display: "none",
+            },
+          }}
+        >
+          {popularItems.map((item) => (
+            <SpecialCard data={item} key={item.id ?? item._id} />
+          ))}
+        </Box>
       </Box>
     </Container>
   );

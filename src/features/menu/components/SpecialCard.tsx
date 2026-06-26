@@ -9,6 +9,7 @@ import { addItemAndSync, clearCartAndSync } from "../../../store/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks/cartHooks";
 import { showSuccessSnackbar } from "../../../utils/notifications";
 import PopUpDialog from "./PopUpDialog";
+import DishDetailsDialog from "./DishDetailsDialog";
 
 type SpecialCardProps = {
   data: IDish;
@@ -18,6 +19,7 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
   const dispatch = useAppDispatch();
   const discountPercent = Number(data.discountPercent ?? 0);
   const [isReplaceCartDialogOpen, setIsReplaceCartDialogOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const cartItems = useAppSelector((state) => state.cart.items);
   const cartRestaurantId = useAppSelector((state) => state.cart.restaurantId);
   const cartRestaurantName = useAppSelector(
@@ -51,10 +53,12 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
   return (
     <>
       <Card
+        onClick={() => setIsDetailsOpen(true)}
         sx={{
           width: "100%",
-          maxWidth: "150px",
-          height: "270px",
+          maxWidth: "170px",
+          minWidth: "170px",
+          height: "310px",
           mr: 2,
           my: 2,
           display: "flex",
@@ -67,6 +71,7 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
           borderStyle: "solid",
           borderColor: Colors.border.default,
           position: "relative",
+          cursor: "pointer",
         }}
       >
         {discountPercent > 0 && (
@@ -116,7 +121,7 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
           style={{
             minHeight: 150,
             maxHeight: 150,
-            width: "148px",
+            width: "100%",
             borderRadius: "3px",
             objectFit: "cover",
             backgroundImage:
@@ -128,9 +133,8 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
         <CardContent
           sx={{
             flexGrow: 1,
-            maxHeight: "70px",
-            mb: 1,
-            WebkitLineClamp: 1,
+            pt: 2.5,
+            pb: 1,
             overflow: "hidden",
           }}
         >
@@ -141,6 +145,24 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
             component="div"
           >
             {data.name}
+          </Typography>
+          {data.description && (
+            <Typography
+              sx={{
+                color: Colors.text.lighter,
+                fontSize: "0.72rem",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                mb: 1,
+              }}
+            >
+              {data.description}
+            </Typography>
+          )}
+          <Typography sx={{ fontWeight: 700, fontSize: "0.85rem" }}>
+            £{Number(data.price).toFixed(2)}
           </Typography>
         </CardContent>
         <Box
@@ -153,13 +175,23 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
         >
           <Button
             aria-label={`Add ${data.name} to cart`}
-            onClick={handleAddToCart}
+            onClick={(event) => {
+              event.stopPropagation();
+              void handleAddToCart();
+            }}
             sx={{
-              width: "89%",
-              borderRadius: "3px",
-              border: "0.5px solid lightgrey",
-              marginBottom: "0.5rem",
-              position: "relative",
+              width: 48,
+              height: 48,
+              minHeight: 48,
+              minWidth: 48,
+              borderRadius: "50%",
+              border: `1px solid ${Colors.border.default}`,
+              backgroundColor: Colors.background.light,
+              boxShadow: `0 3px 10px ${Colors.boxShadow.default}`,
+              position: "absolute",
+              right: 12,
+              top: 126,
+              p: 0,
             }}
           >
             <AddIcon
@@ -172,6 +204,11 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
           </Button>
         </Box>
       </Card>
+      <DishDetailsDialog
+        dish={data}
+        open={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(false)}
+      />
       <PopUpDialog
         open={isReplaceCartDialogOpen}
         onClose={() => setIsReplaceCartDialogOpen(false)}

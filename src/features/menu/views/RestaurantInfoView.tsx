@@ -1,7 +1,11 @@
 import {
   Box,
   Container,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   Grid2 as Grid,
+  IconButton,
   Skeleton,
   Typography,
 } from "@mui/material";
@@ -12,6 +16,9 @@ import LocationSelector from "../components/LocationSelector";
 import Button from "../components/Button";
 import PeopleOutlineOutlinedIcon from "@mui/icons-material/PeopleOutlineOutlined";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CloseIcon from "@mui/icons-material/Close";
+import LocalPhoneOutlinedIcon from "@mui/icons-material/LocalPhoneOutlined";
+import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import { useState } from "react";
 import { Colors } from "../../../theme";
 import { Restaurant } from "../../../types/restaurants";
@@ -25,6 +32,7 @@ const RestaurantInfoView = ({
   restaurant: Restaurant | null;
 }) => {
   const [imageError, setImageError] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -309,6 +317,7 @@ const RestaurantInfoView = ({
               title="Info"
               description="Map, allergens and hygiene rating"
               Icon={<InfoOutlinedIcon sx={{ color: Colors.icon.info }} />}
+              onClick={() => setIsInfoOpen(true)}
             />
             <InfoButton
               title="4.8 Excellent (500+)"
@@ -368,6 +377,98 @@ const RestaurantInfoView = ({
             </Button>
           </Grid>
         </Grid>
+        <Dialog
+          open={isInfoOpen}
+          onClose={() => setIsInfoOpen(false)}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              borderRadius: { xs: 0, sm: "8px" },
+              maxHeight: { xs: "100dvh", sm: "calc(100dvh - 48px)" },
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderBottom: `1px solid ${Colors.border.default}`,
+              fontWeight: 800,
+              position: "relative",
+            }}
+          >
+            Info
+            <IconButton
+              aria-label="Close restaurant info"
+              onClick={() => setIsInfoOpen(false)}
+              sx={{ position: "absolute", right: 12 }}
+            >
+              <CloseIcon sx={{ color: Colors.background.brand }} />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent sx={{ p: 0 }}>
+            <Box
+              sx={{ p: 3, borderBottom: `1px solid ${Colors.border.default}` }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
+                Allergens
+              </Typography>
+              <Typography sx={{ color: Colors.text.default, mb: 2 }}>
+                Questions about allergens, ingredients or cooking methods? Ask{" "}
+                {restaurant.name} before ordering.
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  color: Colors.background.brand,
+                  fontWeight: 700,
+                }}
+              >
+                <LocalPhoneOutlinedIcon />
+                Contact the store
+              </Box>
+            </Box>
+            <Box
+              sx={{ p: 3, borderBottom: `1px solid ${Colors.border.default}` }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 800, mb: 2 }}>
+                Location
+              </Typography>
+              <Box
+                sx={{
+                  height: 180,
+                  borderRadius: 1,
+                  backgroundColor: Colors.background.default,
+                  border: `1px solid ${Colors.border.default}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: Colors.text.placeholder,
+                  mb: 2,
+                }}
+              >
+                <MapOutlinedIcon sx={{ mr: 1 }} />
+                Map preview
+              </Box>
+              <Typography sx={{ color: Colors.text.default }}>
+                {restaurant.address || "Address not available"}
+              </Typography>
+            </Box>
+            <Box sx={{ p: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
+                Restaurant details
+              </Typography>
+              <Typography sx={{ color: Colors.text.lighter }}>
+                {restaurant.description ||
+                  `${restaurant.name} serves ${restaurant.cuisine || "fresh meals"}.`}
+              </Typography>
+            </Box>
+          </DialogContent>
+        </Dialog>
       </Container>
     );
   }

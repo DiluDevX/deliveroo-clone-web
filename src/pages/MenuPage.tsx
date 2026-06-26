@@ -11,6 +11,7 @@ import RestaurantInfoView from "../features/menu/views/RestaurantInfoView";
 import CategoriesBar from "../features/menu/components/CategoriesBar";
 import MenuView from "../features/menu/views/MenuView";
 import Cart from "../features/menu/components/Cart";
+import RestaurantMenuSearch from "../features/menu/components/RestaurantMenuSearch";
 import { Colors } from "../theme";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { ICategory, IDish } from "../data/Sides";
@@ -187,6 +188,12 @@ const MenuPage = () => {
         isLoading={isRestaurantLoading}
         restaurant={restaurant}
       />
+      {restaurant && (
+        <RestaurantMenuSearch
+          categories={categories}
+          restaurantName={restaurant.name}
+        />
+      )}
       <CategoriesBar
         error={error}
         categories={navigationCategories}

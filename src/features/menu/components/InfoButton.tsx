@@ -7,11 +7,13 @@ type InfoButtonProps = {
   title: string;
   description: string;
   Icon: React.ReactNode;
+  onClick?: () => void;
 };
 
-const InfoButton = ({ title, description, Icon }: InfoButtonProps) => {
+const InfoButton = ({ title, description, Icon, onClick }: InfoButtonProps) => {
   return (
     <Box
+      onClick={onClick}
       sx={{
         display: "flex",
         alignItems: "center",

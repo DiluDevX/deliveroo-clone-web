@@ -2,7 +2,7 @@
 
 ### Features
 
-* enhance SpecialCard to display discount percentage and update ProfilePage error handling ([63b3aab](https://github.com/DiluDevX/deliveroo-clone-web/commit/63b3aab5c9bf1403d41edb2f6f60908d37f02043))
+- enhance SpecialCard to display discount percentage and update ProfilePage error handling ([63b3aab](https://github.com/DiluDevX/deliveroo-clone-web/commit/63b3aab5c9bf1403d41edb2f6f60908d37f02043))
 
 ## [1.17.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.16.0...v1.17.0) (2026-06-26)
 
