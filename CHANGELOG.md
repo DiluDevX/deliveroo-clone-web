@@ -1,3 +1,9 @@
+## [1.19.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.18.0...v1.19.0) (2026-06-26)
+
+### Features
+
+* add RestaurantMenuSearch component and enhance DishDetailsDialog integration ([b274ff2](https://github.com/DiluDevX/deliveroo-clone-web/commit/b274ff27ac72fefe74d0316b0f7bcfc3d871c64e))
+
 ## [1.18.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.17.0...v1.18.0) (2026-06-26)
 
 ### Features
