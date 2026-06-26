@@ -1,3 +1,9 @@
+## [1.15.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.14.0...v1.15.0) (2026-06-26)
+
+### Features
+
+* enhance dish model with popularity and discount fields; update related components ([9f8ae04](https://github.com/DiluDevX/deliveroo-clone-web/commit/9f8ae0431667cbdd0254ea5f021b63b2256af156))
+
 ## [1.14.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.13.3...v1.14.0) (2026-06-26)
 
 ### Features
