@@ -99,7 +99,7 @@ const ProfilePage = () => {
   const user = useAppSelector((state) => state.auth.user);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -381,7 +381,10 @@ const ProfilePage = () => {
     setIsLoading(true);
     setError(null);
 
-    const updated = await updateUserProfile(data);
+    const updated = await updateUserProfile({
+      ...data,
+      phone: data.phone?.trim() ? data.phone.trim() : null,
+    });
 
     if (updated) {
       dispatch(
@@ -397,7 +400,7 @@ const ProfilePage = () => {
       );
       setIsEditing(false);
     } else {
-      setError("Failed to update profile");
+      showErrorSnackbar("Failed to update profile");
     }
 
     setIsLoading(false);
@@ -477,21 +480,6 @@ const ProfilePage = () => {
 
             {isEditing && (
               <>
-                {error && (
-                  <Box
-                    sx={{
-                      mb: 2,
-                      p: 2,
-                      backgroundColor: Colors.error.light,
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <Typography sx={{ color: Colors.background.danger }}>
-                      {error}
-                    </Typography>
-                  </Box>
-                )}
-
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <Box
                     sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}

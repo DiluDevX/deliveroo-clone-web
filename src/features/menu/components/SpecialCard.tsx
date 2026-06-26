@@ -16,6 +16,7 @@ type SpecialCardProps = {
 
 const SpecialCard = ({ data }: SpecialCardProps) => {
   const dispatch = useAppDispatch();
+  const discountPercent = Number(data.discountPercent ?? 0);
   const [isReplaceCartDialogOpen, setIsReplaceCartDialogOpen] = useState(false);
   const cartItems = useAppSelector((state) => state.cart.items);
   const cartRestaurantId = useAppSelector((state) => state.cart.restaurantId);
@@ -65,8 +66,50 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
           borderWidth: 1.5,
           borderStyle: "solid",
           borderColor: Colors.border.default,
+          position: "relative",
         }}
       >
+        {discountPercent > 0 && (
+          <Box
+            aria-label={`${discountPercent}% off`}
+            sx={{
+              position: "absolute",
+              top: -1.5,
+              right: 8,
+              zIndex: 2,
+              minWidth: 44,
+              px: 0.75,
+              pt: 0.75,
+              pb: 1.25,
+              backgroundColor: Colors.background.brand,
+              color: Colors.text.inverse,
+              textAlign: "center",
+              fontSize: "0.72rem",
+              fontWeight: 800,
+              lineHeight: 1.05,
+              borderRadius: "0 0 4px 4px",
+              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.18)",
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                left: 0,
+                right: 0,
+                bottom: -9,
+                margin: "auto",
+                width: 0,
+                height: 0,
+                borderLeft: "22px solid transparent",
+                borderRight: "22px solid transparent",
+                borderTop: `9px solid ${Colors.background.brand}`,
+              },
+            }}
+          >
+            {discountPercent}%
+            <Box component="span" sx={{ display: "block", fontSize: "0.6rem" }}>
+              off
+            </Box>
+          </Box>
+        )}
         <img
           src={data.image}
           alt={data.name}
@@ -99,17 +142,6 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
           >
             {data.name}
           </Typography>
-          {Number(data.discountPercent ?? 0) > 0 && (
-            <Typography
-              sx={{
-                color: Colors.background.brand,
-                fontSize: "0.75rem",
-                fontWeight: "bold",
-              }}
-            >
-              {data.discountPercent}% off
-            </Typography>
-          )}
         </CardContent>
         <Box
           sx={{

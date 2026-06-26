@@ -3,7 +3,7 @@ export type IUser = {
   firstName: string;
   lastName: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
   role?: string;
   restaurantId?: string;
   orderCount?: number;
@@ -16,7 +16,7 @@ export interface UserProfile {
   firstName: string;
   lastName: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
   role: string;
   createdAt: string;
   updatedAt: string;

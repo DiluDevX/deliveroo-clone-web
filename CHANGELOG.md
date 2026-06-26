@@ -2,7 +2,7 @@
 
 ### Features
 
-* update various components and pages for 2026, enhance profile payment method limits ([2c3987b](https://github.com/DiluDevX/deliveroo-clone-web/commit/2c3987b86b8efdb711b27817be9a4c60fc7ee577))
+- update various components and pages for 2026, enhance profile payment method limits ([2c3987b](https://github.com/DiluDevX/deliveroo-clone-web/commit/2c3987b86b8efdb711b27817be9a4c60fc7ee577))
 
 ## [1.16.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.15.0...v1.16.0) (2026-06-26)
 
