@@ -96,6 +96,14 @@ const App = () => {
                 </WithPageTitle>
               }
             />
+            <Route
+              path="/order-confirmation/:orderId"
+              element={
+                <WithPageTitle title="Order Confirmation">
+                  <OrderConfirmationPage />
+                </WithPageTitle>
+              }
+            />
           </Route>
           <Route path="/account" element={<SignPageLayout />}>
             <Route
