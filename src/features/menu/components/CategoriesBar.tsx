@@ -14,6 +14,8 @@ import { ICategory } from "../../../data/Sides";
 import { Colors } from "../../../theme";
 import { useEffect, useRef, useState } from "react";
 
+const categoryHoverColor = "rgba(0, 204, 188, 0.12)";
+
 interface CategoryProps {
   error: string | null;
   categories: ICategory[];
@@ -204,7 +206,7 @@ export const CategoriesBar = ({
         borderStyle: "solid",
         borderColor: Colors.border.default,
         position: "sticky",
-        height: "70px",
+        height: "64px",
         alignItems: "center",
         display: "flex",
         top: "68px",
@@ -272,9 +274,9 @@ export const CategoriesBar = ({
               onClick={(event) => setMoreAnchorEl(event.currentTarget)}
               sx={{
                 ml: 0.5,
-                borderRadius: "20px",
-                px: 2,
-                py: 0.5,
+                borderRadius: "999px",
+                px: isMoreSelected ? 2.25 : 1.4,
+                py: 0.45,
                 minWidth: "auto",
                 textTransform: "none",
                 fontWeight: isMoreSelected ? 800 : 500,
@@ -283,17 +285,20 @@ export const CategoriesBar = ({
                   : Colors.background.brand,
                 backgroundColor: isMoreSelected
                   ? Colors.background.brand
-                  : Colors.background.defaultLight,
+                  : "transparent",
                 transition: "background-color 0.18s ease, color 0.18s ease",
                 "@media (hover: hover) and (pointer: fine)": {
                   "&:hover": {
                     backgroundColor: isMoreSelected
                       ? Colors.background.brandHover
-                      : Colors.background.subtleLight,
+                      : categoryHoverColor,
                     color: isMoreSelected
                       ? Colors.text.inverse
-                      : Colors.text.default,
+                      : Colors.background.brand,
                   },
+                },
+                "& .MuiButton-endIcon": {
+                  ml: 0.5,
                 },
               }}
             >

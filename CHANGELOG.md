@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* enhance hover effects and transitions in menu components for improved user experience ([c3fbfd6](https://github.com/DiluDevX/deliveroo-clone-web/commit/c3fbfd621b9a4c1ba753c9205d1a4f66dfd4e9c8))
+- enhance hover effects and transitions in menu components for improved user experience ([c3fbfd6](https://github.com/DiluDevX/deliveroo-clone-web/commit/c3fbfd621b9a4c1ba753c9205d1a4f66dfd4e9c8))
 
 ## [1.30.2](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.30.1...v1.30.2) (2026-06-27)
 

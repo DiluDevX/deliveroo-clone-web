@@ -1,6 +1,8 @@
 import { Box, Typography } from "@mui/material";
 import { Colors } from "../../../theme";
 
+const categoryHoverColor = "rgba(0, 204, 188, 0.12)";
+
 type CategoryChipProps = {
   data: {
     id: string;
@@ -25,20 +27,17 @@ const CategoryChip = ({
     <Box
       onClick={handleOnClick}
       sx={{
-        backgroundColor: selected
-          ? Colors.background.brand
-          : Colors.background.defaultLight,
+        backgroundColor: selected ? Colors.background.brand : "transparent",
         color: selected ? Colors.text.inverse : Colors.background.brand,
-        borderRadius: "20px",
+        borderRadius: "999px",
         border: pending
-          ? `3px solid ${Colors.background.brand}80`
+          ? `2px solid ${Colors.background.brand}80`
           : "2px solid transparent",
-        fontWeight: selected ? "bold" : "regular",
+        fontWeight: selected ? 800 : 500,
         cursor: "pointer",
-        paddingLeft: "1rem",
-        mr: 1,
-        px: 2,
-        py: 0.5,
+        mr: { xs: 1.5, md: 2.5 },
+        px: selected ? 2.25 : 1.4,
+        py: 0.45,
         whiteSpace: "nowrap",
         transition:
           "background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease",
@@ -46,13 +45,22 @@ const CategoryChip = ({
           "&:hover": {
             backgroundColor: selected
               ? Colors.background.brandHover
-              : Colors.background.subtleLight,
-            color: selected ? Colors.text.inverse : Colors.text.default,
+              : categoryHoverColor,
+            color: selected ? Colors.text.inverse : Colors.background.brand,
           },
         },
       }}
     >
-      <Typography>{data.name}</Typography>
+      <Typography
+        sx={{
+          color: "inherit",
+          fontWeight: "inherit",
+          fontSize: { xs: "0.95rem", md: "1rem" },
+          lineHeight: 1.35,
+        }}
+      >
+        {data.name}
+      </Typography>
     </Box>
   );
 };
