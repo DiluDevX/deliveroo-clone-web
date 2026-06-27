@@ -20,6 +20,7 @@ import { getSingleRestaurant } from "../services/restaurant.service";
 import { Restaurant } from "../types/restaurants";
 import { useAppSelector } from "../store/hooks/cartHooks";
 import { ShoppingCart } from "@mui/icons-material";
+import { setRestaurantMenuSearchLabel } from "../features/menu/events/restaurant-menu-search.events";
 
 type RestaurantCategory = {
   id: string;
@@ -176,7 +177,11 @@ const MenuPage = () => {
   useEffect(() => {
     if (restaurant?.name) {
       document.title = `Deliveroo | ${restaurant.name}`;
+      setRestaurantMenuSearchLabel(restaurant.name);
     }
+    return () => {
+      setRestaurantMenuSearchLabel(null);
+    };
   }, [restaurant?.name]);
 
   if (error) {

@@ -271,6 +271,7 @@ const RestaurantInfoView = ({
             }}
             sx={{
               px: 2,
+              minWidth: 0,
               mt: { xs: 2, sm: 2, md: 2, lg: 0 },
             }}
           >
@@ -296,7 +297,7 @@ const RestaurantInfoView = ({
                 sx={{
                   display: "block",
                   maxWidth: "100%",
-                  fontSize: { xs: "0.82rem", sm: "1rem" },
+                  fontSize: "1rem",
                   lineHeight: 1.45,
                   whiteSpace: "nowrap",
                   overflow: "hidden",
@@ -309,38 +310,26 @@ const RestaurantInfoView = ({
             <Box
               sx={{
                 mt: 1,
-                display: "flex",
-                flexWrap: { xs: "wrap", sm: "nowrap" },
-                fontSize: { xs: "0.85rem", sm: "1rem" },
-                gap: { xs: "0.5rem", sm: 0 },
+                overflow: "hidden",
+                width: "100%",
+                minWidth: 0,
               }}
             >
-              <Typography variant="body1" component="span">
-                Opens at {restaurant.openingAt}
-              </Typography>
               <Typography
+                variant="body1"
+                noWrap
                 sx={{
-                  mx: { xs: 0.15, sm: 1 },
-                  display: "inline",
+                  display: "block",
+                  maxWidth: "100%",
+                  fontSize: { xs: "0.9rem", sm: "1rem" },
+                  lineHeight: 1.45,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
                 }}
-                component="span"
               >
-                •
-              </Typography>
-              <Typography variant="body1" component="span">
-                ${restaurant.minimumValue} minimum
-              </Typography>
-              <Typography
-                sx={{
-                  mx: { xs: 0.15, sm: 1 },
-                  display: "inline",
-                }}
-                component="span"
-              >
-                •
-              </Typography>
-              <Typography variant="body1" component="span">
-                ${restaurant.deliveryCharge} delivery
+                Opens at {restaurant.openingAt} • ${restaurant.minimumValue}{" "}
+                minimum • ${restaurant.deliveryCharge} delivery
               </Typography>
             </Box>
 

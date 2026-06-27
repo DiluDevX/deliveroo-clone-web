@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Box, Container } from "@mui/material";
+import { Box, Container, InputAdornment, TextField } from "@mui/material";
 import Button from "./Button";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -10,7 +10,11 @@ import React from "react";
 import PartnerWithUs from "./PartnerWithUs";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store/store";
-import { openRestaurantMenuSearch } from "../events/restaurant-menu-search.events";
+import {
+  RESTAURANT_MENU_SEARCH_LABEL_EVENT,
+  RestaurantMenuSearchLabelEventDetail,
+  openRestaurantMenuSearch,
+} from "../events/restaurant-menu-search.events";
 
 const Header = () => {
   const location = useLocation();
@@ -25,6 +29,29 @@ const Header = () => {
     location.pathname === "/account";
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [restaurantSearchName, setRestaurantSearchName] = React.useState<
+    string | null
+  >(null);
+
+  React.useEffect(() => {
+    const handleRestaurantSearchLabel = (event: Event) => {
+      const customEvent =
+        event as CustomEvent<RestaurantMenuSearchLabelEventDetail>;
+      setRestaurantSearchName(customEvent.detail.restaurantName);
+    };
+
+    globalThis.addEventListener(
+      RESTAURANT_MENU_SEARCH_LABEL_EVENT,
+      handleRestaurantSearchLabel,
+    );
+
+    return () => {
+      globalThis.removeEventListener(
+        RESTAURANT_MENU_SEARCH_LABEL_EVENT,
+        handleRestaurantSearchLabel,
+      );
+    };
+  }, []);
 
   const toggleDrawer = (open: boolean) => {
     setDrawerOpen(open);
@@ -65,7 +92,12 @@ const Header = () => {
         sx={{
           width: "100%",
           height: "100%",
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "minmax(0, 1fr) auto",
+            md: "minmax(170px, 240px) minmax(0, 760px) minmax(150px, 240px)",
+          },
+          columnGap: { xs: 1, md: 3 },
           alignItems: "flex-start",
           position: "relative",
           px: { xs: 0, sm: 2 },
@@ -77,7 +109,7 @@ const Header = () => {
             height: "100%",
             display: "flex",
             alignItems: "center",
-            width: { xs: "170px", sm: "auto", md: "auto", lg: "auto" },
+            minWidth: 0,
             ml: 0,
             paddingTop: Paddings.Left.header.PaddingTop,
           }}
@@ -91,9 +123,64 @@ const Header = () => {
           </Link>
         </Box>
 
+        {isRestaurantMenuPage && (
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              alignItems: "center",
+              minWidth: 0,
+              paddingTop: Paddings.Left.header.PaddingTop,
+            }}
+          >
+            <TextField
+              fullWidth
+              size="small"
+              value=""
+              onFocus={openRestaurantMenuSearch}
+              onClick={openRestaurantMenuSearch}
+              placeholder={`Search ${restaurantSearchName || "restaurant menu"}`}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchOutlinedIcon
+                      sx={{ color: Colors.text.placeholder }}
+                    />
+                  </InputAdornment>
+                ),
+                readOnly: true,
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: Colors.background.light,
+                  borderRadius: "999px",
+                  boxShadow: `0 1px 4px ${Colors.boxShadow.default}`,
+                  "& fieldset": {
+                    border: "none",
+                  },
+                  "&:hover fieldset": {
+                    border: "none",
+                  },
+                  "&.Mui-focused fieldset": {
+                    border: "none",
+                  },
+                },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "none",
+                },
+                "& .MuiInputBase-input": {
+                  py: 1.25,
+                },
+              }}
+            />
+          </Box>
+        )}
+
+        {!isRestaurantMenuPage && (
+          <Box sx={{ display: { xs: "none", md: "block" } }} />
+        )}
+
         <Box
           sx={{
-            flex: 1,
             height: "100%",
             display: "flex",
             alignItems: "center",
