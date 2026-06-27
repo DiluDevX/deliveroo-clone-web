@@ -4,7 +4,7 @@ import Button from "./Button";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import { Colors, Paddings, Svgs } from "../../../theme";
+import { Colors, Svgs } from "../../../theme";
 import AnchorTemporaryDrawer from "./AccountSideBar";
 import React from "react";
 import PartnerWithUs from "./PartnerWithUs";
@@ -72,7 +72,7 @@ const Header = () => {
           ? "transparent"
           : Colors.background.light,
         width: "100%",
-        height: "60px",
+        height: "127.2px",
         display: "flex",
         px: { xs: "0.5rem", sm: "1rem" },
         alignItems: "center",
@@ -80,8 +80,9 @@ const Header = () => {
         position: isTransparent ? "absolute" : "fixed",
         top: "0",
         zIndex: "101",
-        paddingBottom: "3.2rem",
-        paddingTop: "1rem",
+        pt: "1rem",
+        pb: "3.2rem",
+        boxSizing: "border-box",
         borderBottomWidth: isTransparent ? 0 : "0.5px",
         borderColor: Colors.border.subtle,
         borderStyle: "solid",
@@ -91,14 +92,14 @@ const Header = () => {
         maxWidth="xl"
         sx={{
           width: "100%",
-          height: "100%",
+          height: "60px",
           display: "grid",
           gridTemplateColumns: {
             xs: "minmax(0, 1fr) auto",
             md: "minmax(170px, 240px) minmax(0, 760px) minmax(150px, 240px)",
           },
           columnGap: { xs: 1, md: 3 },
-          alignItems: "flex-start",
+          alignItems: "center",
           position: "relative",
           px: { xs: 0, sm: 2 },
         }}
@@ -111,7 +112,6 @@ const Header = () => {
             alignItems: "center",
             minWidth: 0,
             ml: 0,
-            paddingTop: Paddings.Left.header.PaddingTop,
           }}
         >
           <Link to="/">
@@ -129,7 +129,6 @@ const Header = () => {
               display: { xs: "none", md: "flex" },
               alignItems: "center",
               minWidth: 0,
-              paddingTop: Paddings.Left.header.PaddingTop,
             }}
           >
             <TextField
@@ -186,7 +185,6 @@ const Header = () => {
             alignItems: "center",
             justifyContent: "flex-end",
             gap: "8px",
-            paddingTop: Paddings.Left.header.PaddingTop,
           }}
         >
           {location.pathname === "/" && <PartnerWithUs />}

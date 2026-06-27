@@ -2,7 +2,7 @@
 
 ### Features
 
-* implement restaurant menu search label event and enhance header search functionality ([9ec7416](https://github.com/DiluDevX/deliveroo-clone-web/commit/9ec741640e4500f3fc3134343ca853ebc46dca6f))
+- implement restaurant menu search label event and enhance header search functionality ([9ec7416](https://github.com/DiluDevX/deliveroo-clone-web/commit/9ec741640e4500f3fc3134343ca853ebc46dca6f))
 
 ## [1.28.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.27.0...v1.28.0) (2026-06-27)
 
