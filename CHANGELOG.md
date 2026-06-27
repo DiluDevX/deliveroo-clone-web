@@ -1,3 +1,9 @@
+## [1.30.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.29.0...v1.30.0) (2026-06-27)
+
+### Features
+
+* update Header component styles for improved layout and responsiveness ([87d86d7](https://github.com/DiluDevX/deliveroo-clone-web/commit/87d86d78c89cdd644339a38511388a4e304f7399))
+
 ## [1.29.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.28.0...v1.29.0) (2026-06-27)
 
 ### Features
