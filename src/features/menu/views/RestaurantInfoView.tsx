@@ -285,15 +285,38 @@ const RestaurantInfoView = ({
               sx={{
                 mt: 1,
                 display: "flex",
+                flexWrap: "nowrap",
+                alignItems: "center",
+                overflow: "hidden",
               }}
             >
               {restaurant.tags?.map((tag, index) => (
-                <Box key={index + tag} component="span">
-                  <Typography variant="body1" component="span">
+                <Box
+                  key={index + tag}
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    component="span"
+                    sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+                  >
                     {tag}
                   </Typography>
                   {restaurant.tags?.length > index + 1 && (
-                    <Typography sx={{ mx: 1 }} component="span">
+                    <Typography
+                      sx={{
+                        mx: { xs: 0.45, sm: 1 },
+                        lineHeight: 1,
+                        fontSize: { xs: "0.9rem", sm: "1rem" },
+                      }}
+                      component="span"
+                    >
                       •
                     </Typography>
                   )}

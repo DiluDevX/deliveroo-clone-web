@@ -4,7 +4,6 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useEffect, useRef, useState } from "react";
 import { Colors } from "../../../theme";
-import Button from "./Button";
 
 type DishQuantityControlProps = {
   dishName: string;
@@ -69,7 +68,7 @@ const DishQuantityControl = ({
   if (!isInCart) {
     return (
       <Box ref={controlRef}>
-        <Button
+        <IconButton
           aria-label={`Add ${dishName} to cart`}
           onClick={(event) => {
             event.stopPropagation();
@@ -85,6 +84,9 @@ const DishQuantityControl = ({
             border: `1px solid ${Colors.border.default}`,
             boxShadow: `0 3px 10px ${Colors.boxShadow.default}`,
             p: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             transition:
               "width 180ms ease, transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease",
             "&:hover": {
@@ -99,7 +101,7 @@ const DishQuantityControl = ({
               color: Colors.background.brand,
             }}
           />
-        </Button>
+        </IconButton>
       </Box>
     );
   }

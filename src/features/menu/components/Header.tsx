@@ -106,7 +106,15 @@ const Header = () => {
 
           {isRestaurantMenuPage && (
             <Button
-              PrefixIcon={SearchOutlinedIcon}
+              PrefixComponent={
+                <SearchOutlinedIcon
+                  sx={{
+                    width: "1.6rem",
+                    height: "1.6rem",
+                    color: Colors.background.brand,
+                  }}
+                />
+              }
               variant="border"
               aria-label="Search restaurant menu"
               onClick={openRestaurantMenuSearch}
@@ -119,9 +127,6 @@ const Header = () => {
                 minHeight: 42,
                 px: 0,
                 py: 0,
-                "& svg": {
-                  marginRight: "0 !important",
-                },
               }}
             />
           )}
