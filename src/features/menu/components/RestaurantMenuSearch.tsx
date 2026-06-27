@@ -121,6 +121,34 @@ const RestaurantMenuSearch = ({
 
   return (
     <>
+      <Box
+        sx={{
+          ...searchDialogSx,
+          zIndex: 130,
+          display: { xs: "none", md: isOpen ? "none" : "block" },
+        }}
+      >
+        <TextField
+          fullWidth
+          size="small"
+          value=""
+          onFocus={() => setIsOpen(true)}
+          onClick={() => setIsOpen(true)}
+          placeholder={`Search ${restaurantName}`}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchOutlinedIcon sx={{ color: Colors.text.placeholder }} />
+              </InputAdornment>
+            ),
+            readOnly: true,
+          }}
+          sx={{
+            ...searchInputSx,
+          }}
+        />
+      </Box>
+
       {isOpen && (
         <Box
           role="presentation"
