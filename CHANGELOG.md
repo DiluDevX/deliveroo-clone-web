@@ -1,3 +1,9 @@
+## [1.30.2](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.30.1...v1.30.2) (2026-06-27)
+
+### Bug Fixes
+
+* update properties in Header and RestaurantMenuSearch components for better responsiveness ([bec6fd9](https://github.com/DiluDevX/deliveroo-clone-web/commit/bec6fd9922481de39413c185beeaa953ad84baf7))
+
 ## [1.30.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.30.0...v1.30.1) (2026-06-27)
 
 ### Bug Fixes
