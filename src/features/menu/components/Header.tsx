@@ -3,12 +3,14 @@ import { Box, Container } from "@mui/material";
 import Button from "./Button";
 import Person2OutlinedIcon from "@mui/icons-material/Person2Outlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import { Colors, Paddings, Svgs } from "../../../theme";
 import AnchorTemporaryDrawer from "./AccountSideBar";
 import React from "react";
 import PartnerWithUs from "./PartnerWithUs";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store/store";
+import { openRestaurantMenuSearch } from "../events/restaurant-menu-search.events";
 
 const Header = () => {
   const location = useLocation();
@@ -101,6 +103,28 @@ const Header = () => {
           }}
         >
           {location.pathname === "/" && <PartnerWithUs />}
+
+          {isRestaurantMenuPage && (
+            <Button
+              PrefixIcon={SearchOutlinedIcon}
+              variant="border"
+              aria-label="Search restaurant menu"
+              onClick={openRestaurantMenuSearch}
+              sx={{
+                backgroundColor: Colors.background.light,
+                display: { xs: "flex", md: "none" },
+                width: 42,
+                minWidth: 42,
+                height: 42,
+                minHeight: 42,
+                px: 0,
+                py: 0,
+                "& svg": {
+                  marginRight: "0 !important",
+                },
+              }}
+            />
+          )}
 
           {!user && isRestaurantMenuPage && (
             <Button

@@ -1,260 +1,270 @@
-<div align="center" paddingBottom="30px">
-  <img src="./src/assets/svgs/deliverooLogo.svg" alt="Deliveroo Logo" width="300"/>
+# FoodFlow Web
 
-A full-stack food delivery application clone inspired by Deliveroo, built with modern web technologies. This project features a React frontend with TypeScript and a Node.js backend with MongoDB.
+FoodFlow Web is a Deliveroo-inspired food ordering frontend built with React, TypeScript, Vite, MUI, Redux Toolkit, Stripe Elements, and Sonner. It talks to a Backend-for-Frontend (BFF) gateway instead of calling individual backend services directly.
 
-![React](https://img.shields.io/badge/React-18.3.1-blue?logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.6.2-blue?logo=typescript)
-![Vite](https://img.shields.io/badge/Vite-6.0.1-646CFF?logo=vite)
-![Node.js](https://img.shields.io/badge/Node.js-Backend-green?logo=node.js)
-![MongoDB](https://img.shields.io/badge/MongoDB-Database-green?logo=mongodb)
+This project is an educational portfolio app. It is not affiliated with Deliveroo.
 
-</div>
+## What This App Does
 
-<img width="3360" height="5168" alt="screencapture-localhost-5173-2026-02-11-18_39_12" src="https://github.com/user-attachments/assets/ff671fca-6545-48c6-9a9c-a95f298e886c" />
+- Browse restaurants and filter/search available restaurants.
+- View restaurant menu pages with category navigation, special offers, popular dishes, dish detail dialogs, restaurant info, reviews, and in-restaurant search.
+- Add dishes to a cart with single-restaurant cart protection.
+- Use responsive cart experiences: sidebar cart on desktop and bottom drawer cart on mobile.
+- Sign up, log in, persist sessions, and protect account/checkout routes.
+- Manage profile details, saved addresses, order history, and saved payment methods.
+- Place cash-on-delivery orders.
+- Create card payment orders, confirm payment with Stripe, and redirect only after successful payment.
+- View order confirmation and order history.
+- Show skeleton loading states for restaurant info, categories, and menu content.
+- Use Sonner toast notifications for success/error feedback.
 
-## ✨ Features
+## System Context
 
-### 🎨 Frontend Features
+The frontend calls only the BFF gateway.
 
-- **Modern UI/UX** - Clean and responsive design using Material-UI components
-- **User Authentication** - Complete auth flow with signup, login, password recovery, and account completion
-- **Restaurant Browsing** - Browse all restaurants or filter by categories
-- **Menu Viewing** - Detailed restaurant menus with dishes and meal deals
-- **Shopping Cart** - Add items to cart and manage orders
-- **Search Functionality** - Search for restaurants and dishes
-- **Location Services** - Location-based restaurant discovery
-- **Responsive Design** - Optimized for desktop and mobile devices
-- **Firebase Integration** - Cloud services for authentication and storage
-- **State Management** - Redux Toolkit for efficient state management
-- **Form Validation** - React Hook Form with Zod schema validation
-- **Notifications** - Toast notifications using Notistack
-- **Privacy & Data Policies** - Privacy policy and data deletion pages
-
-### 🔧 Backend Features
-
-- **RESTful API** - Built with Node.js and Express
-- **MongoDB Database** - NoSQL database for flexible data storage
-- **Authentication** - JWT-based authentication system
-- **Restaurant Management** - CRUD operations for restaurants
-- **Menu Management** - Manage dishes and categories
-- **User Management** - User profiles and order history
-- **Email Services** - Email notifications and confirmations
-
-## 🏗️ Tech Stack
-
-### Frontend
-
-- **Framework:** React 18.3.1
-- **Language:** TypeScript 5.6.2
-- **Build Tool:** Vite 6.0.1
-- **UI Library:** Material-UI (MUI) 6.3.1
-- **State Management:** Redux Toolkit 2.4.0
-- **Routing:** React Router DOM 7.0.2
-- **Form Handling:** React Hook Form 7.54.2
-- **Validation:** Zod 3.24.2
-- **HTTP Client:** Axios 1.7.9
-- **Authentication:** Firebase 11.4.0, JWT
-- **Animations:** Lottie animations
-- **Icons:** Lucide React, MUI Icons
-- **Notifications:** Notistack 3.0.2
-
-### Backend
-
-- **Runtime:** Node.js
-- **Database:** MongoDB
-- **Authentication:** JWT (JSON Web Tokens)
-
-## 📁 Project Structure
-
-```
-deliveroo-clone-web/
-├── src/
-│   ├── assets/          # Images, SVGs, and animations
-│   ├── data/            # Static data and mock data
-│   ├── features/        # Feature-based modules
-│   │   └── menu/        # Menu feature
-│   │       ├── components/   # UI components
-│   │       ├── validations/  # Form validations
-│   │       └── views/        # Feature views
-│   ├── hocs/            # Higher-order components
-│   ├── layout/          # Layout components
-│   ├── pages/           # Page components
-│   ├── services/        # API services
-│   ├── store/           # Redux store
-│   ├── theme/           # Theme configuration
-│   ├── types/           # TypeScript type definitions
-│   └── utils/           # Utility functions
-├── eslint.config.js     # ESLint configuration
-├── vite.config.ts       # Vite configuration
-└── tsconfig.json        # TypeScript configuration
+```text
+React Web App
+  -> BFF Gateway
+    -> Auth Service
+    -> Restaurant Service
+    -> Order Service
+    -> Payment Service
+    -> Notification Service via backend events
 ```
 
-## 🚀 Getting Started
+The browser must not call internal microservices directly. The BFF owns request routing, public API key checks, JWT forwarding, and service-to-service headers.
 
-### Prerequisites
+## Related Repositories
 
-- Node.js (v16 or higher)
-- npm or yarn
-- MongoDB (local or cloud instance)
-- Firebase account (for authentication)
+Expected local service folders:
 
-### Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/DiluDevX/deliveroo-clone-web.git
-   cd deliveroo-clone-web
-   ```
-
-2. **Install frontend dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-
-   Create a `.env` file in the root directory:
-
-   ```env
-   BFF_API_URL=http://localhost:4000
-   VITE_FIREBASE_API_KEY=your_firebase_api_key
-   VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
-   VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
-   VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
-   VITE_FIREBASE_APP_ID=your_firebase_app_id
-   ```
-
-4. **Set up the backend**
-
-   Navigate to your backend directory and follow backend setup instructions (install dependencies, configure MongoDB connection, etc.)
-
-5. **Start the development server**
-
-   ```bash
-   # Frontend (default port: 5173)
-   npm run dev
-
-   # Backend (default port: 3000)
-   # Run this in your backend directory
-   npm start
-   ```
-
-6. **Open your browser**
-
-   Navigate to `http://localhost:5173`
-
-## 📜 Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint errors
-- `npm run format:fix` - Format code with Prettier
-
-## 🔌 API Configuration
-
-The frontend is configured to proxy API requests to the backend server. Check `vite.config.ts`:
-
-```typescript
-server: {
-  proxy: {
-    '/api': {
-      target: 'http://localhost:3000',
-      changeOrigin: true,
-      secure: false,
-    },
-  },
-}
+```text
+/Users/diludevx/projects/node/deliveroo-clone-api
+/Users/diludevx/projects/node/deliveroo-clone-auth-service
+/Users/diludevx/projects/node/deliveroo-clone-restaurant-service
+/Users/diludevx/projects/node/deliveroo-clone-order-service
+/Users/diludevx/projects/node/deliveroo-clone-payment-service
+/Users/diludevx/projects/node/deliveroo-clone-notification-service
 ```
 
-## 🎯 Key Features Implementation
+The frontend can run against either:
 
-### Authentication Flow
+- A local BFF, usually `http://localhost:3000`
+- The deployed dev BFF, currently exposed through HTTPS by Caddy on the Azure VM
 
-- Email/password signup and login
-- Firebase authentication integration
-- JWT token management
-- Password recovery and reset
-- Account completion flow
+## Tech Stack
 
-### Restaurant & Menu System
+- React 18
+- TypeScript
+- Vite
+- MUI
+- Redux Toolkit
+- Redux Persist
+- React Router
+- React Hook Form
+- Zod
+- Axios
+- Stripe Elements
+- Sonner
+- Vitest and Testing Library
+- ESLint and Prettier
+- Semantic Release
 
-- Browse restaurants by category
-- View detailed restaurant information
-- Explore menu items and deals
-- Add items to cart
-- Category-based filtering
+## Project Structure
 
-### State Management
+```text
+src/
+  assets/          Static images and SVGs
+  components/      Shared UI components
+  config/          Client-side configuration helpers
+  data/            Legacy static types/data used by menu views
+  features/
+    menu/          Restaurant, menu, cart, payment form, and menu UI modules
+  hocs/            Route guards and higher-order wrappers
+  layout/          Shared layout components
+  pages/           Route-level pages
+  services/        BFF API clients and feature service wrappers
+  store/           Redux slices, thunks, hooks, and store setup
+  theme/           Colors, images, SVG paths, spacing, font sizes
+  types/           Shared frontend types
+  utils/           Notifications and helper utilities
+tests/             Vitest tests and setup
+```
 
-The app uses Redux Toolkit for centralized state management, handling:
+## Environment Variables
 
-- User authentication state
-- Cart management
-- Restaurant data
-- Menu items
-- UI state
+Create `.env` from `.env.example`.
 
-## 🎨 Styling
+```env
+VITE_BFF_API_URL=http://localhost:3000
+VITE_BFF_API_KEY=your-bff-api-key
 
-The project uses:
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
 
-- **Material-UI** for component library
-- **Emotion** for CSS-in-JS styling
-- Custom theme configuration in `src/theme/`
-- Responsive design patterns
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_firebase_app_id
+```
 
-## 🔐 Authentication & Security
+Important notes:
 
-- JWT-based authentication
-- Firebase authentication integration
-- Secure password handling
+- `VITE_BFF_API_URL` must include the public BFF origin, not an internal service URL.
+- `VITE_BFF_API_KEY` is a public client key for the BFF. It is not a replacement for JWT auth.
+- `VITE_STRIPE_PUBLISHABLE_KEY` must be the Stripe publishable key. Never put the Stripe secret key in the frontend.
+- Firebase config is only client config. Do not put privileged Firebase secrets here.
+
+## Local Setup
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the frontend:
+
+```bash
+npm run dev
+```
+
+Open:
+
+```text
+http://localhost:5173
+```
+
+The BFF must also be running and reachable at `VITE_BFF_API_URL`.
+
+## Scripts
+
+```bash
+npm run dev             # Start Vite dev server
+npm run build           # Type-check project references and build production bundle
+npm run preview         # Preview production build
+npm run types:check     # Run TypeScript without emitting files
+npm run lint:check      # Run ESLint
+npm run lint:fix        # Fix ESLint issues in src
+npm run format:check    # Check Prettier formatting
+npm run format:fix      # Format files with Prettier
+npm run test:run        # Run Vitest once
+npm run release         # Run semantic-release
+npm run release:dry-run # Preview semantic-release output
+```
+
+## Core Flows
+
+### Authentication
+
+The app authenticates through the BFF/auth service. JWTs are stored client-side and attached to authenticated BFF requests. Protected routes wait for auth initialization before deciding whether to render or redirect.
+
+### Restaurant And Menu
+
+Restaurant list, restaurant details, categories, dishes, popular dishes, and special-offer dishes come from the restaurant service through the BFF. The menu page renders:
+
+- Restaurant info skeleton while loading
+- Category skeleton while loading
+- Menu skeleton while dishes/categories resolve
+- Special offers from `discountPercent`
+- Popular dishes from `isPopular`
+- Dish detail dialog for full dish data
+- Restaurant info and review dialogs
+- In-restaurant search overlay
+
+### Cart
+
+The cart is owned by the order service. The frontend keeps Redux state for UI responsiveness, then syncs through the BFF. Cart rules:
+
+- A cart belongs to one restaurant at a time.
+- Adding from another restaurant asks the user before replacing the cart.
+- Logged-out users can build a local cart.
+- Logged-in users sync cart state with the backend.
+
+### Checkout
+
+Checkout uses server-side pricing. The frontend must not be treated as a trusted source for dish names, item prices, delivery fees, service fees, or totals.
+
+For delivery orders, users can:
+
+- Use a saved address
+- Add a new address
+- Save a new address for future use
+
+Cash-on-delivery orders go to an order confirmation page after successful checkout.
+
+### Card Payments
+
+Card orders use Stripe through the payment service.
+
+The expected flow:
+
+1. Checkout creates a pending order through the order service.
+2. Payment page asks the order service/payment service to create or reuse a PaymentIntent.
+3. Stripe Elements confirms the card payment.
+4. Stripe webhook updates backend payment/order state.
+5. The frontend redirects to order confirmation only after payment succeeds.
+
+The frontend only sends payment-intent requests with trusted identifiers such as `orderId` and optional expected total checks. It must not calculate the final Stripe amount.
+
+## Testing
+
+Run the current frontend test suite:
+
+```bash
+npm run test:run
+```
+
+Run the usual verification set before merging:
+
+```bash
+npm run types:check
+npm run lint:check
+npm run build
+```
+
+Useful test areas:
+
+- Auth headers
 - Protected routes
-- Token refresh mechanism
+- Payment page lifecycle
+- Checkout and cart behavior
 
-## 📱 Responsive Design
+## Deployment
 
-The application is fully responsive and optimized for:
+The frontend is deployed separately from the backend services. The current dev deployment target is Azure Static Web Apps.
 
-- Desktop (1024px and above)
-- Tablet (768px - 1023px)
-- Mobile (320px - 767px)
+The deployed frontend should use:
 
-## 🤝 Contributing
+```env
+VITE_BFF_API_URL=https://your-bff-domain.example.com/api
+VITE_BFF_API_KEY=your-public-bff-key
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_or_live_key
+```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Deployment checklist:
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+- BFF CORS allows the frontend origin.
+- Stripe publishable key matches the Stripe environment used by the payment service.
+- The BFF URL uses HTTPS to avoid mixed-content browser blocking.
+- Cloud asset domains allow the frontend origin through CORS if images/SVGs are loaded cross-origin.
 
-## 📝 License
+## Current Engineering Notes
 
-This project is created for educational purposes.
+- Keep frontend requests routed through the BFF.
+- Do not add internal service API keys to browser requests.
+- Do not trust frontend totals for checkout or payment.
+- Prefer skeletons over empty states while restaurant/menu data is still loading.
+- Repeated images should use lazy loading unless they are first-viewport hero assets.
+- Keep mobile and desktop layouts using stable dimensions to avoid layout shifts.
 
-## 👨‍💻 Author
+## License
+
+Educational portfolio project.
+
+## Author
 
 **DiluDevX**
 
 - GitHub: [@DiluDevX](https://github.com/DiluDevX)
-
-## 🙏 Acknowledgments
-
-- Inspired by [Deliveroo](https://deliveroo.co.uk/)
-- Built with modern React and TypeScript best practices
-- Uses Material-UI component library
-
-## 📧 Contact
-
-For any questions or feedback, please reach out through GitHub issues.
-
----
-
-**Note:** This is a clone project created for learning and portfolio purposes. It is not affiliated with or endorsed by Deliveroo.

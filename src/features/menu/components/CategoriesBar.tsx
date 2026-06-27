@@ -55,6 +55,7 @@ export const CategoriesBar = ({
   isLoading = false,
 }: CategoryProps) => {
   const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const moreButtonRef = useRef<HTMLButtonElement | null>(null);
   const isClickScrolling = useRef(false);
   const targetCategoryId = useRef<string | null>(null);
   const [pendingCategoryId, setPendingCategoryId] = useState<string | null>(
@@ -63,7 +64,7 @@ export const CategoriesBar = ({
   const [moreAnchorEl, setMoreAnchorEl] = useState<HTMLElement | null>(null);
   const isMobile = useMediaQuery("(max-width:599.95px)");
   const isTablet = useMediaQuery("(min-width:600px) and (max-width:899.95px)");
-  const visibleCategoryCount = isMobile ? 3 : isTablet ? 5 : categories.length;
+  const visibleCategoryCount = isMobile ? 2 : isTablet ? 4 : categories.length;
   const visibleCategories = categories.slice(0, visibleCategoryCount);
   const overflowCategories = categories.slice(visibleCategoryCount);
   const isMoreSelected = overflowCategories.some(
@@ -73,6 +74,15 @@ export const CategoriesBar = ({
 
   // Scroll the category chip into view when selected (only if hidden)
   useEffect(() => {
+    if (isMoreSelected) {
+      moreButtonRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "nearest",
+      });
+      return;
+    }
+
     if (
       selectedCategoryId !== null &&
       categoryRefs.current[selectedCategoryId]
@@ -83,7 +93,7 @@ export const CategoriesBar = ({
         inline: "nearest",
       });
     }
-  }, [selectedCategoryId]);
+  }, [isMoreSelected, selectedCategoryId]);
 
   // Add scroll listener to auto-select category
   useEffect(() => {
@@ -257,6 +267,7 @@ export const CategoriesBar = ({
         {overflowCategories.length > 0 && (
           <>
             <MuiButton
+              ref={moreButtonRef}
               endIcon={<KeyboardArrowDownIcon />}
               onClick={(event) => setMoreAnchorEl(event.currentTarget)}
               sx={{

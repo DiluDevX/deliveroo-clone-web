@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ICategory } from "../../../data/Sides";
 import { Colors } from "../../../theme";
 import SpecialCard from "./SpecialCard";
+import { RESTAURANT_MENU_SEARCH_OPEN_EVENT } from "../events/restaurant-menu-search.events";
 
 type RestaurantMenuSearchProps = {
   categories: ICategory[];
@@ -53,18 +54,36 @@ const RestaurantMenuSearch = ({
   };
 
   useEffect(() => {
+    const handleOpenSearch = () => {
+      setIsOpen(true);
+    };
+
+    globalThis.addEventListener(
+      RESTAURANT_MENU_SEARCH_OPEN_EVENT,
+      handleOpenSearch,
+    );
+
+    return () => {
+      globalThis.removeEventListener(
+        RESTAURANT_MENU_SEARCH_OPEN_EVENT,
+        handleOpenSearch,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
     if (!searchTerm.trim()) {
       setIsSearching(false);
       return undefined;
     }
 
     setIsSearching(true);
-    const timeoutId = window.setTimeout(() => {
+    const timeoutId = globalThis.setTimeout(() => {
       setIsSearching(false);
     }, 220);
 
     return () => {
-      window.clearTimeout(timeoutId);
+      globalThis.clearTimeout(timeoutId);
     };
   }, [searchTerm]);
 
@@ -73,7 +92,7 @@ const RestaurantMenuSearch = ({
     top: { xs: 10, md: 14 },
     left: "50%",
     transform: "translateX(-50%)",
-    width: { xs: "calc(100vw - 24px)", md: 760, lg: 760 },
+    width: { xs: "calc(100vw - 24px)", md: 620, lg: 760 },
     maxWidth: { xs: "calc(100vw - 24px)", md: "calc(100vw - 48px)" },
   } as const;
 
@@ -128,29 +147,6 @@ const RestaurantMenuSearch = ({
           }}
         />
       </Box>
-
-      <IconButton
-        aria-label={`Search ${restaurantName}`}
-        onClick={() => setIsOpen(true)}
-        sx={{
-          position: "fixed",
-          top: 17,
-          right: 112,
-          zIndex: 130,
-          display: { xs: isOpen ? "none" : "flex", md: "none" },
-          width: 42,
-          height: 42,
-          borderRadius: "6px",
-          color: Colors.background.brand,
-          backgroundColor: Colors.background.light,
-          border: `1px solid ${Colors.border.subtle}`,
-          "&:hover": {
-            backgroundColor: Colors.background.default,
-          },
-        }}
-      >
-        <SearchOutlinedIcon />
-      </IconButton>
 
       {isOpen && (
         <Box

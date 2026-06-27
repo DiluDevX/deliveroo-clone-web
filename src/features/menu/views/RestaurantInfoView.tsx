@@ -231,7 +231,7 @@ const RestaurantInfoView = ({
                 sx={{
                   display: { xs: "flex", sm: "none" },
                   position: "absolute",
-                  top: 12,
+                  top: 18,
                   left: 12,
                   zIndex: 2,
                   width: 42,
