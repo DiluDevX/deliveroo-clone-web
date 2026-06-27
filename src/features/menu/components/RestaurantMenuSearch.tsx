@@ -90,9 +90,13 @@ const RestaurantMenuSearch = ({
   const searchContainerSx = {
     position: "fixed",
     top: { xs: 10, md: 14 },
-    left: "50%",
+    left: { xs: "50%", md: "calc(50% + 32px)", lg: "50%" },
     transform: "translateX(-50%)",
-    width: { xs: "calc(100vw - 24px)", md: 620, lg: 760 },
+    width: {
+      xs: "calc(100vw - 24px)",
+      md: "clamp(360px, calc(100vw - 520px), 520px)",
+      lg: 760,
+    },
     maxWidth: { xs: "calc(100vw - 24px)", md: "calc(100vw - 48px)" },
   } as const;
 

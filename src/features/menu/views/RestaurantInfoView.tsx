@@ -96,6 +96,7 @@ const RestaurantInfoView = ({
             }}
             sx={{
               px: 2,
+              minWidth: 0,
               mt: { xs: 2, sm: 2, md: 2, lg: 0 },
             }}
           >
@@ -285,12 +286,17 @@ const RestaurantInfoView = ({
               sx={{
                 mt: 1,
                 overflow: "hidden",
+                width: "100%",
+                minWidth: 0,
               }}
             >
               <Typography
                 variant="body1"
+                noWrap
                 sx={{
-                  fontSize: { xs: "0.86rem", sm: "1rem" },
+                  display: "block",
+                  maxWidth: "100%",
+                  fontSize: { xs: "0.82rem", sm: "1rem" },
                   lineHeight: 1.45,
                   whiteSpace: "nowrap",
                   overflow: "hidden",
