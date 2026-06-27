@@ -2,7 +2,7 @@
 
 ### Features
 
-* update system architecture diagram and enhance hover effects ([5691493](https://github.com/DiluDevX/deliveroo-clone-web/commit/56914939c713325c2c088318bf0fdb97dbe7723e))
+- update system architecture diagram and enhance hover effects ([5691493](https://github.com/DiluDevX/deliveroo-clone-web/commit/56914939c713325c2c088318bf0fdb97dbe7723e))
 
 ## [1.30.4](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.30.3...v1.30.4) (2026-06-27)
 

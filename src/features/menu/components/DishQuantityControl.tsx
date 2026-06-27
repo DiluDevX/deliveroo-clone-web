@@ -33,7 +33,7 @@ const DishQuantityControl = ({
       return undefined;
     }
 
-    const handlePointerDown = (event: MouseEvent) => {
+    const handlePointerDown = (event: PointerEvent) => {
       if (
         controlRef.current &&
         event.target instanceof Node &&
@@ -46,10 +46,10 @@ const DishQuantityControl = ({
       onCollapse?.();
     };
 
-    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("pointerdown", handlePointerDown, true);
 
     return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("pointerdown", handlePointerDown, true);
     };
   }, [isExpanded, onCollapse]);
 
