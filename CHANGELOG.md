@@ -2,7 +2,7 @@
 
 ### Features
 
-* enhance RestaurantMenuSearch component with improved styling and search term handling ([4a19c79](https://github.com/DiluDevX/deliveroo-clone-web/commit/4a19c79e73715b9b62ff3a2d881db36b7b0ad8da))
+- enhance RestaurantMenuSearch component with improved styling and search term handling ([4a19c79](https://github.com/DiluDevX/deliveroo-clone-web/commit/4a19c79e73715b9b62ff3a2d881db36b7b0ad8da))
 
 ## [1.21.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.20.0...v1.21.0) (2026-06-26)
 

@@ -1,21 +1,31 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
-import Button from "./Button";
 import { IDish } from "../../../data/Sides";
-import AddIcon from "@mui/icons-material/Add";
 import { Colors } from "../../../theme";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { addItemAndSync, clearCartAndSync } from "../../../store/cartSlice";
+import {
+  addItemAndSync,
+  clearCartAndSync,
+  removeItemAndSync,
+  updateQuantityAndSync,
+} from "../../../store/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks/cartHooks";
 import { showSuccessSnackbar } from "../../../utils/notifications";
 import PopUpDialog from "./PopUpDialog";
 import DishDetailsDialog from "./DishDetailsDialog";
+import DishQuantityControl from "./DishQuantityControl";
 
 type SpecialCardProps = {
   data: IDish;
+  fillContainer?: boolean;
+  compact?: boolean;
 };
 
-const SpecialCard = ({ data }: SpecialCardProps) => {
+const SpecialCard = ({
+  data,
+  fillContainer = false,
+  compact = false,
+}: SpecialCardProps) => {
   const dispatch = useAppDispatch();
   const discountPercent = Number(data.discountPercent ?? 0);
   const [isReplaceCartDialogOpen, setIsReplaceCartDialogOpen] = useState(false);
@@ -25,6 +35,10 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
   const cartRestaurantName = useAppSelector(
     (state) => state.cart.restaurantName,
   );
+  const cartItem = cartItems.find((item) => item._id === data._id);
+  const quantity = cartItem?.quantity ?? 0;
+  const cartItemId = cartItem?.cartItemId || cartItem?._id;
+  const isInCart = quantity > 0;
 
   const handleAddToCart = async () => {
     const selectedRestaurantId = localStorage.getItem("selected-restaurant-id");
@@ -50,17 +64,57 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
     showSuccessSnackbar(`${data.name} added to cart`);
   };
 
+  const handleRemoveFromCart = async () => {
+    if (!cartItemId) {
+      return;
+    }
+
+    await dispatch(removeItemAndSync(cartItemId));
+  };
+
+  const handleDecreaseQuantity = async () => {
+    if (!cartItemId) {
+      return;
+    }
+
+    if (quantity <= 1) {
+      await handleRemoveFromCart();
+      return;
+    }
+
+    await dispatch(
+      updateQuantityAndSync({
+        cartItemId,
+        quantity: quantity - 1,
+      }),
+    );
+  };
+
+  const handleIncreaseQuantity = async () => {
+    if (!cartItemId || quantity === 0) {
+      await handleAddToCart();
+      return;
+    }
+
+    await dispatch(
+      updateQuantityAndSync({
+        cartItemId,
+        quantity: quantity + 1,
+      }),
+    );
+  };
+
   return (
     <>
       <Card
         onClick={() => setIsDetailsOpen(true)}
         sx={{
           width: "100%",
-          maxWidth: "170px",
-          minWidth: "170px",
-          height: "310px",
-          mr: 2,
-          my: 2,
+          maxWidth: fillContainer ? "none" : "170px",
+          minWidth: fillContainer ? 0 : "170px",
+          height: compact ? "220px" : "310px",
+          mr: fillContainer ? 0 : 2,
+          my: fillContainer ? 0 : 2,
           display: "flex",
           flexDirection: "column",
           overflow: "unset",
@@ -70,6 +124,9 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
           borderWidth: 1.5,
           borderStyle: "solid",
           borderColor: Colors.border.default,
+          borderBottom: isInCart
+            ? `4px solid ${Colors.background.brand}`
+            : `1.5px solid ${Colors.border.default}`,
           position: "relative",
           cursor: "pointer",
         }}
@@ -138,8 +195,8 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
           src={data.image}
           alt={data.name}
           style={{
-            minHeight: 150,
-            maxHeight: 150,
+            minHeight: compact ? 110 : 150,
+            maxHeight: compact ? 110 : 150,
             width: "100%",
             borderRadius: "3px",
             objectFit: "cover",
@@ -152,20 +209,29 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
         <CardContent
           sx={{
             flexGrow: 1,
-            pt: 2.5,
+            pt: compact ? 2 : 2.5,
             pb: 1,
             overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <Typography
-            sx={{ fontSize: "0.8rem" }}
+            sx={{
+              fontSize: compact ? "0.76rem" : "0.8rem",
+              fontWeight: 800,
+              display: "-webkit-box",
+              WebkitLineClamp: compact ? 2 : 1,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
             gutterBottom
             variant="h5"
             component="div"
           >
             {data.name}
           </Typography>
-          {data.description && (
+          {data.description && !compact && (
             <Typography
               sx={{
                 color: Colors.text.lighter,
@@ -180,7 +246,25 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
               {data.description}
             </Typography>
           )}
-          <Typography sx={{ fontWeight: 700, fontSize: "0.85rem" }}>
+          {compact && (
+            <Typography
+              sx={{
+                color: Colors.text.lighter,
+                fontSize: "0.74rem",
+                mt: "auto",
+                mb: 0.75,
+              }}
+            >
+              {Math.round(Number(data.price) * 100 + 420)} kcal
+            </Typography>
+          )}
+          <Typography
+            sx={{
+              fontWeight: compact ? 500 : 700,
+              fontSize: compact ? "0.78rem" : "0.85rem",
+              mt: compact ? 0 : "auto",
+            }}
+          >
             £{Number(data.price).toFixed(2)}
           </Typography>
         </CardContent>
@@ -192,35 +276,22 @@ const SpecialCard = ({ data }: SpecialCardProps) => {
             alignItems: "center",
           }}
         >
-          <Button
-            aria-label={`Add ${data.name} to cart`}
-            onClick={(event) => {
-              event.stopPropagation();
-              void handleAddToCart();
-            }}
+          <Box
             sx={{
-              width: 48,
-              height: 48,
-              minHeight: 48,
-              minWidth: 48,
-              borderRadius: "50%",
-              border: `1px solid ${Colors.border.default}`,
-              backgroundColor: Colors.background.light,
-              boxShadow: `0 3px 10px ${Colors.boxShadow.default}`,
               position: "absolute",
-              right: 12,
-              top: 126,
-              p: 0,
+              right: compact ? 8 : 12,
+              top: compact ? 92 : 126,
             }}
           >
-            <AddIcon
-              sx={{
-                height: "1.2rem",
-                width: "1.2rem",
-                color: Colors.text.default,
-              }}
+            <DishQuantityControl
+              dishName={data.name}
+              quantity={quantity}
+              compact={compact}
+              onAdd={handleAddToCart}
+              onDecrease={handleDecreaseQuantity}
+              onIncrease={handleIncreaseQuantity}
             />
-          </Button>
+          </Box>
         </Box>
       </Card>
       <DishDetailsDialog

@@ -1,8 +1,5 @@
-import { Box, Card, IconButton, Typography } from "@mui/material";
+import { Box, Card, Typography } from "@mui/material";
 import { IDish } from "../../../data/Sides";
-import Button from "./Button";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Colors } from "../../../theme";
 import { useAppDispatch, useAppSelector } from "../../../store/hooks/cartHooks";
 import {
@@ -11,11 +8,12 @@ import {
   removeItemAndSync,
   updateQuantityAndSync,
 } from "../../../store/cartSlice";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import PopUpDialog from "./PopUpDialog";
 import { showSuccessSnackbar } from "../../../utils/notifications";
 import DishDetailsDialog from "./DishDetailsDialog";
+import DishQuantityControl from "./DishQuantityControl";
 
 type DishProps = {
   data: IDish;
@@ -23,10 +21,8 @@ type DishProps = {
 
 const Dish = ({ data }: DishProps) => {
   const dispatch = useAppDispatch();
-  const quantityControlRef = useRef<HTMLDivElement | null>(null);
   const [isReplaceCartDialogOpen, setIsReplaceCartDialogOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isQuantityControlOpen, setIsQuantityControlOpen] = useState(false);
   const cartItems = useAppSelector((state) => state.cart.items);
   const cartRestaurantId = useAppSelector((state) => state.cart.restaurantId);
   const cartRestaurantName = useAppSelector(
@@ -36,30 +32,6 @@ const Dish = ({ data }: DishProps) => {
   const quantity = cartItem?.quantity ?? 0;
   const cartItemId = cartItem?.cartItemId || cartItem?._id;
   const isInCart = quantity > 0;
-
-  useEffect(() => {
-    if (!isQuantityControlOpen) {
-      return undefined;
-    }
-
-    const handlePointerDown = (event: MouseEvent) => {
-      if (
-        quantityControlRef.current &&
-        event.target instanceof Node &&
-        quantityControlRef.current.contains(event.target)
-      ) {
-        return;
-      }
-
-      setIsQuantityControlOpen(false);
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-    };
-  }, [isQuantityControlOpen]);
 
   const handleAddToCart = async () => {
     const selectedRestaurantId = localStorage.getItem("selected-restaurant-id");
@@ -90,8 +62,25 @@ const Dish = ({ data }: DishProps) => {
       return;
     }
 
-    setIsQuantityControlOpen(false);
     await dispatch(removeItemAndSync(cartItemId));
+  };
+
+  const handleDecreaseQuantity = async () => {
+    if (!cartItemId) {
+      return;
+    }
+
+    if (quantity <= 1) {
+      await handleRemoveFromCart();
+      return;
+    }
+
+    await dispatch(
+      updateQuantityAndSync({
+        cartItemId,
+        quantity: quantity - 1,
+      }),
+    );
   };
 
   const handleIncreaseQuantity = async () => {
@@ -111,14 +100,7 @@ const Dish = ({ data }: DishProps) => {
   return (
     <>
       <Card
-        onClick={() => {
-          if (isQuantityControlOpen) {
-            setIsQuantityControlOpen(false);
-            return;
-          }
-
-          setIsDetailsOpen(true);
-        }}
+        onClick={() => setIsDetailsOpen(true)}
         sx={{
           border: `1px solid ${Colors.border.default}`,
           borderRadius: "6px",
@@ -231,7 +213,6 @@ const Dish = ({ data }: DishProps) => {
             />
           </Box>
           <Box
-            ref={quantityControlRef}
             sx={{
               position: "absolute",
               right: { xs: -6, sm: -10 },
@@ -241,108 +222,13 @@ const Dish = ({ data }: DishProps) => {
               alignItems: "center",
             }}
           >
-            {!isInCart ? (
-              <Button
-                aria-label={`Add ${data.name} to cart`}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  void handleAddToCart();
-                }}
-                sx={{
-                  width: 48,
-                  height: 48,
-                  minWidth: 48,
-                  minHeight: 48,
-                  borderRadius: "50%",
-                  backgroundColor: Colors.background.light,
-                  border: `1px solid ${Colors.border.default}`,
-                  boxShadow: `0 3px 10px ${Colors.boxShadow.default}`,
-                  p: 0,
-                  transition:
-                    "width 180ms ease, transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease",
-                  "&:hover": {
-                    transform: "scale(1.04)",
-                  },
-                }}
-              >
-                <AddIcon sx={{ color: Colors.background.brand }} />
-              </Button>
-            ) : isQuantityControlOpen ? (
-              <Box
-                onClick={(event) => event.stopPropagation()}
-                sx={{
-                  height: 48,
-                  minWidth: 132,
-                  borderRadius: "999px",
-                  backgroundColor: Colors.background.light,
-                  border: `1px solid ${Colors.border.default}`,
-                  boxShadow: `0 3px 10px ${Colors.boxShadow.default}`,
-                  display: "grid",
-                  gridTemplateColumns: "44px 44px 44px",
-                  alignItems: "center",
-                  justifyItems: "center",
-                  transformOrigin: "right center",
-                  animation: "dishQuantityExpand 180ms ease both",
-                  "@keyframes dishQuantityExpand": {
-                    from: {
-                      opacity: 0,
-                      transform: "scaleX(0.78)",
-                    },
-                    to: {
-                      opacity: 1,
-                      transform: "scaleX(1)",
-                    },
-                  },
-                }}
-              >
-                <IconButton
-                  aria-label={`Remove ${data.name} from cart`}
-                  onClick={() => void handleRemoveFromCart()}
-                  size="small"
-                >
-                  <DeleteOutlineIcon sx={{ color: Colors.background.brand }} />
-                </IconButton>
-                <Typography sx={{ fontWeight: 800 }}>{quantity}</Typography>
-                <IconButton
-                  aria-label={`Add one more ${data.name}`}
-                  onClick={() => void handleIncreaseQuantity()}
-                  size="small"
-                >
-                  <AddIcon sx={{ color: Colors.background.brand }} />
-                </IconButton>
-              </Box>
-            ) : (
-              <Button
-                aria-label={`${data.name} quantity ${quantity}`}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  setIsQuantityControlOpen(true);
-                }}
-                sx={{
-                  width: 56,
-                  height: 56,
-                  minWidth: 56,
-                  minHeight: 56,
-                  borderRadius: "50%",
-                  backgroundColor: Colors.background.brand,
-                  color: Colors.text.inverse,
-                  border: "none",
-                  boxShadow: `0 3px 10px ${Colors.boxShadow.default}`,
-                  p: 0,
-                  fontWeight: 800,
-                  fontSize: "1.1rem",
-                  transition:
-                    "transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease",
-                  "&:hover": {
-                    border: "none",
-                    backgroundColor: Colors.background.brandHover,
-                    transform: "scale(1.04)",
-                  },
-                }}
-              >
-                {quantity}
-              </Button>
-            )}
+            <DishQuantityControl
+              dishName={data.name}
+              quantity={quantity}
+              onAdd={handleAddToCart}
+              onDecrease={handleDecreaseQuantity}
+              onIncrease={handleIncreaseQuantity}
+            />
           </Box>
         </Box>
       </Card>

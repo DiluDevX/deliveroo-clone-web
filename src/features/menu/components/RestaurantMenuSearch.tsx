@@ -1,5 +1,6 @@
 import {
   Box,
+  CircularProgress,
   IconButton,
   InputAdornment,
   TextField,
@@ -7,7 +8,7 @@ import {
 } from "@mui/material";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import CloseIcon from "@mui/icons-material/Close";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ICategory } from "../../../data/Sides";
 import { Colors } from "../../../theme";
 import SpecialCard from "./SpecialCard";
@@ -23,6 +24,7 @@ const RestaurantMenuSearch = ({
 }: RestaurantMenuSearchProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   const dishes = useMemo(
     () => categories.flatMap((category) => category.dishes ?? []),
@@ -47,14 +49,31 @@ const RestaurantMenuSearch = ({
   const closeSearch = () => {
     setIsOpen(false);
     setSearchTerm("");
+    setIsSearching(false);
   };
+
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setIsSearching(false);
+      return undefined;
+    }
+
+    setIsSearching(true);
+    const timeoutId = window.setTimeout(() => {
+      setIsSearching(false);
+    }, 220);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [searchTerm]);
 
   const searchContainerSx = {
     position: "fixed",
     top: 14,
     left: "50%",
     transform: "translateX(-50%)",
-    width: { md: 720, lg: 860 },
+    width: { md: 760, lg: 760 },
     maxWidth: "calc(100vw - 48px)",
   } as const;
 
@@ -138,8 +157,6 @@ const RestaurantMenuSearch = ({
                 : "none",
               borderRadius: hasSearchTerm ? "18px" : "999px",
               boxShadow: "0 12px 40px rgba(0, 0, 0, 0.28)",
-              transition:
-                "border-color 160ms ease, border-radius 160ms ease, max-height 160ms ease",
             }}
           >
             <Box>
@@ -181,26 +198,47 @@ const RestaurantMenuSearch = ({
                   {results.length} results for "{searchTerm.trim()}"
                 </Typography>
 
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns:
-                      "repeat(auto-fill, minmax(170px, 170px))",
-                    justifyContent: "start",
-                    gap: 2.5,
-                    maxHeight: "calc(100dvh - 150px)",
-                    overflowY: "auto",
-                    pb: 1,
-                    pr: 0.5,
-                    "& > .MuiCard-root": {
-                      m: 0,
-                    },
-                  }}
-                >
-                  {results.map((dish) => (
-                    <SpecialCard key={dish._id} data={dish} />
-                  ))}
-                </Box>
+                {isSearching ? (
+                  <Box
+                    sx={{
+                      minHeight: 220,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <CircularProgress
+                      size={34}
+                      thickness={4}
+                      aria-label="Searching menu"
+                      sx={{ color: Colors.background.brand }}
+                    />
+                  </Box>
+                ) : (
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: {
+                        md: "repeat(5, minmax(0, 1fr))",
+                        lg: "repeat(5, minmax(0, 1fr))",
+                      },
+                      gap: 1.5,
+                      maxHeight: "calc(100dvh - 150px)",
+                      overflowY: "auto",
+                      pb: 1,
+                      pr: 0.5,
+                    }}
+                  >
+                    {results.map((dish) => (
+                      <SpecialCard
+                        key={dish._id}
+                        data={dish}
+                        fillContainer
+                        compact
+                      />
+                    ))}
+                  </Box>
+                )}
               </Box>
             )}
           </Box>
