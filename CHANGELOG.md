@@ -2,7 +2,7 @@
 
 ### Features
 
-* enhance Dish and DishDetailsDialog components with quantity control and update functionality ([3ee7c56](https://github.com/DiluDevX/deliveroo-clone-web/commit/3ee7c56fb8117836a9d15c0bf170fc9ac2ea6465))
+- enhance Dish and DishDetailsDialog components with quantity control and update functionality ([3ee7c56](https://github.com/DiluDevX/deliveroo-clone-web/commit/3ee7c56fb8117836a9d15c0bf170fc9ac2ea6465))
 
 ## [1.20.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.19.0...v1.20.0) (2026-06-26)
 
