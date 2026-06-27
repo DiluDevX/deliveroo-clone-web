@@ -1,3 +1,9 @@
+## [1.27.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.26.0...v1.27.0) (2026-06-27)
+
+### Features
+
+* simplify restaurant tags display and improve layout in RestaurantInfoView ([b6174ad](https://github.com/DiluDevX/deliveroo-clone-web/commit/b6174adceee41d1c1cdcd903c3057fe7a7561522))
+
 ## [1.26.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.25.0...v1.26.0) (2026-06-27)
 
 ### Features
