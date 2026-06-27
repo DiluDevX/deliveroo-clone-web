@@ -120,7 +120,7 @@ const Header = () => {
               onClick={openRestaurantMenuSearch}
               sx={{
                 backgroundColor: Colors.background.light,
-                display: { xs: "flex", md: "none" },
+                display: { xs: "flex", lg: "none" },
                 width: 42,
                 minWidth: 42,
                 height: 42,

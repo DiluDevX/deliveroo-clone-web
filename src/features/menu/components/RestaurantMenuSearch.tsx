@@ -125,7 +125,7 @@ const RestaurantMenuSearch = ({
         sx={{
           ...searchDialogSx,
           zIndex: 130,
-          display: { xs: "none", md: isOpen ? "none" : "block" },
+          display: { xs: "none", lg: isOpen ? "none" : "block" },
         }}
       >
         <TextField
