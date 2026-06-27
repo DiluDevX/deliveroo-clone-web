@@ -1,3 +1,9 @@
+## [1.31.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.31.0...v1.31.1) (2026-06-27)
+
+### Bug Fixes
+
+* update event listener to use pointer events in DishQuantityControl component ([bf62483](https://github.com/DiluDevX/deliveroo-clone-web/commit/bf6248386e0d4f166964a7135fb9443e06d5633c))
+
 ## [1.31.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.30.4...v1.31.0) (2026-06-27)
 
 ### Features
