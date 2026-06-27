@@ -1,3 +1,9 @@
+## [1.24.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.23.0...v1.24.0) (2026-06-27)
+
+### Features
+
+* optimize image loading with lazy loading and async decoding across components ([af389a8](https://github.com/DiluDevX/deliveroo-clone-web/commit/af389a8997297b6f07e17a119644c2e9bcf8e50a))
+
 ## [1.23.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.22.0...v1.23.0) (2026-06-27)
 
 ### Features
