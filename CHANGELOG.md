@@ -1,3 +1,9 @@
+## [1.28.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.27.0...v1.28.0) (2026-06-27)
+
+### Features
+
+* enhance layout and responsiveness in RestaurantMenuSearch and RestaurantInfoView ([da17b05](https://github.com/DiluDevX/deliveroo-clone-web/commit/da17b05471536939a3a6f07f02e58a88bbb8d9da))
+
 ## [1.27.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.26.0...v1.27.0) (2026-06-27)
 
 ### Features
