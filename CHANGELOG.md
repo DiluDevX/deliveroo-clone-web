@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* update hover effects and styles in CategoriesBar and CategoryChip components ([0cb9c92](https://github.com/DiluDevX/deliveroo-clone-web/commit/0cb9c927da3e7009920fd4ad12e07567f7b901cd))
+- update hover effects and styles in CategoriesBar and CategoryChip components ([0cb9c92](https://github.com/DiluDevX/deliveroo-clone-web/commit/0cb9c927da3e7009920fd4ad12e07567f7b901cd))
 
 ## [1.30.3](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.30.2...v1.30.3) (2026-06-27)
 

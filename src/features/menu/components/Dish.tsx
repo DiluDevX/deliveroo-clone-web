@@ -124,7 +124,7 @@ const Dish = ({ data }: DishProps) => {
             : `1px solid ${Colors.border.default}`,
           "@media (hover: hover) and (pointer: fine)": {
             "&:hover": {
-              boxShadow: `0px 2px 8px ${Colors.boxShadow.default}`,
+              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.18)",
             },
           },
         }}

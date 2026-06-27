@@ -22,6 +22,8 @@ This project is an educational portfolio app. It is not affiliated with Delivero
 
 The frontend calls only the BFF gateway.
 
+![FoodFlow system architecture](docs/assets/deliveroo-clone-architecture-v2.svg)
+
 ```text
 React Web App
   -> BFF Gateway
