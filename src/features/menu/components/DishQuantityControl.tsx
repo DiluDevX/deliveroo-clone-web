@@ -90,6 +90,8 @@ const DishQuantityControl = ({
             transition:
               "width 180ms ease, transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease",
             "&:hover": {
+              backgroundColor: Colors.background.light,
+              boxShadow: `0 3px 10px ${Colors.boxShadow.default}`,
               transform: "scale(1.04)",
             },
           }}
@@ -163,6 +165,9 @@ const DishQuantityControl = ({
           transform: isExpanded ? "translateX(0)" : "translateX(8px)",
           pointerEvents: isExpanded ? "auto" : "none",
           transition: "opacity 180ms ease 80ms, transform 220ms ease 60ms",
+          "&:hover": {
+            backgroundColor: "transparent",
+          },
         }}
       >
         {quantity <= 1 ? (
@@ -200,6 +205,9 @@ const DishQuantityControl = ({
           transform: isExpanded ? "translateX(0)" : "translateX(-8px)",
           pointerEvents: isExpanded ? "auto" : "none",
           transition: "opacity 180ms ease 80ms, transform 220ms ease 60ms",
+          "&:hover": {
+            backgroundColor: "transparent",
+          },
         }}
       >
         <AddIcon sx={{ color: Colors.background.brand }} />

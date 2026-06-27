@@ -40,7 +40,16 @@ const CategoryChip = ({
         px: 2,
         py: 0.5,
         whiteSpace: "nowrap",
-        transition: "border 0.2s ease",
+        transition:
+          "background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease",
+        "@media (hover: hover) and (pointer: fine)": {
+          "&:hover": {
+            backgroundColor: selected
+              ? Colors.background.brandHover
+              : Colors.background.subtleLight,
+            color: selected ? Colors.text.inverse : Colors.text.default,
+          },
+        },
       }}
     >
       <Typography>{data.name}</Typography>

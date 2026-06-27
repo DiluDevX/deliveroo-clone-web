@@ -284,10 +284,16 @@ export const CategoriesBar = ({
                 backgroundColor: isMoreSelected
                   ? Colors.background.brand
                   : Colors.background.defaultLight,
-                "&:hover": {
-                  backgroundColor: isMoreSelected
-                    ? Colors.background.brandHover
-                    : Colors.background.default,
+                transition: "background-color 0.18s ease, color 0.18s ease",
+                "@media (hover: hover) and (pointer: fine)": {
+                  "&:hover": {
+                    backgroundColor: isMoreSelected
+                      ? Colors.background.brandHover
+                      : Colors.background.subtleLight,
+                    color: isMoreSelected
+                      ? Colors.text.inverse
+                      : Colors.text.default,
+                  },
                 },
               }}
             >

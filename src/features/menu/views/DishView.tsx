@@ -84,14 +84,14 @@ const DishView = ({ categories = [], onLoadingChange }: DishViewProps) => {
             >
               {category.name}
             </Typography>
-            <Grid container spacing={{ sm: 0, md: 2, lg: 2 }}>
+            <Grid
+              container
+              columnSpacing={{ sm: 0, md: 2, lg: 2 }}
+              rowSpacing={{ xs: 1.25, md: 1.5 }}
+            >
               {dishesByCategory[category.id].map((dish) => {
                 return (
-                  <Grid
-                    sx={{ marginBottom: "1rem" }}
-                    key={dish._id}
-                    size={{ xs: 12, sm: 12, md: 6, lg: 6 }}
-                  >
+                  <Grid key={dish._id} size={{ xs: 12, sm: 12, md: 6, lg: 6 }}>
                     <Dish data={dish} />
                   </Grid>
                 );

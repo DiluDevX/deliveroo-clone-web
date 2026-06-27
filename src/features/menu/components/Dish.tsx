@@ -113,13 +113,20 @@ const Dish = ({ data }: DishProps) => {
           minHeight: "178px",
           width: "100%",
           maxWidth: "100%",
-          boxShadow: `0px 2px 8px ${Colors.boxShadow.default}`,
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
           backgroundColor: Colors.background.light,
           cursor: "pointer",
           position: "relative",
+          transition:
+            "box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease",
           borderLeft: isInCart
             ? `6px solid ${Colors.background.brand}`
             : `1px solid ${Colors.border.default}`,
+          "@media (hover: hover) and (pointer: fine)": {
+            "&:hover": {
+              boxShadow: `0px 2px 8px ${Colors.boxShadow.default}`,
+            },
+          },
         }}
       >
         <Box
