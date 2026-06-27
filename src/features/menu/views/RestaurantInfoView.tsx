@@ -284,44 +284,21 @@ const RestaurantInfoView = ({
             <Box
               sx={{
                 mt: 1,
-                display: "flex",
-                flexWrap: "nowrap",
-                alignItems: "center",
                 overflow: "hidden",
               }}
             >
-              {restaurant.tags?.map((tag, index) => (
-                <Box
-                  key={index + tag}
-                  component="span"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Typography
-                    variant="body1"
-                    component="span"
-                    sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
-                  >
-                    {tag}
-                  </Typography>
-                  {restaurant.tags?.length > index + 1 && (
-                    <Typography
-                      sx={{
-                        mx: { xs: 0.45, sm: 1 },
-                        lineHeight: 1,
-                        fontSize: { xs: "0.9rem", sm: "1rem" },
-                      }}
-                      component="span"
-                    >
-                      •
-                    </Typography>
-                  )}
-                </Box>
-              ))}
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: { xs: "0.86rem", sm: "1rem" },
+                  lineHeight: 1.45,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {restaurant.tags?.join(" • ")}
+              </Typography>
             </Box>
             <Box
               sx={{
@@ -527,8 +504,14 @@ const RestaurantInfoView = ({
           maxWidth="sm"
           PaperProps={{
             sx: {
-              borderRadius: { xs: 0, sm: "8px" },
-              maxHeight: { xs: "100dvh", sm: "calc(100dvh - 48px)" },
+              borderRadius: { xs: "8px", sm: "8px" },
+              maxHeight: {
+                xs: "calc(100dvh - 96px)",
+                sm: "calc(100dvh - 48px)",
+              },
+              height: { xs: "78dvh", sm: "auto" },
+              display: "flex",
+              flexDirection: "column",
             },
           }}
         >
@@ -551,7 +534,7 @@ const RestaurantInfoView = ({
               <CloseIcon sx={{ color: Colors.background.brand }} />
             </IconButton>
           </DialogTitle>
-          <DialogContent sx={{ p: 0 }}>
+          <DialogContent sx={{ p: 0, overflowY: "auto" }}>
             <Box
               sx={{ p: 3, borderBottom: `1px solid ${Colors.border.default}` }}
             >

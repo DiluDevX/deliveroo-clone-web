@@ -2,7 +2,7 @@
 
 ### Features
 
-* update DishQuantityControl to use IconButton ([184753b](https://github.com/DiluDevX/deliveroo-clone-web/commit/184753b442d556b46e227a644c669799a86b74af))
+- update DishQuantityControl to use IconButton ([184753b](https://github.com/DiluDevX/deliveroo-clone-web/commit/184753b442d556b46e227a644c669799a86b74af))
 
 ## [1.25.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.24.0...v1.25.0) (2026-06-27)
 
