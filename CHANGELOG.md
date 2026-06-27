@@ -2,7 +2,7 @@
 
 ### Features
 
-* implement DishQuantityControl component for managing dish quantities in cart ([aa15c28](https://github.com/DiluDevX/deliveroo-clone-web/commit/aa15c28fde6c5848b941239ad032ef41189564a0))
+- implement DishQuantityControl component for managing dish quantities in cart ([aa15c28](https://github.com/DiluDevX/deliveroo-clone-web/commit/aa15c28fde6c5848b941239ad032ef41189564a0))
 
 ## [1.22.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.21.0...v1.22.0) (2026-06-27)
 

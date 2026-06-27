@@ -201,6 +201,8 @@ const Dish = ({ data }: DishProps) => {
             <img
               src={data.image}
               alt={data.name}
+              loading="lazy"
+              decoding="async"
               style={{
                 width: "100%",
                 height: "100%",

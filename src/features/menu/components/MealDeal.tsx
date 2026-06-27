@@ -25,6 +25,8 @@ const MealDeal = () => {
         <img
           src="https://assets.dilum.me/deliveroo-clone/svgs/MealDealsBackground.svg"
           alt="Meal Deals Background"
+          loading="lazy"
+          decoding="async"
           style={{
             width: "100%",
             height: "100%",
@@ -52,6 +54,8 @@ const MealDeal = () => {
           <img
             src="https://assets.dilum.me/deliveroo-clone/svgs/merch-sparkleleft.svg"
             alt="Sparkle Left"
+            loading="lazy"
+            decoding="async"
             style={{
               minWidth: "50px",
               width: "8%",
@@ -74,6 +78,8 @@ const MealDeal = () => {
           <img
             src="https://assets.dilum.me/deliveroo-clone/svgs/merch-sparkleright.svg"
             alt="Sparkle Right"
+            loading="lazy"
+            decoding="async"
             style={{
               minWidth: "50px",
               width: "8%",
@@ -113,6 +119,8 @@ const MealDeal = () => {
       <img
         src="https://assets.dilum.me/deliveroo-clone/svgs/merch-itemrow.svg"
         alt="item-row"
+        loading="lazy"
+        decoding="async"
         style={{
           minHeight: "40px",
           paddingTop: "0.5rem",

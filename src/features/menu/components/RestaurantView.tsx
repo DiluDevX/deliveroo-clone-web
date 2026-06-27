@@ -63,6 +63,8 @@ const RestaurantView = ({ restaurant }: RestaurantViewProps) => {
             <img
               src={restaurant.image}
               alt={restaurant.name}
+              loading="lazy"
+              decoding="async"
               onError={() => setImageError(true)}
               style={{
                 width: "100%",

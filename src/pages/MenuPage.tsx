@@ -199,6 +199,7 @@ const MenuPage = () => {
         categories={navigationCategories}
         selectedCategoryId={selectedCategoryId}
         setSelectedCategoryId={setSelectedCategoryId}
+        isLoading={isRestaurantLoading}
       />
       <Box
         sx={{
@@ -219,6 +220,7 @@ const MenuPage = () => {
             >
               <MenuView
                 categories={categories}
+                isLoading={isRestaurantLoading}
                 onDishesLoadingChange={handleDishesLoadingChange}
               />
             </Grid>

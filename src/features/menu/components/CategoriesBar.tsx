@@ -1,4 +1,14 @@
-import { Box, Container, Typography } from "@mui/material";
+import {
+  Box,
+  Button as MuiButton,
+  Container,
+  Menu,
+  MenuItem,
+  Skeleton,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CategoryChip from "./CategoryChip";
 import { ICategory } from "../../../data/Sides";
 import { Colors } from "../../../theme";
@@ -9,6 +19,7 @@ interface CategoryProps {
   categories: ICategory[];
   selectedCategoryId: string | null;
   setSelectedCategoryId: (id: string | null) => void;
+  isLoading?: boolean;
 }
 
 // Custom smooth scroll with easing
@@ -41,6 +52,7 @@ export const CategoriesBar = ({
   categories,
   selectedCategoryId,
   setSelectedCategoryId,
+  isLoading = false,
 }: CategoryProps) => {
   const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const isClickScrolling = useRef(false);
@@ -48,6 +60,16 @@ export const CategoriesBar = ({
   const [pendingCategoryId, setPendingCategoryId] = useState<string | null>(
     null,
   );
+  const [moreAnchorEl, setMoreAnchorEl] = useState<HTMLElement | null>(null);
+  const isMobile = useMediaQuery("(max-width:599.95px)");
+  const isTablet = useMediaQuery("(min-width:600px) and (max-width:899.95px)");
+  const visibleCategoryCount = isMobile ? 3 : isTablet ? 5 : categories.length;
+  const visibleCategories = categories.slice(0, visibleCategoryCount);
+  const overflowCategories = categories.slice(visibleCategoryCount);
+  const isMoreSelected = overflowCategories.some(
+    (category) => category.id === selectedCategoryId,
+  );
+  const isMoreOpen = Boolean(moreAnchorEl);
 
   // Scroll the category chip into view when selected (only if hidden)
   useEffect(() => {
@@ -134,6 +156,7 @@ export const CategoriesBar = ({
   }, [setSelectedCategoryId]);
 
   const handleOnCategoryClick = (id: string) => {
+    setMoreAnchorEl(null);
     // Set pending state immediately (shows lighter border)
     setPendingCategoryId(id);
 
@@ -186,12 +209,23 @@ export const CategoriesBar = ({
           display: "flex",
           alignItems: "center",
           overflowX: "auto",
+          flexWrap: "nowrap",
           "::-webkit-scrollbar": {
             display: "none",
           },
         }}
       >
-        {categories.length === 0 && (
+        {isLoading &&
+          Array.from({ length: 5 }).map((_, index) => (
+            <Skeleton
+              key={index}
+              variant="rounded"
+              width={index === 0 ? 92 : 132}
+              height={34}
+              sx={{ borderRadius: "20px", mr: 1.25 }}
+            />
+          ))}
+        {!isLoading && categories.length === 0 && (
           <Typography
             sx={{
               display: "flex",
@@ -204,21 +238,81 @@ export const CategoriesBar = ({
             No categories Found
           </Typography>
         )}
-        {categories.map((category) => (
-          <div
-            key={category.id}
-            ref={(el) => {
-              categoryRefs.current[category.id] = el;
-            }}
-          >
-            <CategoryChip
-              data={category}
-              onClick={() => handleOnCategoryClick(category.id)}
-              selected={selectedCategoryId === category.id}
-              pending={pendingCategoryId === category.id}
-            />
-          </div>
-        ))}
+        {!isLoading &&
+          visibleCategories.map((category) => (
+            <div
+              key={category.id}
+              ref={(el) => {
+                categoryRefs.current[category.id] = el;
+              }}
+            >
+              <CategoryChip
+                data={category}
+                onClick={() => handleOnCategoryClick(category.id)}
+                selected={selectedCategoryId === category.id}
+                pending={pendingCategoryId === category.id}
+              />
+            </div>
+          ))}
+        {overflowCategories.length > 0 && (
+          <>
+            <MuiButton
+              endIcon={<KeyboardArrowDownIcon />}
+              onClick={(event) => setMoreAnchorEl(event.currentTarget)}
+              sx={{
+                ml: 0.5,
+                borderRadius: "20px",
+                px: 2,
+                py: 0.5,
+                minWidth: "auto",
+                textTransform: "none",
+                fontWeight: isMoreSelected ? 800 : 500,
+                color: isMoreSelected
+                  ? Colors.text.inverse
+                  : Colors.background.brand,
+                backgroundColor: isMoreSelected
+                  ? Colors.background.brand
+                  : Colors.background.defaultLight,
+                "&:hover": {
+                  backgroundColor: isMoreSelected
+                    ? Colors.background.brandHover
+                    : Colors.background.default,
+                },
+              }}
+            >
+              More
+            </MuiButton>
+            <Menu
+              anchorEl={moreAnchorEl}
+              open={isMoreOpen}
+              onClose={() => setMoreAnchorEl(null)}
+              PaperProps={{
+                sx: {
+                  mt: 1,
+                  minWidth: 190,
+                  borderRadius: 2,
+                },
+              }}
+            >
+              {overflowCategories.map((category) => (
+                <MenuItem
+                  key={category.id}
+                  selected={selectedCategoryId === category.id}
+                  onClick={() => handleOnCategoryClick(category.id)}
+                  sx={{
+                    color:
+                      selectedCategoryId === category.id
+                        ? Colors.background.brand
+                        : Colors.text.default,
+                    fontWeight: selectedCategoryId === category.id ? 800 : 500,
+                  }}
+                >
+                  {category.name}
+                </MenuItem>
+              ))}
+            </Menu>
+          </>
+        )}
       </Container>
     </Box>
   );

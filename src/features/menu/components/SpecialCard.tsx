@@ -39,6 +39,10 @@ const SpecialCard = ({
   const quantity = cartItem?.quantity ?? 0;
   const cartItemId = cartItem?.cartItemId || cartItem?._id;
   const isInCart = quantity > 0;
+  const cardWidth = fillContainer ? "100%" : { xs: 156, sm: 164, md: 170 };
+  const cardHeight = compact ? 220 : { xs: 286, sm: 300, md: 310 };
+  const imageHeight = compact ? 110 : { xs: 132, sm: 142, md: 150 };
+  const quantityTop = compact ? 92 : { xs: 108, sm: 118, md: 126 };
 
   const handleAddToCart = async () => {
     const selectedRestaurantId = localStorage.getItem("selected-restaurant-id");
@@ -109,10 +113,10 @@ const SpecialCard = ({
       <Card
         onClick={() => setIsDetailsOpen(true)}
         sx={{
-          width: "100%",
+          width: cardWidth,
           maxWidth: fillContainer ? "none" : "170px",
-          minWidth: fillContainer ? 0 : "170px",
-          height: compact ? "220px" : "310px",
+          minWidth: fillContainer ? 0 : cardWidth,
+          height: cardHeight,
           mr: fillContainer ? 0 : 2,
           my: fillContainer ? 0 : 2,
           display: "flex",
@@ -191,15 +195,19 @@ const SpecialCard = ({
             </Typography>
           </Box>
         )}
-        <img
+        <Box
+          component="img"
           src={data.image}
           alt={data.name}
-          style={{
-            minHeight: compact ? 110 : 150,
-            maxHeight: compact ? 110 : 150,
+          loading="lazy"
+          decoding="async"
+          sx={{
+            height: imageHeight,
+            minHeight: imageHeight,
             width: "100%",
             borderRadius: "3px",
             objectFit: "cover",
+            flexShrink: 0,
             backgroundImage:
               "url(https://assets.dilum.me/deliveroo-clone/svgs/placeholder-menu.svg)",
             backgroundPosition: "center",
@@ -280,7 +288,7 @@ const SpecialCard = ({
             sx={{
               position: "absolute",
               right: compact ? 8 : 12,
-              top: compact ? 92 : 126,
+              top: quantityTop,
             }}
           >
             <DishQuantityControl

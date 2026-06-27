@@ -106,6 +106,8 @@ const LocationView = () => {
           <img
             src="https://img2.storyblok.com/filters:format(webp)/f/62776/x/ca59b51c51/map-min.svg"
             alt="map"
+            loading="lazy"
+            decoding="async"
             style={{
               width: "100%",
               height: "auto",
@@ -139,6 +141,8 @@ const LocationView = () => {
             <img
               alt="notification-img"
               src="https://assets.dilum.me/deliveroo-clone/images/notification.png"
+              loading="lazy"
+              decoding="async"
               style={{
                 width: "100%",
                 height: "auto",

@@ -34,6 +34,8 @@ const MainCard: React.FC<MainCardProps> = ({ image, title, description }) => {
         <img
           src={image}
           alt={title}
+          loading="lazy"
+          decoding="async"
           style={{
             width: "100%",
             height: "100%",

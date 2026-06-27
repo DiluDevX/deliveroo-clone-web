@@ -70,11 +70,11 @@ const RestaurantMenuSearch = ({
 
   const searchContainerSx = {
     position: "fixed",
-    top: 14,
+    top: { xs: 10, md: 14 },
     left: "50%",
     transform: "translateX(-50%)",
-    width: { md: 760, lg: 760 },
-    maxWidth: "calc(100vw - 48px)",
+    width: { xs: "calc(100vw - 24px)", md: 760, lg: 760 },
+    maxWidth: { xs: "calc(100vw - 24px)", md: "calc(100vw - 48px)" },
   } as const;
 
   const searchInputSx = {
@@ -129,6 +129,29 @@ const RestaurantMenuSearch = ({
         />
       </Box>
 
+      <IconButton
+        aria-label={`Search ${restaurantName}`}
+        onClick={() => setIsOpen(true)}
+        sx={{
+          position: "fixed",
+          top: 17,
+          right: 112,
+          zIndex: 130,
+          display: { xs: isOpen ? "none" : "flex", md: "none" },
+          width: 42,
+          height: 42,
+          borderRadius: "6px",
+          color: Colors.background.brand,
+          backgroundColor: Colors.background.light,
+          border: `1px solid ${Colors.border.subtle}`,
+          "&:hover": {
+            backgroundColor: Colors.background.default,
+          },
+        }}
+      >
+        <SearchOutlinedIcon />
+      </IconButton>
+
       {isOpen && (
         <Box
           role="presentation"
@@ -138,7 +161,7 @@ const RestaurantMenuSearch = ({
             inset: 0,
             zIndex: 1200,
             backgroundColor: "rgba(0, 0, 0, 0.55)",
-            display: { xs: "none", md: "block" },
+            display: "block",
           }}
         >
           <Box
@@ -149,7 +172,10 @@ const RestaurantMenuSearch = ({
             sx={{
               ...searchContainerSx,
               boxSizing: "border-box",
-              maxHeight: "calc(100dvh - 42px)",
+              maxHeight: {
+                xs: "calc(100dvh - 20px)",
+                md: "calc(100dvh - 42px)",
+              },
               overflow: "hidden",
               backgroundColor: Colors.background.light,
               border: hasSearchTerm
@@ -219,6 +245,8 @@ const RestaurantMenuSearch = ({
                     sx={{
                       display: "grid",
                       gridTemplateColumns: {
+                        xs: "repeat(2, minmax(0, 1fr))",
+                        sm: "repeat(3, minmax(0, 1fr))",
                         md: "repeat(5, minmax(0, 1fr))",
                         lg: "repeat(5, minmax(0, 1fr))",
                       },

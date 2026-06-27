@@ -21,6 +21,8 @@ const MainCard: React.FC<MainCardProps> = ({ image }) => {
       <img
         src={image}
         alt="Man Card"
+        loading="lazy"
+        decoding="async"
         style={{
           width: "100%",
           height: "100%",

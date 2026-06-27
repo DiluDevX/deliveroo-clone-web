@@ -36,13 +36,18 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
 
     const updateOverflow = () => {
       setHasOverflow(scrollElement.scrollWidth > scrollElement.clientWidth + 1);
+      setShowBackArrow(scrollElement.scrollLeft > 8);
     };
 
     updateOverflow();
     const resizeObserver = new ResizeObserver(updateOverflow);
     resizeObserver.observe(scrollElement);
+    scrollElement.addEventListener("scroll", updateOverflow, { passive: true });
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      resizeObserver.disconnect();
+      scrollElement.removeEventListener("scroll", updateOverflow);
+    };
   }, [specialItems.length]);
 
   if (specialItems.length === 0) {
@@ -77,7 +82,35 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
       <Typography variant="body2" sx={{ marginBottom: "0.7rem" }}>
         Selected discounted dishes from this restaurant.
       </Typography>
-      <Box sx={{ position: "relative" }}>
+      <Box
+        sx={{
+          position: "relative",
+          "&::before": {
+            content: '""',
+            display: hasOverflow && showBackArrow ? "block" : "none",
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: { xs: 32, md: 56 },
+            zIndex: 2,
+            pointerEvents: "none",
+            background: `linear-gradient(90deg, ${Colors.background.default} 0%, rgba(241, 240, 240, 0) 100%)`,
+          },
+          "&::after": {
+            content: '""',
+            display: hasOverflow ? "block" : "none",
+            position: "absolute",
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: { xs: 32, md: 56 },
+            zIndex: 2,
+            pointerEvents: "none",
+            background: `linear-gradient(270deg, ${Colors.background.default} 0%, rgba(241, 240, 240, 0) 100%)`,
+          },
+        }}
+      >
         {hasOverflow && showBackArrow && (
           <IconButton
             aria-label="Previous special offers"

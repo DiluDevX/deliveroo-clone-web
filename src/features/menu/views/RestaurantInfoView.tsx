@@ -47,7 +47,7 @@ const RestaurantInfoView = ({
             sm: 2,
             md: 2,
           },
-          py: 3,
+          py: { xs: 0, sm: 3 },
         }}
       >
         <Box sx={{ paddingBottom: "1rem" }}>
@@ -170,10 +170,12 @@ const RestaurantInfoView = ({
             sm: 2,
             md: 2,
           },
-          py: 3,
+          py: { xs: 0, sm: 3 },
         }}
       >
-        <Box sx={{ paddingBottom: "1rem" }}>
+        <Box
+          sx={{ paddingBottom: "1rem", display: { xs: "none", sm: "block" } }}
+        >
           <Button
             PrefixComponent={<ArrowBackIcon sx={{ height: "1.3rem" }} />}
             onClick={() => globalThis.history.back()}
@@ -207,7 +209,7 @@ const RestaurantInfoView = ({
             <Box
               sx={{
                 width: "100%",
-                height: "100%",
+                height: { xs: 220, sm: "100%" },
                 borderRadius: {
                   xs: 0,
                   sm: 2,
@@ -220,8 +222,29 @@ const RestaurantInfoView = ({
                   : "none",
                 backgroundPosition: "center",
                 backgroundSize: "contain",
+                position: "relative",
               }}
             >
+              <IconButton
+                aria-label="Back"
+                onClick={() => globalThis.history.back()}
+                sx={{
+                  display: { xs: "flex", sm: "none" },
+                  position: "absolute",
+                  top: 12,
+                  left: 12,
+                  zIndex: 2,
+                  width: 42,
+                  height: 42,
+                  backgroundColor: Colors.background.light,
+                  boxShadow: `0 3px 10px ${Colors.boxShadow.default}`,
+                  "&:hover": {
+                    backgroundColor: Colors.background.default,
+                  },
+                }}
+              >
+                <ArrowBackIcon sx={{ color: Colors.background.brand }} />
+              </IconButton>
               <img
                 alt=""
                 src={restaurant.image}
