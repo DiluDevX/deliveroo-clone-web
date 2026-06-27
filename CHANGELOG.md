@@ -1,3 +1,9 @@
+## [1.25.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.24.0...v1.25.0) (2026-06-27)
+
+### Features
+
+* enhance restaurant menu search functionality and UI improvements ([1bd7960](https://github.com/DiluDevX/deliveroo-clone-web/commit/1bd7960fbc67fe31454a4027c013e6371f8408bf))
+
 ## [1.24.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.23.0...v1.24.0) (2026-06-27)
 
 ### Features
