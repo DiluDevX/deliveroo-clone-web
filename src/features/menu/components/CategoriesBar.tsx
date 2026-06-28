@@ -12,9 +12,10 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CategoryChip from "./CategoryChip";
 import { ICategory } from "../../../data/Sides";
 import { Colors } from "../../../theme";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const categoryHoverColor = "rgba(0, 204, 188, 0.12)";
+const moreButtonReservedWidth = 118;
 
 interface CategoryProps {
   error: string | null;
@@ -56,6 +57,7 @@ export const CategoriesBar = ({
   setSelectedCategoryId,
   isLoading = false,
 }: CategoryProps) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const moreButtonRef = useRef<HTMLButtonElement | null>(null);
   const isClickScrolling = useRef(false);
@@ -64,10 +66,11 @@ export const CategoriesBar = ({
     null,
   );
   const [moreAnchorEl, setMoreAnchorEl] = useState<HTMLElement | null>(null);
+  const [visibleCategoryCount, setVisibleCategoryCount] = useState(
+    categories.length,
+  );
   const isMobile = useMediaQuery("(max-width:599.95px)");
   const isTablet = useMediaQuery("(min-width:600px) and (max-width:899.95px)");
-  const isDesktop = useMediaQuery("(min-width:1200px)");
-  const visibleCategoryCount = isMobile ? 2 : isTablet ? 4 : isDesktop ? 8 : 5;
   const visibleCategories = categories.slice(0, visibleCategoryCount);
   const overflowCategories = categories.slice(visibleCategoryCount);
   const selectedOverflowCategory = overflowCategories.find(
@@ -75,6 +78,85 @@ export const CategoriesBar = ({
   );
   const isMoreSelected = Boolean(selectedOverflowCategory);
   const isMoreOpen = Boolean(moreAnchorEl);
+  const estimateCategoryWidth = useCallback(
+    (categoryName: string) => {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        return isMobile ? 152 : isTablet ? 190 : 150;
+      }
+
+      context.font = "800 16px IBM Plex Sans";
+
+      const textWidth = context.measureText(categoryName).width;
+      const horizontalPadding = isMobile ? 28 : isTablet ? 34 : 44;
+      const rightMargin = isMobile ? 8 : isTablet ? 12 : 20;
+      const maxWidth = isMobile
+        ? 152
+        : isTablet
+          ? 190
+          : Number.POSITIVE_INFINITY;
+
+      return Math.min(textWidth + horizontalPadding, maxWidth) + rightMargin;
+    },
+    [isMobile, isTablet],
+  );
+
+  const updateVisibleCategoryCount = useCallback(() => {
+    const containerWidth = containerRef.current?.clientWidth ?? 0;
+
+    if (containerWidth <= 0 || categories.length === 0) {
+      setVisibleCategoryCount(categories.length);
+      return;
+    }
+
+    const totalWidth = categories.reduce(
+      (width, category) => width + estimateCategoryWidth(category.name),
+      0,
+    );
+
+    if (totalWidth <= containerWidth) {
+      setVisibleCategoryCount(categories.length);
+      return;
+    }
+
+    const availableWidth = Math.max(
+      0,
+      containerWidth - moreButtonReservedWidth,
+    );
+    let usedWidth = 0;
+    let nextVisibleCount = 0;
+
+    for (const category of categories) {
+      const categoryWidth = estimateCategoryWidth(category.name);
+
+      if (usedWidth + categoryWidth > availableWidth) {
+        break;
+      }
+
+      usedWidth += categoryWidth;
+      nextVisibleCount += 1;
+    }
+
+    setVisibleCategoryCount(Math.max(1, nextVisibleCount));
+  }, [categories, estimateCategoryWidth]);
+
+  useEffect(() => {
+    updateVisibleCategoryCount();
+
+    const containerElement = containerRef.current;
+    if (!containerElement) {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(updateVisibleCategoryCount);
+    resizeObserver.observe(containerElement);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [updateVisibleCategoryCount]);
 
   // Scroll the category chip into view when selected (only if hidden)
   useEffect(() => {
@@ -217,6 +299,7 @@ export const CategoriesBar = ({
       }}
     >
       <Container
+        ref={containerRef}
         maxWidth="xl"
         sx={{
           ml: { xs: 0, sm: 0, md: 0, lg: 0, xl: "57px" },
