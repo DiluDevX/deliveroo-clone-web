@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* adjust dimensions in SpecialCard and PopularView components for improved layout ([40627bb](https://github.com/DiluDevX/deliveroo-clone-web/commit/40627bb88debf2052c350eab651980bbb0dcbc19))
+- adjust dimensions in SpecialCard and PopularView components for improved layout ([40627bb](https://github.com/DiluDevX/deliveroo-clone-web/commit/40627bb88debf2052c350eab651980bbb0dcbc19))
 
 ## [1.32.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.31.1...v1.32.0) (2026-06-28)
 

@@ -41,7 +41,7 @@ const SpecialCard = ({
   const quantity = cartItem?.quantity ?? 0;
   const cartItemId = cartItem?.cartItemId || cartItem?._id;
   const isInCart = quantity > 0;
-  const cardWidth = fillContainer ? "100%" : { xs: 146, sm: 150, md: 154 };
+  const cardWidth = fillContainer ? "100%" : { xs: 154, sm: 160, md: 164 };
   const cardHeight = compact ? 220 : { xs: 258, sm: 268, md: 276 };
   const imageHeight = compact ? 110 : { xs: 116, sm: 122, md: 128 };
   const quantityTop = compact ? 92 : { xs: 94, sm: 100, md: 104 };
@@ -116,7 +116,7 @@ const SpecialCard = ({
         onClick={() => setIsDetailsOpen(true)}
         sx={{
           width: cardWidth,
-          maxWidth: fillContainer ? "none" : "154px",
+          maxWidth: fillContainer ? "none" : "164px",
           minWidth: fillContainer ? 0 : cardWidth,
           height: cardHeight,
           mr: fillContainer ? 0 : 1.75,
