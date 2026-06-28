@@ -1,7 +1,7 @@
 import { Box, Container, IconButton, Typography } from "@mui/material";
 import SpecialCard from "../components/SpecialCard";
 import { ICategory, IDish } from "../../../data/Sides";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { Colors } from "../../../theme";
@@ -18,6 +18,20 @@ const getSpecialItems = (categories: ICategory[]): IDish[] =>
     .flatMap((category) => category.dishes ?? [])
     .filter((dish) => Number(dish.discountPercent ?? 0) > 0);
 
+const getCardStep = (scrollElement: HTMLDivElement) => {
+  const firstCard = scrollElement.children.item(0);
+  const secondCard = scrollElement.children.item(1);
+
+  if (firstCard && secondCard) {
+    return (
+      secondCard.getBoundingClientRect().left -
+      firstCard.getBoundingClientRect().left
+    );
+  }
+
+  return firstCard ? firstCard.getBoundingClientRect().width : 186;
+};
+
 const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
   const specialItems = useMemo(() => getSpecialItems(categories), [categories]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -32,48 +46,61 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
     onLoadingChange?.(false);
   }, [onLoadingChange]);
 
+  const updateCarouselState = useCallback(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) {
+      return;
+    }
+
+    const cardStep = getCardStep(scrollElement);
+    const totalItems = scrollElement.children.length;
+    const visibleFullCards = Math.max(
+      1,
+      Math.floor(scrollElement.clientWidth / cardStep),
+    );
+    const maxStartIndex = Math.max(0, totalItems - visibleFullCards);
+    const currentStartIndex = Math.round(scrollElement.scrollLeft / cardStep);
+    const nextHasOverflow = totalItems > visibleFullCards;
+    const isAtEnd = currentStartIndex >= maxStartIndex;
+    const scrollRect = scrollElement.getBoundingClientRect();
+    const nextObscuredIndex = Array.from(scrollElement.children).findIndex(
+      (child) => {
+        const childRect = child.getBoundingClientRect();
+        return (
+          childRect.left < scrollRect.right - 1 &&
+          childRect.right > scrollRect.right + 1
+        );
+      },
+    );
+
+    setHasOverflow(nextHasOverflow);
+    setShowBackArrow(currentStartIndex > 0);
+    setShowForwardArrow(nextHasOverflow && !isAtEnd);
+    setObscuredItemIndex(
+      nextHasOverflow && !isAtEnd && nextObscuredIndex >= 0
+        ? nextObscuredIndex
+        : null,
+    );
+  }, []);
+
   useEffect(() => {
     const scrollElement = scrollRef.current;
     if (!scrollElement) {
       return;
     }
 
-    const updateOverflow = () => {
-      const maxScrollLeft =
-        scrollElement.scrollWidth - scrollElement.clientWidth;
-      const nextHasOverflow = maxScrollLeft > 1;
-      const isAtEnd = scrollElement.scrollLeft >= maxScrollLeft - 8;
-      const scrollRect = scrollElement.getBoundingClientRect();
-      const nextObscuredIndex = Array.from(scrollElement.children).findIndex(
-        (child) => {
-          const childRect = child.getBoundingClientRect();
-          return (
-            childRect.left >= scrollRect.left - 1 &&
-            childRect.right > scrollRect.right + 1
-          );
-        },
-      );
-
-      setHasOverflow(nextHasOverflow);
-      setShowBackArrow(scrollElement.scrollLeft > 8);
-      setShowForwardArrow(nextHasOverflow && !isAtEnd);
-      setObscuredItemIndex(
-        nextHasOverflow && !isAtEnd && nextObscuredIndex >= 0
-          ? nextObscuredIndex
-          : null,
-      );
-    };
-
-    updateOverflow();
-    const resizeObserver = new ResizeObserver(updateOverflow);
+    updateCarouselState();
+    const resizeObserver = new ResizeObserver(updateCarouselState);
     resizeObserver.observe(scrollElement);
-    scrollElement.addEventListener("scroll", updateOverflow, { passive: true });
+    scrollElement.addEventListener("scroll", updateCarouselState, {
+      passive: true,
+    });
 
     return () => {
       resizeObserver.disconnect();
-      scrollElement.removeEventListener("scroll", updateOverflow);
+      scrollElement.removeEventListener("scroll", updateCarouselState);
     };
-  }, [specialItems.length]);
+  }, [specialItems.length, updateCarouselState]);
 
   if (specialItems.length === 0) {
     return null;
@@ -85,22 +112,24 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
       return;
     }
 
-    const firstCard = scrollElement.children.item(0);
-    const secondCard = scrollElement.children.item(1);
-    const cardStep =
-      firstCard && secondCard
-        ? secondCard.getBoundingClientRect().left -
-          firstCard.getBoundingClientRect().left
-        : 186;
-    const scrollAmount = cardStep * 3;
-    const maxScrollLeft = scrollElement.scrollWidth - scrollElement.clientWidth;
-    const nextScrollLeft =
+    const cardStep = getCardStep(scrollElement);
+    const visibleFullCards = Math.max(
+      1,
+      Math.floor(scrollElement.clientWidth / cardStep),
+    );
+    const maxStartIndex = Math.max(
+      0,
+      scrollElement.children.length - visibleFullCards,
+    );
+    const currentStartIndex = Math.round(scrollElement.scrollLeft / cardStep);
+    const pageSize = Math.min(3, Math.max(1, visibleFullCards - 1));
+    const nextStartIndex =
       direction === "forward"
-        ? Math.min(scrollElement.scrollLeft + scrollAmount, maxScrollLeft)
-        : Math.max(scrollElement.scrollLeft - scrollAmount, 0);
+        ? Math.min(currentStartIndex + pageSize, maxStartIndex)
+        : Math.max(currentStartIndex - pageSize, 0);
 
     scrollElement.scrollTo({
-      left: nextScrollLeft,
+      left: nextStartIndex * cardStep,
       behavior: "smooth",
     });
   };
@@ -135,7 +164,7 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
               display: { xs: "none", md: "flex" },
               position: "absolute",
               left: -22,
-              top: 116,
+              top: 104,
               zIndex: 3,
               width: 48,
               height: 48,
@@ -155,7 +184,7 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
               display: { xs: "none", md: "flex" },
               position: "absolute",
               right: -22,
-              top: 116,
+              top: 104,
               zIndex: 3,
               width: 48,
               height: 48,
@@ -174,6 +203,7 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
             alignItems: "center",
             overflowY: "hidden",
             overflowX: { xs: "scroll", md: "hidden" },
+            pr: { xs: 0, md: 8 },
             scrollSnapType: { xs: "x proximity", md: "none" },
             "::-webkit-scrollbar": {
               display: "none",
