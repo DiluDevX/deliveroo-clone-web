@@ -1,3 +1,9 @@
+## [1.34.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.33.2...v1.34.0) (2026-06-28)
+
+### Features
+
+* implement token refresh mechanism and update api client for authorization ([10e1cfa](https://github.com/DiluDevX/deliveroo-clone-web/commit/10e1cfad2524763af21bb16d058955dfeb4e6fb0))
+
 ## [1.33.2](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.33.1...v1.33.2) (2026-06-28)
 
 ### Bug Fixes
