@@ -1,3 +1,9 @@
+## [1.32.5](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.32.4...v1.32.5) (2026-06-28)
+
+### Bug Fixes
+
+* adjust button positioning and sizing in PopularView and SpecialView ([65fcc40](https://github.com/DiluDevX/deliveroo-clone-web/commit/65fcc40fd783ef57a5176602fb8ccb24cae1d61f))
+
 ## [1.32.4](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.32.3...v1.32.4) (2026-06-28)
 
 ### Bug Fixes
