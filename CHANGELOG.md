@@ -1,3 +1,9 @@
+## [1.33.2](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.33.1...v1.33.2) (2026-06-28)
+
+### Bug Fixes
+
+* update CategoriesBar component to use dynamic maxWidth and width properties ([f0e5a58](https://github.com/DiluDevX/deliveroo-clone-web/commit/f0e5a581fbf5dedcc04800dcc6cfa3d0bb16248a))
+
 ## [1.33.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.33.0...v1.33.1) (2026-06-28)
 
 ### Bug Fixes
