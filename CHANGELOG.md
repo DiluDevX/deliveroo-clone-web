@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* adjust margins and paddings in CategoriesBar and CategoryChip components ([f0e48d3](https://github.com/DiluDevX/deliveroo-clone-web/commit/f0e48d3247a84edccd4d03d975c18b5fb3e080fe))
+- adjust margins and paddings in CategoriesBar and CategoryChip components ([f0e48d3](https://github.com/DiluDevX/deliveroo-clone-web/commit/f0e48d3247a84edccd4d03d975c18b5fb3e080fe))
 
 ## [1.33.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.32.5...v1.33.0) (2026-06-28)
 

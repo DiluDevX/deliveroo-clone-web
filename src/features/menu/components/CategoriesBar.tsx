@@ -300,9 +300,11 @@ export const CategoriesBar = ({
     >
       <Container
         ref={containerRef}
-        maxWidth="xl"
+        maxWidth={false}
         sx={{
           ml: { xs: 0, sm: 0, md: 0, lg: 0, xl: "57px" },
+          width: "auto",
+          flex: 1,
           display: "flex",
           alignItems: "center",
           minWidth: 0,
