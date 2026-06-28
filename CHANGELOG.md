@@ -1,3 +1,9 @@
+## [1.35.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.34.0...v1.35.0) (2026-06-28)
+
+### Features
+
+* enhance checkout process with restaurant minimum value validation and loading state ([dacdc22](https://github.com/DiluDevX/deliveroo-clone-web/commit/dacdc223f067b3351af10bd92102e670c08cca75))
+
 ## [1.34.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.33.2...v1.34.0) (2026-06-28)
 
 ### Features
