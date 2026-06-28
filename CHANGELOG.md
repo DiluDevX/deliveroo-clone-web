@@ -1,3 +1,9 @@
+## [1.32.2](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.32.1...v1.32.2) (2026-06-28)
+
+### Bug Fixes
+
+* update dimensions and positioning in SpecialCard, PopularView ([6349f0a](https://github.com/DiluDevX/deliveroo-clone-web/commit/6349f0a942a551fcebeb2c2fd394638228914885))
+
 ## [1.32.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.32.0...v1.32.1) (2026-06-28)
 
 ### Bug Fixes
