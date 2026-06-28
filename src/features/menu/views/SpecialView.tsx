@@ -135,7 +135,7 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
               display: { xs: "none", md: "flex" },
               position: "absolute",
               left: -22,
-              top: "36%",
+              top: 116,
               zIndex: 3,
               width: 48,
               height: 48,
@@ -154,8 +154,8 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
             sx={{
               display: { xs: "none", md: "flex" },
               position: "absolute",
-              right: 14,
-              top: "36%",
+              right: -22,
+              top: 116,
               zIndex: 3,
               width: 48,
               height: 48,
@@ -174,6 +174,7 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
             alignItems: "center",
             overflowY: "hidden",
             overflowX: { xs: "scroll", md: "hidden" },
+            scrollSnapType: { xs: "x proximity", md: "none" },
             "::-webkit-scrollbar": {
               display: "none",
             },

@@ -222,6 +222,7 @@ export const CategoriesBar = ({
           ml: { xs: 0, sm: 0, md: 0, lg: 0, xl: "57px" },
           display: "flex",
           alignItems: "center",
+          minWidth: 0,
           overflowX: "auto",
           flexWrap: "nowrap",
           "::-webkit-scrollbar": {
@@ -275,11 +276,18 @@ export const CategoriesBar = ({
               endIcon={<KeyboardArrowDownIcon />}
               onClick={(event) => setMoreAnchorEl(event.currentTarget)}
               sx={{
-                ml: 0.5,
+                ml: { xs: 0, sm: 0.5 },
                 borderRadius: "999px",
-                px: isMoreSelected ? 2.25 : 1.4,
+                px: {
+                  xs: isMoreSelected ? 1.65 : 1.1,
+                  sm: isMoreSelected ? 2 : 1.25,
+                  md: isMoreSelected ? 2.25 : 1.4,
+                },
                 py: 0.45,
-                minWidth: "auto",
+                minWidth: 0,
+                maxWidth: { xs: 164, sm: 210, md: 260 },
+                flexShrink: 0,
+                whiteSpace: "nowrap",
                 textTransform: "none",
                 fontWeight: isMoreSelected ? 800 : 500,
                 color: isMoreSelected
@@ -301,10 +309,22 @@ export const CategoriesBar = ({
                 },
                 "& .MuiButton-endIcon": {
                   ml: 0.5,
+                  flexShrink: 0,
                 },
               }}
             >
-              {selectedOverflowCategory?.name ?? "More"}
+              <Box
+                component="span"
+                sx={{
+                  display: "block",
+                  minWidth: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {selectedOverflowCategory?.name ?? "More"}
+              </Box>
             </MuiButton>
             <Menu
               anchorEl={moreAnchorEl}

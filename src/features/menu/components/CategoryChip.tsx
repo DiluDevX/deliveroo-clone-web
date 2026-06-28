@@ -35,9 +35,15 @@ const CategoryChip = ({
           : "2px solid transparent",
         fontWeight: selected ? 800 : 500,
         cursor: "pointer",
-        mr: { xs: 1.5, md: 2.5 },
-        px: selected ? 2.25 : 1.4,
+        mr: { xs: 1, sm: 1.5, md: 2.5 },
+        px: {
+          xs: selected ? 1.65 : 1.1,
+          sm: selected ? 2 : 1.25,
+          md: selected ? 2.25 : 1.4,
+        },
         py: 0.45,
+        maxWidth: { xs: 152, sm: 190, md: "none" },
+        overflow: "hidden",
         whiteSpace: "nowrap",
         transition:
           "background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease",
@@ -57,6 +63,9 @@ const CategoryChip = ({
           fontWeight: "inherit",
           fontSize: { xs: "0.95rem", md: "1rem" },
           lineHeight: 1.35,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
         }}
       >
         {data.name}

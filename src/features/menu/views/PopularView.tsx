@@ -133,7 +133,7 @@ const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
               display: { xs: "none", md: "flex" },
               position: "absolute",
               left: -22,
-              top: "36%",
+              top: 116,
               zIndex: 3,
               width: 48,
               height: 48,
@@ -152,8 +152,8 @@ const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
             sx={{
               display: { xs: "none", md: "flex" },
               position: "absolute",
-              right: 14,
-              top: "36%",
+              right: -22,
+              top: 116,
               zIndex: 3,
               width: 48,
               height: 48,
@@ -173,6 +173,7 @@ const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
             alignItems: "center",
             overflowX: { xs: "scroll", md: "hidden" },
             overflowY: "hidden",
+            scrollSnapType: { xs: "x proximity", md: "none" },
             "::-webkit-scrollbar": {
               display: "none",
             },

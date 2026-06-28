@@ -137,6 +137,7 @@ const SpecialCard = ({
           cursor: "pointer",
           opacity: isObscured ? 0.46 : 1,
           transition: "opacity 180ms ease, box-shadow 180ms ease",
+          scrollSnapAlign: "start",
         }}
       >
         {discountPercent > 0 && (
