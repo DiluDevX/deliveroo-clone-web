@@ -90,8 +90,8 @@ export const CategoriesBar = ({
       context.font = "800 16px IBM Plex Sans";
 
       const textWidth = context.measureText(categoryName).width;
-      const horizontalPadding = isMobile ? 28 : isTablet ? 34 : 44;
-      const rightMargin = isMobile ? 8 : isTablet ? 12 : 20;
+      const horizontalPadding = isMobile ? 28 : isTablet ? 34 : 28;
+      const rightMargin = isMobile ? 8 : isTablet ? 12 : 16;
       const maxWidth = isMobile
         ? 152
         : isTablet
@@ -364,7 +364,7 @@ export const CategoriesBar = ({
                 px: {
                   xs: isMoreSelected ? 1.65 : 1.1,
                   sm: isMoreSelected ? 2 : 1.25,
-                  md: isMoreSelected ? 2.25 : 1.4,
+                  md: isMoreSelected ? 1.8 : 1.1,
                 },
                 py: 0.45,
                 minWidth: 0,

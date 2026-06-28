@@ -35,11 +35,11 @@ const CategoryChip = ({
           : "2px solid transparent",
         fontWeight: selected ? 800 : 500,
         cursor: "pointer",
-        mr: { xs: 1, sm: 1.5, md: 2.5 },
+        mr: { xs: 1, sm: 1.5, md: 2 },
         px: {
           xs: selected ? 1.65 : 1.1,
           sm: selected ? 2 : 1.25,
-          md: selected ? 2.25 : 1.4,
+          md: selected ? 1.8 : 1.1,
         },
         py: 0.45,
         maxWidth: { xs: 152, sm: 190, md: "none" },

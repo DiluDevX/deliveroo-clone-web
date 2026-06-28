@@ -2,7 +2,7 @@
 
 ### Features
 
-* enhance CategoriesBar component with dynamic visible category count ([fa07305](https://github.com/DiluDevX/deliveroo-clone-web/commit/fa073059c5ef163fc99c631cbe9031e2403c0d5e))
+- enhance CategoriesBar component with dynamic visible category count ([fa07305](https://github.com/DiluDevX/deliveroo-clone-web/commit/fa073059c5ef163fc99c631cbe9031e2403c0d5e))
 
 ## [1.32.5](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.32.4...v1.32.5) (2026-06-28)
 
