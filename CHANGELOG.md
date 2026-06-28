@@ -1,3 +1,9 @@
+## [1.32.3](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.32.2...v1.32.3) (2026-06-28)
+
+### Bug Fixes
+
+* improve layout and responsiveness in restaurant menu components ([2ce4242](https://github.com/DiluDevX/deliveroo-clone-web/commit/2ce42422ba105b0eeda4804f3132f42f4e21fd91))
+
 ## [1.32.2](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.32.1...v1.32.2) (2026-06-28)
 
 ### Bug Fixes
