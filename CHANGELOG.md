@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* refactor carousel logic in PopularView and SpecialView ([07b5cd5](https://github.com/DiluDevX/deliveroo-clone-web/commit/07b5cd5fd0aac14314587fc6ed45b2c1405d5c72))
+- refactor carousel logic in PopularView and SpecialView ([07b5cd5](https://github.com/DiluDevX/deliveroo-clone-web/commit/07b5cd5fd0aac14314587fc6ed45b2c1405d5c72))
 
 ## [1.32.3](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.32.2...v1.32.3) (2026-06-28)
 
