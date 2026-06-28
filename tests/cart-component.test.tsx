@@ -1,10 +1,51 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Cart from "../src/features/menu/components/Cart";
 import { CartItem } from "../src/store/cartSlice";
 import { renderWithProviders } from "./test-utils";
+import { showErrorSnackbar } from "../src/utils/notifications";
+
+vi.mock("../src/services/cart.service", () => ({
+  addItemToCart: vi.fn().mockResolvedValue(true),
+  clearCartInDb: vi.fn().mockResolvedValue(true),
+  getCart: vi.fn().mockResolvedValue({
+    restaurantId: "restaurant-1",
+    items: [
+      {
+        id: "cart-item-1",
+        dishId: "dish-1",
+        dishName: "Margherita Pizza",
+        dishImageUrl: "/pizza.jpg",
+        unitPrice: 12.5,
+        quantity: 2,
+        modifiers: [],
+        createdAt: "",
+        updatedAt: "",
+      },
+    ],
+  }),
+  removeItemFromCart: vi.fn().mockResolvedValue(true),
+  syncCart: vi.fn().mockResolvedValue([
+    {
+      id: "cart-item-1",
+      dishId: "dish-1",
+      dishName: "Margherita Pizza",
+      dishImageUrl: "/pizza.jpg",
+      unitPrice: 12.5,
+      quantity: 2,
+      modifiers: [],
+      createdAt: "",
+      updatedAt: "",
+    },
+  ]),
+  updateCartItemQuantity: vi.fn().mockResolvedValue(true),
+}));
+
+vi.mock("../src/utils/notifications", () => ({
+  showErrorSnackbar: vi.fn(),
+}));
 
 const LocationDisplay = () => {
   const location = useLocation();
@@ -66,6 +107,8 @@ const renderCart = (
         },
         cart: {
           items: cartItems,
+          restaurantId: "restaurant-1",
+          restaurantName: "Test Restaurant",
         },
       },
     },
@@ -73,6 +116,12 @@ const renderCart = (
 };
 
 describe("Cart", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
   it("shows the login dialog instead of navigating when checkout requires auth", async () => {
     const user = userEvent.setup();
     renderCart(false);
@@ -105,5 +154,18 @@ describe("Cart", () => {
 
     expect(screen.getByText("Checkout page")).toBeInTheDocument();
     expect(screen.getByText("Current route: /checkout")).toBeInTheDocument();
+  });
+
+  it("blocks checkout when synced subtotal is under the restaurant minimum", async () => {
+    const user = userEvent.setup();
+    localStorage.setItem("selected-restaurant-minimum-value", "30");
+    renderCart(true);
+
+    await user.click(screen.getByRole("button", { name: "Go to Checkout" }));
+
+    expect(screen.getByText("Current route: /menu")).toBeInTheDocument();
+    expect(showErrorSnackbar).toHaveBeenCalledWith(
+      "Add $5.00 more to reach this restaurant's $30.00 minimum.",
+    );
   });
 });

@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Box, Typography, IconButton, Divider } from "@mui/material";
+import {
+  Box,
+  Typography,
+  IconButton,
+  Divider,
+  CircularProgress,
+} from "@mui/material";
 import ShoppingBasketOutlinedIcon from "@mui/icons-material/ShoppingBasketOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -8,12 +14,15 @@ import { Colors } from "../../../theme";
 import { useAppSelector, useAppDispatch } from "../../../store/hooks/cartHooks";
 import {
   clearCartAndSync,
+  fetchCart,
   removeItemAndSync,
+  syncCartToServer,
   updateQuantityAndSync,
 } from "../../../store/cartSlice";
 import Button from "./Button";
 import { useNavigate } from "react-router-dom";
 import PopUpDialog from "./PopUpDialog";
+import { showErrorSnackbar } from "../../../utils/notifications";
 
 type CartProps = {
   layout?: "sidebar" | "drawer";
@@ -25,6 +34,7 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
   const cartItems = useAppSelector((state) => state.cart.items);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [isPreparingCheckout, setIsPreparingCheckout] = useState(false);
   const isDrawer = layout === "drawer";
 
   const totalPrice = cartItems.reduce(
@@ -71,13 +81,55 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
     dispatch(clearCartAndSync());
   };
 
-  const handleCheckout = () => {
+  const getRestaurantMinimumValue = () => {
+    const rawMinimumValue = localStorage.getItem(
+      "selected-restaurant-minimum-value",
+    );
+    const minimumValue = Number(rawMinimumValue);
+
+    return Number.isFinite(minimumValue) && minimumValue > 0
+      ? minimumValue
+      : null;
+  };
+
+  const handleCheckout = async () => {
     if (!isAuthenticated) {
       setShowLoginDialog(true);
       return;
     }
-    // Navigate to checkout page
-    navigate("/checkout");
+
+    setIsPreparingCheckout(true);
+    try {
+      const syncResult = await dispatch(syncCartToServer());
+      if (syncCartToServer.rejected.match(syncResult) || !syncResult.payload) {
+        showErrorSnackbar("Failed to sync cart. Please try again.");
+        return;
+      }
+
+      const cartResult = await dispatch(fetchCart());
+      if (fetchCart.rejected.match(cartResult)) {
+        showErrorSnackbar("Failed to refresh cart. Please try again.");
+        return;
+      }
+
+      const syncedCartItems = cartResult.payload.items;
+      const syncedSubtotal = syncedCartItems.reduce(
+        (total, item) => total + Number(item.unitPrice) * Number(item.quantity),
+        0,
+      );
+      const minimumValue = getRestaurantMinimumValue();
+
+      if (minimumValue !== null && syncedSubtotal < minimumValue) {
+        showErrorSnackbar(
+          `Add $${(minimumValue - syncedSubtotal).toFixed(2)} more to reach this restaurant's $${minimumValue.toFixed(2)} minimum.`,
+        );
+        return;
+      }
+
+      navigate("/checkout");
+    } finally {
+      setIsPreparingCheckout(false);
+    }
   };
 
   const handleLoginRedirect = () => {
@@ -320,6 +372,7 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
             <Button
               onClick={handleCheckout}
               variant="filled"
+              disabled={isPreparingCheckout}
               sx={{
                 width: "100%",
                 fontWeight: "bold",
@@ -327,11 +380,19 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
                 py: 1.5,
               }}
             >
-              Go to Checkout
+              {isPreparingCheckout ? (
+                <CircularProgress
+                  size={22}
+                  sx={{ color: Colors.text.inverse }}
+                />
+              ) : (
+                "Go to Checkout"
+              )}
             </Button>
             <Button
               onClick={handleClearCart}
               variant="border"
+              disabled={isPreparingCheckout}
               sx={{
                 width: "100%",
                 mt: 1,

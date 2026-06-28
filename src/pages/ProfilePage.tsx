@@ -209,8 +209,8 @@ const ProfilePage = () => {
   const canResumeCardPayment = (order: Order) => {
     if (
       order.status !== "PENDING" ||
-      order.paymentMethod !== "card" ||
-      !["PENDING", "PROCESSING"].includes(order.paymentStatus) ||
+      order.paymentMethod?.toLowerCase() !== "card" ||
+      !["PENDING", "PROCESSING", "FAILED"].includes(order.paymentStatus) ||
       !order.paymentExpiresAt
     ) {
       return false;
@@ -589,6 +589,58 @@ const ProfilePage = () => {
         );
 
       case "Order history": {
+        const isCardOrder = (order: Order) =>
+          order.paymentMethod?.toLowerCase() === "card";
+
+        const isPaymentExpired = (order: Order) =>
+          Boolean(
+            order.paymentExpiresAt &&
+              new Date(order.paymentExpiresAt).getTime() <= Date.now(),
+          );
+
+        const getDisplayStatus = (order: Order) => {
+          if (isCardOrder(order) && order.status === "PENDING") {
+            if (isPaymentExpired(order)) {
+              return { key: "PAYMENT_EXPIRED", label: "Payment expired" };
+            }
+
+            switch (order.paymentStatus) {
+              case "FAILED":
+                return { key: "PAYMENT_FAILED", label: "Payment failed" };
+              case "PROCESSING":
+                return {
+                  key: "PAYMENT_PROCESSING",
+                  label: "Payment processing",
+                };
+              case "PENDING":
+                return {
+                  key: "AWAITING_PAYMENT",
+                  label: "Awaiting payment",
+                };
+              default:
+                break;
+            }
+          }
+
+          return {
+            key: order.status,
+            label:
+              order.status === "DELIVERED"
+                ? "Delivered"
+                : order.status === "ON_THE_WAY"
+                  ? "On the way"
+                  : order.status === "PREPARING"
+                    ? "Preparing"
+                    : order.status === "CONFIRMED"
+                      ? "Confirmed"
+                      : order.status === "PENDING"
+                        ? "Pending"
+                        : order.status === "CANCELLED"
+                          ? "Cancelled"
+                          : order.status.replace("_", " "),
+          };
+        };
+
         const getOrderStatusColor = (status: string) => {
           switch (status) {
             case "DELIVERED":
@@ -598,9 +650,15 @@ const ProfilePage = () => {
               };
             case "CANCELLED":
             case "REFUNDED":
+            case "PAYMENT_EXPIRED":
               return {
                 bg: Colors.status.cancelled.bg,
                 color: Colors.status.cancelled.text,
+              };
+            case "PAYMENT_FAILED":
+              return {
+                bg: Colors.error.lighter,
+                color: Colors.error.default,
               };
             case "ON_THE_WAY":
               return {
@@ -614,6 +672,8 @@ const ProfilePage = () => {
               };
             case "PREPARING":
             case "PENDING":
+            case "PAYMENT_PROCESSING":
+            case "AWAITING_PAYMENT":
               return {
                 bg: Colors.status.pending.bg,
                 color: Colors.status.pending.text,
@@ -632,6 +692,8 @@ const ProfilePage = () => {
               return <CheckCircle />;
             case "CANCELLED":
             case "REFUNDED":
+            case "PAYMENT_EXPIRED":
+            case "PAYMENT_FAILED":
               return <CancelRounded />;
             case "ON_THE_WAY":
               return <BikeScooter />;
@@ -639,6 +701,8 @@ const ProfilePage = () => {
               return <CheckCircle />;
             case "PREPARING":
             case "PENDING":
+            case "PAYMENT_PROCESSING":
+            case "AWAITING_PAYMENT":
               return <RestaurantMenu />;
             default:
               return <LockClock />;
@@ -769,7 +833,8 @@ const ProfilePage = () => {
                 }}
               >
                 {visibleOrders.map((order) => {
-                  const statusColors = getOrderStatusColor(order.status);
+                  const displayStatus = getDisplayStatus(order);
+                  const statusColors = getOrderStatusColor(displayStatus.key);
                   return (
                     <Box
                       key={order.id}
@@ -860,7 +925,7 @@ const ProfilePage = () => {
                                 color: statusColors.color,
                               }}
                             >
-                              {getOrderStatusIcon(order.status)}
+                              {getOrderStatusIcon(displayStatus.key)}
                             </Box>
                             <Typography
                               sx={{
@@ -869,19 +934,7 @@ const ProfilePage = () => {
                                 color: statusColors.color,
                               }}
                             >
-                              {order.status === "DELIVERED"
-                                ? "Delivered"
-                                : order.status === "ON_THE_WAY"
-                                  ? "On the way"
-                                  : order.status === "PREPARING"
-                                    ? "Preparing"
-                                    : order.status === "CONFIRMED"
-                                      ? "Confirmed"
-                                      : order.status === "PENDING"
-                                        ? "Pending"
-                                        : order.status === "CANCELLED"
-                                          ? "Cancelled"
-                                          : order.status.replace("_", " ")}
+                              {displayStatus.label}
                             </Typography>
                           </Box>
                         </Box>
@@ -941,7 +994,9 @@ const ProfilePage = () => {
                               onClick={() => handleResumeCardPayment(order)}
                               sx={{ flex: 1, fontSize: "0.85rem" }}
                             >
-                              Pay now
+                              {order.paymentStatus === "FAILED"
+                                ? "Retry payment"
+                                : "Pay now"}
                             </Button>
                           )}
                           {order.status === "DELIVERED" && (

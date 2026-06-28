@@ -28,12 +28,22 @@ vi.mock("@stripe/react-stripe-js", () => ({
 vi.mock("../src/features/menu/components/StripeCardForm", () => ({
   StripeCardForm: ({
     onPaymentSuccess,
+    onPaymentError,
   }: {
     onPaymentSuccess: () => Promise<boolean>;
+    onPaymentError: (message: string) => void;
   }) => (
-    <button type="button" onClick={() => void onPaymentSuccess()}>
-      Complete card payment
-    </button>
+    <>
+      <button type="button" onClick={() => void onPaymentSuccess()}>
+        Complete card payment
+      </button>
+      <button
+        type="button"
+        onClick={() => onPaymentError("Your card was declined.")}
+      >
+        Fail card payment
+      </button>
+    </>
   ),
 }));
 
@@ -360,5 +370,31 @@ describe("PaymentPage", () => {
       expect(confirmPayment).toHaveBeenCalledWith("payment-1");
       expect(screen.getByText("Confirmed order: ORD-1")).toBeInTheDocument();
     });
+  });
+
+  it("shows a snackbar and keeps the user on the payment page when Stripe fails", async () => {
+    const user = userEvent.setup();
+    vi.mocked(checkoutCart).mockResolvedValue(checkoutResult());
+    vi.mocked(createPaymentIntent).mockResolvedValue({
+      success: true,
+      message: "Payment intent created",
+      data: {
+        paymentId: "payment-1",
+        status: "PROCESSING",
+        clientSecret: "client-secret",
+      },
+    });
+
+    renderPaymentPage();
+
+    await user.click(
+      await screen.findByRole("button", { name: "Fail card payment" }),
+    );
+
+    expect(showErrorSnackbar).toHaveBeenCalledWith("Your card was declined.");
+    expect(confirmPayment).not.toHaveBeenCalled();
+    expect(
+      screen.queryByText("Confirmed order: ORD-1"),
+    ).not.toBeInTheDocument();
   });
 });

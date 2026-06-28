@@ -150,6 +150,10 @@ const MenuPage = () => {
         localStorage.setItem("restaurantName", restaurantData.name);
         localStorage.setItem("selected-restaurant-id", restaurantData.id);
         localStorage.setItem("selected-restaurant-name", restaurantData.name);
+        localStorage.setItem(
+          "selected-restaurant-minimum-value",
+          String(restaurantData.minimumValue),
+        );
         if (restaurantData.address?.trim()) {
           localStorage.setItem(
             "selected-restaurant-address",

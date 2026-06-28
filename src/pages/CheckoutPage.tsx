@@ -38,6 +38,7 @@ import {
   updateQuantityAndSync,
   removeItemAndSync,
   clearCartAndSync,
+  fetchCart,
   syncCartToServer,
 } from "../store/cartSlice";
 import { DeliveryDiningSharp, ShoppingBagOutlined } from "@mui/icons-material";
@@ -86,6 +87,9 @@ const CheckoutPage = () => {
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const isAuthInitialized = useAppSelector(
+    (state) => state.auth.isAuthInitialized,
+  );
   const user = useAppSelector((state) => state.auth.user);
 
   const [deliveryMethod, setDeliveryMethod] = useState("delivery");
@@ -98,6 +102,7 @@ const CheckoutPage = () => {
   const [selectedAddressId, setSelectedAddressId] = useState<string>("new");
   const [saveAddressForFuture, setSaveAddressForFuture] = useState(false);
   const [savePhoneForFuture, setSavePhoneForFuture] = useState(false);
+  const [hasHydratedCart, setHasHydratedCart] = useState(false);
 
   const effectiveDeliveryMethod =
     paymentMethod === "CASH_ON_DELIVERY" ? "delivery" : deliveryMethod;
@@ -387,21 +392,40 @@ const CheckoutPage = () => {
   };
 
   useEffect(() => {
+    if (!isAuthInitialized) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      sessionStorage.setItem("redirectAfterLogin", "/checkout");
+      navigate("/account/login");
+      return;
+    }
+
+    let isMounted = true;
+    setHasHydratedCart(false);
+
+    void dispatch(fetchCart()).finally(() => {
+      if (isMounted) {
+        setHasHydratedCart(true);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [dispatch, isAuthenticated, isAuthInitialized, navigate]);
+
+  useEffect(() => {
     if (
+      hasHydratedCart &&
       cartItems.length === 0 &&
       !orderPlaced &&
       !isCompletingOrderRef.current
     ) {
       navigate("/");
     }
-  }, [cartItems, navigate, orderPlaced]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      sessionStorage.setItem("redirectAfterLogin", "/checkout");
-      navigate("/account/login");
-    }
-  }, [isAuthenticated, navigate]);
+  }, [cartItems.length, hasHydratedCart, navigate, orderPlaced]);
 
   const subtotal = cartItems.reduce(
     (total, item) => total + Number(item.price) * Number(item.quantity),
@@ -411,6 +435,23 @@ const CheckoutPage = () => {
   const shippingFee = effectiveDeliveryMethod === "delivery" ? 5.0 : 0;
   const discount = 0;
   const total = subtotal + shippingFee - discount;
+
+  if (!hasHydratedCart) {
+    return (
+      <Box
+        sx={{
+          mt: 7,
+          minHeight: "calc(100vh - 130px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: Colors.background.default,
+        }}
+      >
+        <CircularProgress sx={{ color: Colors.background.brand }} />
+      </Box>
+    );
+  }
 
   return (
     <Box

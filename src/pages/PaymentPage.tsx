@@ -325,6 +325,13 @@ const PaymentPage = () => {
     console.error(context, err);
   }, []);
 
+  const handleStripePaymentError = useCallback((message: string) => {
+    showErrorSnackbar(
+      message.trim() || "Payment failed. Please check your card and try again.",
+    );
+    console.error("Stripe payment error:", message);
+  }, []);
+
   /**
    * Auto-initialize payment on page load
    * Syncs cart, creates order, and prepares payment method
@@ -666,7 +673,7 @@ const PaymentPage = () => {
                       <StripeCardForm
                         clientSecret={clientSecret}
                         onPaymentSuccess={handleStripePaymentSucceeded}
-                        onPaymentError={() => undefined}
+                        onPaymentError={handleStripePaymentError}
                         totalAmount={displayTotal}
                         savedPaymentMethods={savedPaymentMethods}
                       />
