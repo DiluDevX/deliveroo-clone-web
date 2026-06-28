@@ -109,7 +109,7 @@ const PopularView = ({ categories, onLoadingChange }: PopularViewProps) => {
     <Container
       disableGutters
       id={`categoryId-${POPULAR_CATEGORY_ID}`}
-      sx={{ height: "380px", marginBottom: "1rem", marginTop: "1rem" }}
+      sx={{ height: "336px", marginBottom: "1rem", marginTop: "1rem" }}
     >
       <Typography
         sx={{

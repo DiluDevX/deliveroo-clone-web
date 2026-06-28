@@ -2,7 +2,7 @@
 
 ### Features
 
-* enhance category visibility and scrolling in menu components ([3a13951](https://github.com/DiluDevX/deliveroo-clone-web/commit/3a139516de7786b58bbe4d520328cc0b7b31f146))
+- enhance category visibility and scrolling in menu components ([3a13951](https://github.com/DiluDevX/deliveroo-clone-web/commit/3a139516de7786b58bbe4d520328cc0b7b31f146))
 
 ## [1.31.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.31.0...v1.31.1) (2026-06-27)
 

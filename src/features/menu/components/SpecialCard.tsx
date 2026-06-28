@@ -41,10 +41,10 @@ const SpecialCard = ({
   const quantity = cartItem?.quantity ?? 0;
   const cartItemId = cartItem?.cartItemId || cartItem?._id;
   const isInCart = quantity > 0;
-  const cardWidth = fillContainer ? "100%" : { xs: 156, sm: 164, md: 170 };
-  const cardHeight = compact ? 220 : { xs: 286, sm: 300, md: 310 };
-  const imageHeight = compact ? 110 : { xs: 132, sm: 142, md: 150 };
-  const quantityTop = compact ? 92 : { xs: 108, sm: 118, md: 126 };
+  const cardWidth = fillContainer ? "100%" : { xs: 146, sm: 150, md: 154 };
+  const cardHeight = compact ? 220 : { xs: 258, sm: 268, md: 276 };
+  const imageHeight = compact ? 110 : { xs: 116, sm: 122, md: 128 };
+  const quantityTop = compact ? 92 : { xs: 94, sm: 100, md: 104 };
 
   const handleAddToCart = async () => {
     const selectedRestaurantId = localStorage.getItem("selected-restaurant-id");
@@ -116,11 +116,11 @@ const SpecialCard = ({
         onClick={() => setIsDetailsOpen(true)}
         sx={{
           width: cardWidth,
-          maxWidth: fillContainer ? "none" : "170px",
+          maxWidth: fillContainer ? "none" : "154px",
           minWidth: fillContainer ? 0 : cardWidth,
           height: cardHeight,
-          mr: fillContainer ? 0 : 2,
-          my: fillContainer ? 0 : 2,
+          mr: fillContainer ? 0 : 1.75,
+          my: fillContainer ? 0 : 1.5,
           display: "flex",
           flexDirection: "column",
           overflow: "unset",
@@ -221,8 +221,8 @@ const SpecialCard = ({
         <CardContent
           sx={{
             flexGrow: 1,
-            pt: compact ? 2 : 2.5,
-            pb: 1,
+            pt: 2,
+            pb: 0.85,
             overflow: "hidden",
             display: "flex",
             flexDirection: "column",
