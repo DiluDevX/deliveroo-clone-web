@@ -539,8 +539,8 @@ const CheckoutPage = () => {
       </Box>
 
       <Box sx={{ maxWidth: "1200px", mx: "auto", px: 3 }}>
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={7} sx={{ display: "flex" }}>
+        <Grid container spacing={4} alignItems="flex-start">
+          <Grid item xs={12} md={7}>
             <Card
               sx={{
                 p: 3,
@@ -978,12 +978,11 @@ const CheckoutPage = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={5} sx={{ display: "flex" }}>
+          <Grid item xs={12} md={5}>
             <Card
               sx={{
                 p: 3,
                 width: "100%",
-                height: { md: "100%" },
                 display: "flex",
                 flexDirection: "column",
                 borderRadius: "12px",

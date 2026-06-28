@@ -529,7 +529,7 @@ const PaymentPage = () => {
         throw new Error("Payment confirmation failed. Please try again.");
       }
 
-      navigateToOrderConfirmation(orderNumber || "unknown", !resumeOrder);
+      navigateToOrderConfirmation(orderNumber || "unknown", true);
       return true;
     } catch (err) {
       handlePaymentError(err, "Payment confirmation error:");
@@ -643,13 +643,8 @@ const PaymentPage = () => {
           px: 3,
         }}
       >
-        <Grid container spacing={4}>
-          <Grid
-            item
-            xs={12}
-            md={7}
-            sx={{ order: { xs: 2, md: 1 }, display: "flex" }}
-          >
+        <Grid container spacing={4} alignItems="flex-start">
+          <Grid item xs={12} md={7} sx={{ order: { xs: 2, md: 1 } }}>
             <Card
               sx={{
                 p: { xs: 2, sm: 3 },
@@ -733,17 +728,11 @@ const PaymentPage = () => {
             </Card>
           </Grid>
 
-          <Grid
-            item
-            xs={12}
-            md={5}
-            sx={{ order: { xs: 1, md: 2 }, display: "flex" }}
-          >
+          <Grid item xs={12} md={5} sx={{ order: { xs: 1, md: 2 } }}>
             <Card
               sx={{
                 p: 3,
                 width: "100%",
-                height: { md: "100%" },
                 display: "flex",
                 flexDirection: "column",
                 borderRadius: "12px",
