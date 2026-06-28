@@ -18,6 +18,10 @@ import {
   getStoredAccessToken,
   getStoredRefreshToken,
 } from "./auth-headers";
+import {
+  refreshAccessToken,
+  RefreshTokenPayload,
+} from "./auth-refresh.service";
 
 type AccessTokenPayload = {
   userId?: string;
@@ -32,15 +36,6 @@ type ICheckEmailResponse = {
 };
 
 type AuthStatus = false | { valid: true; user: IUser };
-type RefreshTokenPayload = {
-  accessToken: string;
-  refreshToken: string;
-};
-
-type RefreshTokenApiResponse =
-  | CommonResponseDTO<RefreshTokenPayload>
-  | RefreshTokenPayload;
-
 export const checkEmail = async (
   body: CheckEmailRequestBodyDTO,
 ): Promise<ICheckEmailResponse> => {
@@ -275,28 +270,8 @@ export const checkAuthStatus = async (): Promise<AuthStatus> => {
 };
 
 export const refreshToken = async (): Promise<RefreshTokenPayload | false> => {
-  const storedRefreshToken = getStoredRefreshToken();
-  if (!storedRefreshToken) {
-    return false;
-  }
-
   try {
-    const response = await apiClient.post<RefreshTokenApiResponse>(
-      "/auth/refresh",
-      {
-        refreshToken: storedRefreshToken,
-      },
-    );
-    const payload =
-      response.data && "data" in response.data
-        ? response.data.data
-        : response.data;
-
-    if (!payload.accessToken || !payload.refreshToken) {
-      return false;
-    }
-
-    return payload;
+    return (await refreshAccessToken()) ?? false;
   } catch (error) {
     console.error("Error refreshing token", error);
     return false;
