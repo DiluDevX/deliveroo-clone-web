@@ -66,12 +66,14 @@ export const CategoriesBar = ({
   const [moreAnchorEl, setMoreAnchorEl] = useState<HTMLElement | null>(null);
   const isMobile = useMediaQuery("(max-width:599.95px)");
   const isTablet = useMediaQuery("(min-width:600px) and (max-width:899.95px)");
-  const visibleCategoryCount = isMobile ? 2 : isTablet ? 4 : categories.length;
+  const isDesktop = useMediaQuery("(min-width:1200px)");
+  const visibleCategoryCount = isMobile ? 2 : isTablet ? 4 : isDesktop ? 8 : 5;
   const visibleCategories = categories.slice(0, visibleCategoryCount);
   const overflowCategories = categories.slice(visibleCategoryCount);
-  const isMoreSelected = overflowCategories.some(
+  const selectedOverflowCategory = overflowCategories.find(
     (category) => category.id === selectedCategoryId,
   );
+  const isMoreSelected = Boolean(selectedOverflowCategory);
   const isMoreOpen = Boolean(moreAnchorEl);
 
   // Scroll the category chip into view when selected (only if hidden)
@@ -302,7 +304,7 @@ export const CategoriesBar = ({
                 },
               }}
             >
-              More
+              {selectedOverflowCategory?.name ?? "More"}
             </MuiButton>
             <Menu
               anchorEl={moreAnchorEl}

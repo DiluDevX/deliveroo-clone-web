@@ -19,12 +19,14 @@ type SpecialCardProps = {
   data: IDish;
   fillContainer?: boolean;
   compact?: boolean;
+  isObscured?: boolean;
 };
 
 const SpecialCard = ({
   data,
   fillContainer = false,
   compact = false,
+  isObscured = false,
 }: SpecialCardProps) => {
   const dispatch = useAppDispatch();
   const discountPercent = Number(data.discountPercent ?? 0);
@@ -133,6 +135,8 @@ const SpecialCard = ({
             : `1.5px solid ${Colors.border.default}`,
           position: "relative",
           cursor: "pointer",
+          opacity: isObscured ? 0.46 : 1,
+          transition: "opacity 180ms ease, box-shadow 180ms ease",
         }}
       >
         {discountPercent > 0 && (

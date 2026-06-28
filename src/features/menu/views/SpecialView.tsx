@@ -22,7 +22,11 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
   const specialItems = useMemo(() => getSpecialItems(categories), [categories]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [showBackArrow, setShowBackArrow] = useState(false);
+  const [showForwardArrow, setShowForwardArrow] = useState(false);
   const [hasOverflow, setHasOverflow] = useState(false);
+  const [obscuredItemIndex, setObscuredItemIndex] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     onLoadingChange?.(false);
@@ -35,8 +39,29 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
     }
 
     const updateOverflow = () => {
-      setHasOverflow(scrollElement.scrollWidth > scrollElement.clientWidth + 1);
+      const maxScrollLeft =
+        scrollElement.scrollWidth - scrollElement.clientWidth;
+      const nextHasOverflow = maxScrollLeft > 1;
+      const isAtEnd = scrollElement.scrollLeft >= maxScrollLeft - 8;
+      const scrollRect = scrollElement.getBoundingClientRect();
+      const nextObscuredIndex = Array.from(scrollElement.children).findIndex(
+        (child) => {
+          const childRect = child.getBoundingClientRect();
+          return (
+            childRect.left >= scrollRect.left - 1 &&
+            childRect.right > scrollRect.right + 1
+          );
+        },
+      );
+
+      setHasOverflow(nextHasOverflow);
       setShowBackArrow(scrollElement.scrollLeft > 8);
+      setShowForwardArrow(nextHasOverflow && !isAtEnd);
+      setObscuredItemIndex(
+        nextHasOverflow && !isAtEnd && nextObscuredIndex >= 0
+          ? nextObscuredIndex
+          : null,
+      );
     };
 
     updateOverflow();
@@ -55,14 +80,29 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
   }
 
   const scrollByDishPage = (direction: "back" | "forward") => {
-    scrollRef.current?.scrollBy({
-      left: direction === "forward" ? 560 : -560,
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) {
+      return;
+    }
+
+    const firstCard = scrollElement.children.item(0);
+    const secondCard = scrollElement.children.item(1);
+    const cardStep =
+      firstCard && secondCard
+        ? secondCard.getBoundingClientRect().left -
+          firstCard.getBoundingClientRect().left
+        : 186;
+    const scrollAmount = cardStep * 3;
+    const maxScrollLeft = scrollElement.scrollWidth - scrollElement.clientWidth;
+    const nextScrollLeft =
+      direction === "forward"
+        ? Math.min(scrollElement.scrollLeft + scrollAmount, maxScrollLeft)
+        : Math.max(scrollElement.scrollLeft - scrollAmount, 0);
+
+    scrollElement.scrollTo({
+      left: nextScrollLeft,
       behavior: "smooth",
     });
-
-    if (direction === "forward") {
-      setShowBackArrow(true);
-    }
   };
 
   return (
@@ -85,30 +125,6 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
       <Box
         sx={{
           position: "relative",
-          "&::before": {
-            content: '""',
-            display: hasOverflow && showBackArrow ? "block" : "none",
-            position: "absolute",
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: { xs: 32, md: 56 },
-            zIndex: 2,
-            pointerEvents: "none",
-            background: `linear-gradient(90deg, ${Colors.background.default} 0%, rgba(241, 240, 240, 0) 100%)`,
-          },
-          "&::after": {
-            content: '""',
-            display: hasOverflow ? "block" : "none",
-            position: "absolute",
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: { xs: 32, md: 56 },
-            zIndex: 2,
-            pointerEvents: "none",
-            background: `linear-gradient(270deg, ${Colors.background.default} 0%, rgba(241, 240, 240, 0) 100%)`,
-          },
         }}
       >
         {hasOverflow && showBackArrow && (
@@ -131,7 +147,7 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
             <ArrowBackIcon sx={{ color: Colors.background.brand }} />
           </IconButton>
         )}
-        {hasOverflow && (
+        {showForwardArrow && (
           <IconButton
             aria-label="Next special offers"
             onClick={() => scrollByDishPage("forward")}
@@ -163,8 +179,12 @@ const SpecialView = ({ categories, onLoadingChange }: SpecialViewProps) => {
             },
           }}
         >
-          {specialItems.map((item) => (
-            <SpecialCard data={item} key={item.id ?? item._id} />
+          {specialItems.map((item, index) => (
+            <SpecialCard
+              data={item}
+              isObscured={index === obscuredItemIndex}
+              key={item.id ?? item._id}
+            />
           ))}
         </Box>
       </Box>
