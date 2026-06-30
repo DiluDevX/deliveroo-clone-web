@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* update layout alignment in Checkout and Payment pages ([6dc5884](https://github.com/DiluDevX/deliveroo-clone-web/commit/6dc5884fcab698c6cec4443d600fa354b7370a2d))
+- update layout alignment in Checkout and Payment pages ([6dc5884](https://github.com/DiluDevX/deliveroo-clone-web/commit/6dc5884fcab698c6cec4443d600fa354b7370a2d))
 
 ## [1.35.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.34.0...v1.35.0) (2026-06-28)
 

@@ -53,7 +53,7 @@ apiClient.interceptors.response.use(
       requestUrl.includes("/auth/refresh") ||
       requestUrl.includes("/auth/logout")
     ) {
-      throw new Error("An unexpected error occurred. Please try again later.");
+      throw error;
     }
 
     originalRequest._retry = true;
@@ -86,6 +86,7 @@ apiClient.interceptors.response.use(
     } catch {
       refreshRequest = null;
       store.dispatch(logOut());
+      throw error;
     }
   },
 );
