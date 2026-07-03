@@ -26,7 +26,7 @@ import {
 type AccessTokenPayload = {
   userId?: string;
   email?: string;
-  role?: "user" | "platform_admin" | "restaurant_admin";
+  role?: "user" | "platform_admin" | "restaurant_admin" | "restaurant_user";
 };
 
 type ICheckEmailResponse = {
@@ -157,6 +157,7 @@ export const login = async (
               phone: user.phone ?? undefined,
               role: user.role,
               restaurantId: user.restaurantId ?? undefined,
+              restaurantRole: user.restaurantRole ?? undefined,
               status: "Active",
               orderCount: 0,
               createdAt: user.createdAt,
@@ -299,7 +300,8 @@ export const getValidAdminAuth = async (): Promise<AuthStatus> => {
     authStatus &&
     typeof authStatus !== "boolean" &&
     (authStatus.user?.role === "platform_admin" ||
-      authStatus.user?.role === "restaurant_admin")
+      authStatus.user?.role === "restaurant_admin" ||
+      authStatus.user?.role === "restaurant_user")
   ) {
     return authStatus;
   }

@@ -161,4 +161,24 @@ describe("protected routes", () => {
 
     expect(screen.getByText("Restaurant dashboard")).toBeInTheDocument();
   });
+
+  it("allows restaurant users with a restaurant id through", () => {
+    renderWithProviders(<RestaurantAdminRouteHarness />, {
+      preloadedState: {
+        auth: {
+          isAuthInitialized: true,
+          isAuthenticated: true,
+          user: {
+            firstName: "Restaurant",
+            lastName: "User",
+            email: "restaurant-user@example.com",
+            role: "restaurant_user",
+            restaurantId: "restaurant-1",
+          },
+        },
+      },
+    });
+
+    expect(screen.getByText("Restaurant dashboard")).toBeInTheDocument();
+  });
 });

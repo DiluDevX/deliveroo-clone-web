@@ -1,3 +1,9 @@
+export type RestaurantUserRole =
+  | "employee"
+  | "super_admin"
+  | "admin"
+  | "finance";
+
 export type IUser = {
   id?: string;
   firstName: string;
@@ -6,6 +12,7 @@ export type IUser = {
   phone?: string | null;
   role?: string;
   restaurantId?: string;
+  restaurantRole?: RestaurantUserRole;
   orderCount?: number;
   createdAt?: string;
   updatedAt?: string;

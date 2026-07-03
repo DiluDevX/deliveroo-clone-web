@@ -6,12 +6,20 @@ export const UserSchema = z.object({
   lastName: z.string(),
   email: z.string(),
   phone: z.string().optional(),
-  role: z.enum(["user", "platform_admin", "restaurant_admin"]),
+  role: z.enum([
+    "user",
+    "platform_admin",
+    "restaurant_admin",
+    "restaurant_user",
+  ]),
   status: z.enum(["Active", "Suspended"]),
   orderCount: z.number(),
   createdAt: z.string(),
   updatedAt: z.string(),
   restaurantId: z.string().optional(),
+  restaurantRole: z
+    .enum(["employee", "super_admin", "admin", "finance"])
+    .optional(),
 });
 
 export const RestaurantSchema = z.object({

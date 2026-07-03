@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-* improve error handling in API client response interceptor ([107dcaf](https://github.com/DiluDevX/deliveroo-clone-web/commit/107dcaf94075deb40e52d684e7b5651e983c0db5))
+- improve error handling in API client response interceptor ([107dcaf](https://github.com/DiluDevX/deliveroo-clone-web/commit/107dcaf94075deb40e52d684e7b5651e983c0db5))
 
 ## [1.35.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.35.0...v1.35.1) (2026-06-28)
 
