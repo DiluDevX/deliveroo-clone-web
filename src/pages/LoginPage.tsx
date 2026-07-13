@@ -19,6 +19,7 @@ import { useAppDispatch } from "../store/hooks/cartHooks";
 import SignUpPage from "./SignUpPage";
 import { fetchCart } from "../store/cartSlice";
 import { showErrorSnackbar, showSuccessSnackbar } from "../utils/notifications";
+import { IUser } from "../types/user.types";
 
 type LoginForm = {
   email: string;
@@ -98,9 +99,11 @@ export default function Login() {
       );
       dispatch(setAuthInitialized(true));
 
+      let authenticatedUser: IUser = user;
       const authStatus = await checkAuthStatus();
       if (authStatus && typeof authStatus !== "boolean") {
         dispatch(setCredentials({ user: authStatus.user }));
+        authenticatedUser = authStatus.user;
       }
 
       await dispatch(fetchCart());
@@ -113,11 +116,12 @@ export default function Login() {
       if (redirectAfterLogin) {
         sessionStorage.removeItem("redirectAfterLogin");
         navigate(redirectAfterLogin);
-      } else if (user.role === "platform_admin") {
+      } else if (authenticatedUser.role === "platform_admin") {
         navigate("/admin/dashboard");
       } else if (
-        (user.role === "restaurant_admin" || user.role === "restaurant_user") &&
-        user.restaurantId
+        (authenticatedUser.role === "restaurant_admin" ||
+          authenticatedUser.role === "restaurant_user") &&
+        authenticatedUser.restaurantId
       ) {
         navigate("/restaurant/dashboard");
       } else {
