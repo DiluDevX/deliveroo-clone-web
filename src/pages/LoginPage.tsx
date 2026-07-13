@@ -115,7 +115,10 @@ export default function Login() {
         navigate(redirectAfterLogin);
       } else if (user.role === "platform_admin") {
         navigate("/admin/dashboard");
-      } else if (user.role === "restaurant_admin" && user.restaurantId) {
+      } else if (
+        (user.role === "restaurant_admin" || user.role === "restaurant_user") &&
+        user.restaurantId
+      ) {
         navigate("/restaurant/dashboard");
       } else {
         navigate("/");
