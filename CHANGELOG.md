@@ -1,3 +1,9 @@
+## [1.36.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.35.2...v1.36.0) (2026-07-13)
+
+### Features
+
+* enhance restaurant management roles and permissions ([c8e43e8](https://github.com/DiluDevX/deliveroo-clone-web/commit/c8e43e828ba2ecf8b935dc336466a626796eef4d))
+
 ## [1.35.2](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.35.1...v1.35.2) (2026-06-30)
 
 ### Bug Fixes
