@@ -1,3 +1,10 @@
+## [1.36.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.36.0...v1.36.1) (2026-07-13)
+
+### Bug Fixes
+
+* trigger azure deployment ([cf41e41](https://github.com/DiluDevX/deliveroo-clone-web/commit/cf41e41c49f4f39b92f1be01302d6ee2ba53d2e9))
+* update authentication logic to use authenticated user data ([ef2f287](https://github.com/DiluDevX/deliveroo-clone-web/commit/ef2f28730d63121c121dd883cff2bdd112aaa15a))
+
 ## [1.36.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.35.2...v1.36.0) (2026-07-13)
 
 ### Features
