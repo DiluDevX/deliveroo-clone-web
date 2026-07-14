@@ -122,7 +122,7 @@ describe("protected routes", () => {
     expect(screen.getByText("Admin dashboard")).toBeInTheDocument();
   });
 
-  it("requires restaurant admins to have a restaurant id", () => {
+  it("redirects restaurant users without a restaurant id", () => {
     renderWithProviders(<RestaurantAdminRouteHarness />, {
       preloadedState: {
         auth: {
@@ -130,9 +130,9 @@ describe("protected routes", () => {
           isAuthenticated: true,
           user: {
             firstName: "Restaurant",
-            lastName: "Admin",
-            email: "restaurant@example.com",
-            role: "restaurant_admin",
+            lastName: "User",
+            email: "restaurant-user@example.com",
+            role: "restaurant_user",
           },
         },
       },
@@ -140,26 +140,6 @@ describe("protected routes", () => {
 
     expect(screen.getByText("Login page")).toBeInTheDocument();
     expect(screen.queryByText("Restaurant dashboard")).not.toBeInTheDocument();
-  });
-
-  it("allows restaurant admins with a restaurant id through", () => {
-    renderWithProviders(<RestaurantAdminRouteHarness />, {
-      preloadedState: {
-        auth: {
-          isAuthInitialized: true,
-          isAuthenticated: true,
-          user: {
-            firstName: "Restaurant",
-            lastName: "Admin",
-            email: "restaurant@example.com",
-            role: "restaurant_admin",
-            restaurantId: "restaurant-1",
-          },
-        },
-      },
-    });
-
-    expect(screen.getByText("Restaurant dashboard")).toBeInTheDocument();
   });
 
   it("allows restaurant users with a restaurant id through", () => {

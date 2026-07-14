@@ -1,14 +1,16 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAppSelector } from "../store/hooks/cartHooks";
+import { showErrorSnackbar } from "../utils/notifications";
 
 const RestaurantAdminProtectedRoute = () => {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const user = useAppSelector((state) => state.auth.user);
-  const isRestaurantAdmin =
-    user?.role === "restaurant_admin" || user?.role === "restaurant_user";
+  const hasRestaurantAccess = user?.role === "restaurant_user";
 
-  // Check if user is authenticated and has restaurant admin role
-  if (!isAuthenticated || !isRestaurantAdmin || !user?.restaurantId) {
+  if (!isAuthenticated || !hasRestaurantAccess) {
+    showErrorSnackbar(
+      "No restaurant assigned to this account. Please contact support.",
+    );
     return <Navigate to="/account/login" replace />;
   }
 

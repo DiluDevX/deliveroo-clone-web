@@ -1,5 +1,6 @@
 import axios from "axios";
 import { IUser } from "../types/user.types";
+import { CreateRestaurantAdminRequestBodySchema } from "../types/dto/admin.dto";
 
 export const verifyApiKey = async (
   apiKey: string,
@@ -41,15 +42,19 @@ export const createNewRestaurantAdmin = async (
   if (!isPlatformAdmin) {
     throw new Error("Platform admins can only create restaurant admins.");
   }
+
+  const payload = CreateRestaurantAdminRequestBodySchema.parse({
+    email,
+    password,
+    role: "restaurant_user",
+    restaurantRole: "super_admin",
+    firstName: restaurantName,
+    lastName: "admin",
+  });
+
   const response = await axios.post(
     "/api/auth/admin/create-restaurant-admin",
-    {
-      email,
-      password,
-      role: "restaurant_admin",
-      firstName: restaurantName,
-      lastName: "admin",
-    },
+    payload,
     {
       headers: {
         platform_admin: isPlatformAdmin ? "true" : "false",

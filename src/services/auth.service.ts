@@ -26,7 +26,7 @@ import {
 type AccessTokenPayload = {
   userId?: string;
   email?: string;
-  role?: "user" | "platform_admin" | "restaurant_admin" | "restaurant_user";
+  role?: "user" | "platform_admin" | "restaurant_user";
 };
 
 type ICheckEmailResponse = {
@@ -300,8 +300,8 @@ export const getValidAdminAuth = async (): Promise<AuthStatus> => {
     authStatus &&
     typeof authStatus !== "boolean" &&
     (authStatus.user?.role === "platform_admin" ||
-      authStatus.user?.role === "restaurant_admin" ||
-      authStatus.user?.role === "restaurant_user")
+      (authStatus.user?.role === "restaurant_user" &&
+        Boolean(authStatus.user.restaurantId)))
   ) {
     return authStatus;
   }

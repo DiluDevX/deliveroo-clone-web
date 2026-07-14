@@ -119,8 +119,7 @@ export default function Login() {
       } else if (authenticatedUser.role === "platform_admin") {
         navigate("/admin/dashboard");
       } else if (
-        (authenticatedUser.role === "restaurant_admin" ||
-          authenticatedUser.role === "restaurant_user") &&
+        authenticatedUser.role === "restaurant_user" &&
         authenticatedUser.restaurantId
       ) {
         navigate("/restaurant/dashboard");
