@@ -53,7 +53,7 @@ import {
 } from "../../utils/notifications";
 
 const optionalImageUrlSchema = z.preprocess(
-  (value) => (value === "" ? undefined : value),
+  (value) => (value === "" || value === null ? undefined : value),
   z.string().trim().url("Enter a valid image URL").optional(),
 );
 
@@ -101,7 +101,7 @@ const formatCurrency = (amount: number) =>
 const getDishImage = (dish: MenuDish) =>
   dish.image || "https://assets.dilum.me/deliveroo-clone/svgs/NotFound.svg";
 
-const menuManagerRoles = ["super_admin", "admin"];
+const setMenuManagerRoles = ["super_admin", "admin"];
 
 const RestaurantMenuPage = () => {
   const user = useAppSelector((state) => state.auth.user);
@@ -109,7 +109,9 @@ const RestaurantMenuPage = () => {
   const canManageMenu =
     user?.role === "platform_admin" ||
     Boolean(
-      user?.restaurantRole && menuManagerRoles.includes(user.restaurantRole),
+      user?.role === "restaurant_user" &&
+        user.restaurantRole &&
+        setMenuManagerRoles.includes(user.restaurantRole),
     );
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -131,6 +133,7 @@ const RestaurantMenuPage = () => {
     resolver: zodResolver(dishSchema),
     defaultValues: dishFormDefaults,
   });
+  const { setValue: setDishValue } = dishForm;
 
   const selectedCategory = categories.find(
     (category) => category.id === selectedCategoryId,
@@ -176,13 +179,13 @@ const RestaurantMenuPage = () => {
 
         return categoryList[0]?.id ?? "";
       });
-      dishForm.setValue("categoryId", categoryList[0]?.id ?? "");
+      setDishValue("categoryId", categoryList[0]?.id ?? "");
     } catch {
       showErrorSnackbar("Failed to load restaurant menu");
     } finally {
       setIsLoading(false);
     }
-  }, [dishForm, restaurantId]);
+  }, [restaurantId, setDishValue]);
 
   useEffect(() => {
     void loadMenu();
@@ -190,9 +193,9 @@ const RestaurantMenuPage = () => {
 
   useEffect(() => {
     if (selectedCategoryId) {
-      dishForm.setValue("categoryId", selectedCategoryId);
+      setDishValue("categoryId", selectedCategoryId);
     }
-  }, [dishForm, selectedCategoryId]);
+  }, [selectedCategoryId, setDishValue]);
 
   const openCategoryDialog = () => {
     if (!canManageMenu) {
@@ -759,7 +762,11 @@ const RestaurantMenuPage = () => {
         onClose={closeCategoryDialog}
         fullWidth
         maxWidth="sm"
-        PaperProps={{ sx: { borderRadius: "12px" } }}
+        PaperProps={{
+          component: "form",
+          onSubmit: handleCreateCategory,
+          sx: { borderRadius: "12px" },
+        }}
       >
         <DialogTitle sx={{ fontWeight: 900 }}>Create category</DialogTitle>
         <DialogContent>
@@ -784,6 +791,7 @@ const RestaurantMenuPage = () => {
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 1 }}>
           <Button
+            type="button"
             variant="border"
             onClick={closeCategoryDialog}
             disabled={categoryForm.formState.isSubmitting}
@@ -792,8 +800,8 @@ const RestaurantMenuPage = () => {
             Cancel
           </Button>
           <Button
+            type="submit"
             variant="filled"
-            onClick={() => void handleCreateCategory()}
             disabled={categoryForm.formState.isSubmitting}
             sx={{ px: 2, fontWeight: 800 }}
           >
@@ -808,7 +816,11 @@ const RestaurantMenuPage = () => {
         fullWidth
         maxWidth="md"
         fullScreen={isMobile}
-        PaperProps={{ sx: { borderRadius: isMobile ? 0 : "12px" } }}
+        PaperProps={{
+          component: "form",
+          onSubmit: handleCreateDish,
+          sx: { borderRadius: isMobile ? 0 : "12px" },
+        }}
       >
         <DialogTitle sx={{ fontWeight: 900 }}>Create dish</DialogTitle>
         <DialogContent>
@@ -1009,6 +1021,7 @@ const RestaurantMenuPage = () => {
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 1 }}>
           <Button
+            type="button"
             variant="border"
             onClick={closeDishDialog}
             disabled={dishForm.formState.isSubmitting}
@@ -1017,8 +1030,8 @@ const RestaurantMenuPage = () => {
             Cancel
           </Button>
           <Button
+            type="submit"
             variant="filled"
-            onClick={() => void handleCreateDish()}
             disabled={dishForm.formState.isSubmitting}
             sx={{ px: 2, fontWeight: 800 }}
           >

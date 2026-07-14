@@ -46,7 +46,8 @@ export const createNewRestaurantAdmin = async (
     {
       email,
       password,
-      role: "restaurant_admin",
+      role: "restaurant_user",
+      restaurantRole: "super_admin",
       firstName: restaurantName,
       lastName: "admin",
     },

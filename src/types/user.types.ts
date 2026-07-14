@@ -1,8 +1,7 @@
-export type RestaurantUserRole =
-  | "employee"
-  | "super_admin"
-  | "admin"
-  | "finance";
+import type { z } from "zod";
+import type { RestaurantUserRoleSchema } from "./dto/model.schemas";
+
+export type RestaurantUserRole = z.infer<typeof RestaurantUserRoleSchema>;
 
 export type IUser = {
   id?: string;

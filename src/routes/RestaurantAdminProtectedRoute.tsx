@@ -4,11 +4,9 @@ import { useAppSelector } from "../store/hooks/cartHooks";
 const RestaurantAdminProtectedRoute = () => {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const user = useAppSelector((state) => state.auth.user);
-  const isRestaurantAdmin =
-    user?.role === "restaurant_admin" || user?.role === "restaurant_user";
+  const hasRestaurantAccess = user?.role === "restaurant_user";
 
-  // Check if user is authenticated and has restaurant admin role
-  if (!isAuthenticated || !isRestaurantAdmin || !user?.restaurantId) {
+  if (!isAuthenticated || !hasRestaurantAccess || !user?.restaurantId) {
     return <Navigate to="/account/login" replace />;
   }
 

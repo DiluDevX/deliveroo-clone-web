@@ -63,7 +63,8 @@ export type UpdateRestaurantAdminResponseBodyDTO = z.infer<
 export const CreateRestaurantAdminRequestBodySchema = z.object({
   email: z.string(),
   password: z.string(),
-  role: z.literal("restaurant_admin"),
+  role: z.literal("restaurant_user"),
+  restaurantRole: z.literal("super_admin"),
   firstName: z.string(),
   lastName: z.string(),
 });
