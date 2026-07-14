@@ -52,10 +52,14 @@ import {
   showSuccessSnackbar,
 } from "../../utils/notifications";
 
-const optionalImageUrlSchema = z.preprocess(
-  (value) => (value === "" || value === null ? undefined : value),
-  z.string().trim().url("Enter a valid image URL").optional(),
-);
+const optionalImageUrlSchema = z.preprocess((value) => {
+  if (value === "string") {
+    const trimmed = value.trim();
+    return trimmed === "" ? undefined : trimmed;
+  }
+
+  return value;
+}, z.string().trim().url("Enter a valid image URL").optional());
 
 const categorySchema = z.object({
   name: z.string().trim().min(1, "Category name is required").max(200),
@@ -101,7 +105,7 @@ const formatCurrency = (amount: number) =>
 const getDishImage = (dish: MenuDish) =>
   dish.image || "https://assets.dilum.me/deliveroo-clone/svgs/NotFound.svg";
 
-const setMenuManagerRoles = ["super_admin", "admin"];
+const MENU_MANAGER_ROLES = ["super_admin", "admin"];
 
 const RestaurantMenuPage = () => {
   const user = useAppSelector((state) => state.auth.user);
@@ -111,7 +115,7 @@ const RestaurantMenuPage = () => {
     Boolean(
       user?.role === "restaurant_user" &&
         user.restaurantRole &&
-        setMenuManagerRoles.includes(user.restaurantRole),
+        MENU_MANAGER_ROLES.includes(user.restaurantRole),
     );
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
