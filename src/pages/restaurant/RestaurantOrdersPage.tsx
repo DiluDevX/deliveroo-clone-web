@@ -1,4 +1,15 @@
-import { SearchOutlined } from "@mui/icons-material";
+import {
+  CancelOutlined,
+  CheckCircleOutline,
+  CurrencyExchangeOutlined,
+  DeliveryDiningOutlined,
+  HourglassEmptyOutlined,
+  InfoOutlined,
+  Inventory2Outlined,
+  RestaurantOutlined,
+  SearchOutlined,
+  TaskAltOutlined,
+} from "@mui/icons-material";
 import {
   Box,
   Card,
@@ -17,6 +28,7 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
@@ -87,6 +99,49 @@ const getStatusColor = (status: string) => {
       return "error" as const;
     default:
       return "default" as const;
+  }
+};
+
+const getUnavailableActionIcon = (status: string) => {
+  const iconSx = { fontSize: 24 };
+
+  switch (status) {
+    case "PENDING":
+      return (
+        <HourglassEmptyOutlined
+          sx={{ ...iconSx, color: Colors.status.pending.text }}
+        />
+      );
+    case "CONFIRMED":
+      return <CheckCircleOutline sx={{ ...iconSx, color: Colors.icon.info }} />;
+    case "PREPARING":
+      return (
+        <RestaurantOutlined sx={{ ...iconSx, color: Colors.status.warning }} />
+      );
+    case "READY":
+      return <Inventory2Outlined sx={{ ...iconSx, color: "info.main" }} />;
+    case "OUT_FOR_DELIVERY":
+      return (
+        <DeliveryDiningOutlined
+          sx={{ ...iconSx, color: Colors.status.onTheWay.text }}
+        />
+      );
+    case "DELIVERED":
+      return (
+        <TaskAltOutlined
+          sx={{ ...iconSx, color: Colors.status.delivered.text }}
+        />
+      );
+    case "CANCELLED":
+      return <CancelOutlined sx={{ ...iconSx, color: Colors.error.main }} />;
+    case "REFUNDED":
+      return (
+        <CurrencyExchangeOutlined
+          sx={{ ...iconSx, color: Colors.error.default }}
+        />
+      );
+    default:
+      return <InfoOutlined sx={{ ...iconSx, color: Colors.icon.info }} />;
   }
 };
 
@@ -295,10 +350,7 @@ const RestaurantOrdersPage = () => {
                     >
                       Placed
                     </TableCell>
-                    <TableCell
-                      align="right"
-                      sx={{ width: { xs: "30%", lg: "15%" } }}
-                    >
+                    <TableCell sx={{ width: { xs: "30%", lg: "15%" } }}>
                       Actions
                     </TableCell>
                   </TableRow>
@@ -383,11 +435,12 @@ const RestaurantOrdersPage = () => {
                         >
                           {formatDateTime(order.createdAt)}
                         </TableCell>
-                        <TableCell align="right">
+                        <TableCell>
                           <Box
                             sx={{
                               display: "flex",
-                              justifyContent: "flex-end",
+                              alignItems: "center",
+                              justifyContent: "flex-start",
                               width: "100%",
                             }}
                           >
@@ -412,6 +465,27 @@ const RestaurantOrdersPage = () => {
                                   ? "Updating..."
                                   : `Mark ${formatStatus(nextStatus)}`}
                               </Button>
+                            )}
+                            {(!canManageOrders || !nextStatus) && (
+                              <Tooltip
+                                title={`${formatStatus(order.status)} - no restaurant action available`}
+                                arrow
+                              >
+                                <Box
+                                  component="span"
+                                  role="img"
+                                  aria-label={`${formatStatus(order.status)} - no restaurant action available`}
+                                  sx={{
+                                    width: 36,
+                                    height: 36,
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  {getUnavailableActionIcon(order.status)}
+                                </Box>
+                              </Tooltip>
                             )}
                           </Box>
                         </TableCell>

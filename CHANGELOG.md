@@ -2,7 +2,7 @@
 
 ### Features
 
-* add tests for RestaurantOrdersPage functionality and UI interactions ([8c3cb3c](https://github.com/DiluDevX/deliveroo-clone-web/commit/8c3cb3cb288cc6bac737e6bdbceb05494808f8b6))
+- add tests for RestaurantOrdersPage functionality and UI interactions ([8c3cb3c](https://github.com/DiluDevX/deliveroo-clone-web/commit/8c3cb3cb288cc6bac737e6bdbceb05494808f8b6))
 
 ## [1.39.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.38.0...v1.39.0) (2026-07-16)
 

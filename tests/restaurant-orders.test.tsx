@@ -62,6 +62,13 @@ const order: Order = {
   updatedAt: "2026-07-16T18:17:00.000Z",
 };
 
+const readyOrder: Order = {
+  ...order,
+  id: "order-2",
+  orderNumber: "DASH-FIESTA-003",
+  status: "READY",
+};
+
 const renderOrders = () =>
   renderWithProviders(<RestaurantOrdersPage />, {
     preloadedState: {
@@ -84,10 +91,10 @@ describe("RestaurantOrdersPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getRestaurantOrders).mockResolvedValue({
-      orders: [order],
+      orders: [order, readyOrder],
       page: 1,
       limit: 10,
-      total: 1,
+      total: 2,
       totalPages: 1,
     });
     vi.mocked(updateRestaurantOrderStatus).mockResolvedValue({
@@ -130,5 +137,15 @@ describe("RestaurantOrdersPage", () => {
       );
     });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("shows a status indicator when no restaurant action is available", async () => {
+    renderOrders();
+
+    expect(
+      await screen.findByRole("img", {
+        name: "Ready - no restaurant action available",
+      }),
+    ).toBeInTheDocument();
   });
 });
