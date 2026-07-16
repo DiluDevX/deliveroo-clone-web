@@ -1,274 +1,313 @@
-import { Box, Card, Grid, Typography, Chip } from "@mui/material";
-import { TrendingUp, ShoppingCart, Star, People } from "@mui/icons-material";
-import { Colors } from "../../theme";
+import { People, ShoppingCart, Star, TrendingUp } from "@mui/icons-material";
 import {
-  LineChart,
+  Box,
+  Card,
+  Chip,
+  CircularProgress,
+  Grid,
+  Typography,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
 } from "recharts";
+import { getRestaurantDashboardSummary } from "../../services/restaurant-admin.service";
+import { getSingleRestaurant } from "../../services/restaurant.service";
+import { useAppSelector } from "../../store/hooks/cartHooks";
+import { Colors } from "../../theme";
+import { Order } from "../../types/order.types";
+import { showErrorSnackbar } from "../../utils/notifications";
+import type { RestaurantDashboardSummary } from "../../services/restaurant-admin.service";
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+  }).format(amount);
+
+const formatStatus = (status: string) =>
+  status
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+const getChangeLabel = (change: number | null) => {
+  if (change === null) return "No previous-day data";
+  return `${change >= 0 ? "+" : ""}${change}% from yesterday`;
+};
 
 const RestaurantDashboardPage = () => {
-  const dashboardStats = [
-    {
-      label: "Today's Sales",
-      value: "$0.00",
-      change: "No data",
-      icon: TrendingUp,
-      color: "#10B981",
-    },
-    {
-      label: "Active Orders",
-      value: "0",
-      change: "No data",
-      icon: ShoppingCart,
-      color: "#3B82F6",
-    },
-    {
-      label: "Average Rating",
-      value: "0.0",
-      change: "No reviews",
-      icon: Star,
-      color: "#F59E0B",
-    },
-    {
-      label: "Total Customers",
-      value: "0",
-      change: "No data",
-      icon: People,
-      color: "#8B5CF6",
-    },
-  ];
+  const restaurantId = useAppSelector((state) => state.auth.user?.restaurantId);
+  const [summary, setSummary] = useState<RestaurantDashboardSummary | null>(
+    null,
+  );
+  const [rating, setRating] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const revenueChartData: Array<{ day: string; revenue: number }> = [];
+  useEffect(() => {
+    if (!restaurantId) {
+      setIsLoading(false);
+      return;
+    }
 
-  const popularItemsData: Array<{ name: string; orders: number }> = [];
+    let isActive = true;
+    const loadDashboard = async () => {
+      setIsLoading(true);
+      try {
+        const [dashboardSummary, restaurant] = await Promise.all([
+          getRestaurantDashboardSummary(restaurantId),
+          getSingleRestaurant(restaurantId),
+        ]);
+        if (!isActive) return;
+        setSummary(dashboardSummary);
+        setRating(restaurant?.rating ?? 0);
+      } catch {
+        if (isActive) showErrorSnackbar("Failed to load restaurant dashboard");
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    };
 
-  const recentOrders: Array<{
-    id: string;
-    customer: string;
-    items: number;
-    total: string;
-    status: string;
-    time: string;
-  }> = [];
+    void loadDashboard();
+    return () => {
+      isActive = false;
+    };
+  }, [restaurantId]);
 
-  const StatCard = ({ stat }: { stat: (typeof dashboardStats)[0] }) => {
-    const IconComponent = stat.icon;
+  if (!restaurantId) {
     return (
-      <Card
-        sx={{
-          p: 3,
-          bgcolor: Colors.background.light,
-          border: `1px solid ${Colors.border.default}`,
-        }}
-      >
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-          <Typography variant="body2" sx={{ color: Colors.text.default }}>
-            {stat.label}
-          </Typography>
-          <IconComponent sx={{ color: stat.color, fontSize: 24 }} />
-        </Box>
-        <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
-          {stat.value}
+      <Card sx={{ p: 4, border: `1px solid ${Colors.border.default}` }}>
+        <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
+          Restaurant assignment missing
         </Typography>
-        <Typography variant="caption" sx={{ color: stat.color }}>
-          {stat.change}
+        <Typography sx={{ color: Colors.text.lighter }}>
+          Assign this account to a restaurant before viewing dashboard data.
         </Typography>
       </Card>
     );
-  };
+  }
+
+  if (isLoading) {
+    return (
+      <Box sx={{ minHeight: 480, display: "grid", placeItems: "center" }}>
+        <CircularProgress sx={{ color: Colors.background.brand }} />
+      </Box>
+    );
+  }
+
+  if (!summary) {
+    return (
+      <Card sx={{ p: 4, border: `1px solid ${Colors.border.default}` }}>
+        <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
+          Dashboard unavailable
+        </Typography>
+        <Typography sx={{ color: Colors.text.lighter }}>
+          The reporting service could not load this restaurant&apos;s summary.
+          Try again after the service is available.
+        </Typography>
+      </Card>
+    );
+  }
+
+  const dashboardStats = [
+    {
+      label: "Today's sales",
+      value: formatCurrency(summary.todaySales),
+      detail: getChangeLabel(summary.salesChangePercent),
+      icon: TrendingUp,
+      color: Colors.status.success,
+    },
+    {
+      label: "Active orders",
+      value: String(summary.activeOrders),
+      detail: `${summary.todayOrders} recognized today`,
+      icon: ShoppingCart,
+      color: Colors.background.brand,
+    },
+    {
+      label: "Average rating",
+      value: rating.toFixed(1),
+      detail: rating > 0 ? "Restaurant rating" : "No reviews yet",
+      icon: Star,
+      color: Colors.status.warning,
+    },
+    {
+      label: "Total customers",
+      value: String(summary.totalCustomers),
+      detail: `Average ${formatCurrency(summary.averageOrderValue)} today`,
+      icon: People,
+      color: "#7C3AED",
+    },
+  ];
 
   return (
     <Box>
-      {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
+        <Typography variant="h4" sx={{ fontWeight: 900, mb: 1 }}>
           Restaurant Dashboard
         </Typography>
-        <Typography variant="body2" sx={{ color: Colors.text.default }}>
-          Welcome back! Here's your restaurant performance overview
+        <Typography sx={{ color: Colors.text.lighter }}>
+          Live operational overview. Revenue periods are calculated in UTC.
         </Typography>
       </Box>
 
-      {/* Stats Grid */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {dashboardStats.map((stat, idx) => (
-          <Grid item xs={12} sm={6} md={3} key={idx}>
-            <StatCard stat={stat} />
-          </Grid>
-        ))}
+        {dashboardStats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <Grid item xs={12} sm={6} xl={3} key={stat.label}>
+              <Card
+                sx={{
+                  p: 3,
+                  height: "100%",
+                  bgcolor: Colors.background.light,
+                  border: `1px solid ${Colors.border.default}`,
+                }}
+              >
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography sx={{ color: Colors.text.lighter }}>
+                    {stat.label}
+                  </Typography>
+                  <Icon sx={{ color: stat.color }} />
+                </Box>
+                <Typography variant="h4" sx={{ fontWeight: 900, my: 1 }}>
+                  {stat.value}
+                </Typography>
+                <Typography variant="caption" sx={{ color: stat.color }}>
+                  {stat.detail}
+                </Typography>
+              </Card>
+            </Grid>
+          );
+        })}
       </Grid>
 
-      {/* Charts Section */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {/* Revenue Trend */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} lg={7}>
           <Card
             sx={{
               p: 3,
-              bgcolor: Colors.background.light,
               border: `1px solid ${Colors.border.default}`,
+              height: 380,
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-              Weekly Revenue Trend
+            <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>
+              Revenue this week
             </Typography>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={revenueChartData}>
+              <LineChart data={summary.weeklyTrend}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
+                <XAxis dataKey="label" />
                 <YAxis />
-                <Tooltip />
-                <Legend />
+                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                 <Line
                   type="monotone"
                   dataKey="revenue"
                   stroke={Colors.background.brand}
-                  strokeWidth={2}
-                  name="Revenue ($)"
+                  strokeWidth={3}
+                  name="Revenue"
                 />
               </LineChart>
             </ResponsiveContainer>
           </Card>
         </Grid>
 
-        {/* Popular Items */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} lg={5}>
           <Card
             sx={{
               p: 3,
-              bgcolor: Colors.background.light,
               border: `1px solid ${Colors.border.default}`,
+              height: 380,
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-              Top Selling Items
+            <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>
+              Top selling items
             </Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={popularItemsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar
-                  dataKey="orders"
-                  fill={Colors.background.brand}
-                  name="Orders"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Orders and Orders/Day Trend */}
-      <Grid container spacing={3}>
-        {/* Recent Orders */}
-        <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              p: 3,
-              bgcolor: Colors.background.light,
-              border: `1px solid ${Colors.border.default}`,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-              Recent Orders
-            </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {recentOrders.map((order) => (
-                <Box
-                  key={order.id}
-                  sx={{
-                    p: 2,
-                    bgcolor: Colors.background.default,
-                    borderRadius: "0.5rem",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: "bold", mb: 0.5 }}
-                    >
-                      {order.id}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: Colors.text.placeholder }}
-                    >
-                      {order.customer} • {order.items} items
-                    </Typography>
-                  </Box>
-                  <Box sx={{ textAlign: "right" }}>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: "bold", mb: 0.5 }}
-                    >
-                      {order.total}
-                    </Typography>
-                    <Chip
-                      label={order.status}
-                      size="small"
-                      color={
-                        order.status === "Delivered"
-                          ? "success"
-                          : order.status === "Preparing"
-                            ? "warning"
-                            : "info"
-                      }
-                      sx={{ maxWidth: "70px" }}
-                    />
-                  </Box>
-                </Box>
-              ))}
-              {recentOrders.length === 0 && (
-                <Typography sx={{ color: Colors.text.placeholder }}>
-                  No recent orders found.
+            {summary.topItems.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={summary.topItems} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="name" type="category" width={105} />
+                  <Tooltip />
+                  <Bar
+                    dataKey="quantity"
+                    fill={Colors.background.brand}
+                    name="Items sold"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <Box sx={{ height: 280, display: "grid", placeItems: "center" }}>
+                <Typography sx={{ color: Colors.text.lighter }}>
+                  No recognized orders in the last 30 days.
                 </Typography>
-              )}
-            </Box>
-          </Card>
-        </Grid>
-
-        {/* Orders per Day */}
-        <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              p: 3,
-              bgcolor: Colors.background.light,
-              border: `1px solid ${Colors.border.default}`,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-              Orders per Day
-            </Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={revenueChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar
-                  dataKey="orders"
-                  fill={Colors.background.brand}
-                  name="Orders"
-                />
-              </BarChart>
-            </ResponsiveContainer>
+              </Box>
+            )}
           </Card>
         </Grid>
       </Grid>
+
+      <Card sx={{ p: 3, border: `1px solid ${Colors.border.default}` }}>
+        <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>
+          Recent orders
+        </Typography>
+        {summary.recentOrders.length === 0 ? (
+          <Typography sx={{ color: Colors.text.lighter }}>
+            No orders have been placed yet.
+          </Typography>
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
+            {summary.recentOrders.map((order: Order, index) => (
+              <Box
+                key={order.id}
+                sx={{
+                  py: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 2,
+                  borderBottom:
+                    index === summary.recentOrders.length - 1
+                      ? "none"
+                      : `1px solid ${Colors.border.default}`,
+                }}
+              >
+                <Box>
+                  <Typography sx={{ fontWeight: 800 }}>
+                    {order.orderNumber}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: Colors.text.lighter }}
+                  >
+                    {order.items.reduce(
+                      (total, item) => total + item.quantity,
+                      0,
+                    )}{" "}
+                    items
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography sx={{ fontWeight: 800 }}>
+                    {formatCurrency(order.totalAmount)}
+                  </Typography>
+                  <Chip label={formatStatus(order.status)} size="small" />
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        )}
+      </Card>
     </Box>
   );
 };

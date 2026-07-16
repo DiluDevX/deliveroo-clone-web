@@ -1,190 +1,250 @@
-import { Box, Card, Grid, Typography } from "@mui/material";
-import { Colors } from "../../theme";
+import { Box, Card, CircularProgress, Grid, Typography } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import {
-  LineChart,
-  Line,
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
+import {
+  getMenuCategories,
+  MenuCategory,
+} from "../../services/menu-management.service";
+import {
+  getRestaurantAnalytics,
+  RestaurantAnalytics,
+} from "../../services/restaurant-admin.service";
+import { useAppSelector } from "../../store/hooks/cartHooks";
+import { Colors } from "../../theme";
+import { showErrorSnackbar } from "../../utils/notifications";
 
-interface RevenueDataPoint {
-  week: string;
-  revenue: number;
-  orders: number;
-}
+const CHART_COLORS = [
+  Colors.background.brand,
+  Colors.status.success,
+  Colors.status.warning,
+  "#2563EB",
+  "#7C3AED",
+  "#DB2777",
+];
 
-interface CategoryBreakdown {
-  name: string;
-  value: number;
-  color: string;
-}
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: "GBP",
+  }).format(amount);
 
-interface MonthlyStats {
-  month: string;
-  revenue: number;
-  orders: number;
-}
-
-interface PeakHourData {
-  hour: string;
-  orders: number;
-}
-
-interface AnalyticsCard {
-  label: string;
-  value: string;
-  change: string;
-}
+const formatChange = (change: number | null) => {
+  if (change === null) return "No previous-month data";
+  return `${change >= 0 ? "+" : ""}${change}% from last month`;
+};
 
 const RestaurantAnalyticsPage = () => {
-  // Mock analytics data
-  const revenueData: RevenueDataPoint[] = [
-    { week: "Week 1", revenue: 2400, orders: 45 },
-    { week: "Week 2", revenue: 3200, orders: 58 },
-    { week: "Week 3", revenue: 2800, orders: 52 },
-    { week: "Week 4", revenue: 3800, orders: 71 },
-    { week: "Week 5", revenue: 4200, orders: 85 },
-  ];
+  const restaurantId = useAppSelector((state) => state.auth.user?.restaurantId);
+  const [analytics, setAnalytics] = useState<RestaurantAnalytics | null>(null);
+  const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadError, setHasLoadError] = useState(false);
 
-  const categoryBreakdown: CategoryBreakdown[] = [
-    { name: "Pizza", value: 35, color: "#FF6B6B" },
-    { name: "Salads", value: 20, color: "#4ECDC4" },
-    { name: "Pasta", value: 25, color: "#FFE66D" },
-    { name: "Desserts", value: 15, color: "#A8E6CF" },
-    { name: "Drinks", value: 5, color: "#FF8B94" },
-  ];
+  useEffect(() => {
+    if (!restaurantId) {
+      setIsLoading(false);
+      return;
+    }
 
-  const monthlyStats: MonthlyStats[] = [
-    { month: "Jan", revenue: 8500, orders: 210 },
-    { month: "Feb", revenue: 12300, orders: 298 },
-    { month: "Mar", revenue: 15600, orders: 365 },
-    { month: "Apr", revenue: 14200, orders: 340 },
-    { month: "May", revenue: 18900, orders: 450 },
-    { month: "Jun", revenue: 21500, orders: 520 },
-  ];
+    let isActive = true;
+    const loadAnalytics = async () => {
+      setIsLoading(true);
+      setHasLoadError(false);
+      try {
+        const [restaurantAnalytics, menuCategories] = await Promise.all([
+          getRestaurantAnalytics(restaurantId),
+          getMenuCategories(restaurantId).catch(() => []),
+        ]);
 
-  const peakHours: PeakHourData[] = [
-    { hour: "11:00", orders: 15 },
-    { hour: "12:00", orders: 42 },
-    { hour: "13:00", orders: 38 },
-    { hour: "14:00", orders: 18 },
-    { hour: "18:00", orders: 22 },
-    { hour: "19:00", orders: 56 },
-    { hour: "20:00", orders: 48 },
-    { hour: "21:00", orders: 25 },
-  ];
+        if (!isActive) return;
+        setAnalytics(restaurantAnalytics);
+        setCategories(menuCategories);
+      } catch {
+        if (isActive) {
+          setHasLoadError(true);
+          showErrorSnackbar("Failed to load restaurant analytics");
+        }
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    };
 
-  const analyticsCards: AnalyticsCard[] = [
+    void loadAnalytics();
+    return () => {
+      isActive = false;
+    };
+  }, [restaurantId]);
+
+  const categoryBreakdown = useMemo(() => {
+    const categoryNames = new Map(
+      categories.map((category) => [category.id, category.name]),
+    );
+
+    return (analytics?.categoryBreakdown ?? []).map((category, index) => ({
+      ...category,
+      name:
+        category.categoryId === "uncategorized"
+          ? "Uncategorized"
+          : (categoryNames.get(category.categoryId) ?? "Unknown category"),
+      color: CHART_COLORS[index % CHART_COLORS.length],
+    }));
+  }, [analytics?.categoryBreakdown, categories]);
+
+  if (!restaurantId) {
+    return (
+      <Card sx={{ p: 4, border: `1px solid ${Colors.border.default}` }}>
+        <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
+          Restaurant assignment missing
+        </Typography>
+        <Typography sx={{ color: Colors.text.lighter }}>
+          Assign this account to a restaurant before viewing analytics.
+        </Typography>
+      </Card>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <Box sx={{ minHeight: 480, display: "grid", placeItems: "center" }}>
+        <CircularProgress sx={{ color: Colors.background.brand }} />
+      </Box>
+    );
+  }
+
+  if (hasLoadError || !analytics) {
+    return (
+      <Card sx={{ p: 4, border: `1px solid ${Colors.border.default}` }}>
+        <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
+          Analytics unavailable
+        </Typography>
+        <Typography sx={{ color: Colors.text.lighter }}>
+          The reporting service could not load this restaurant&apos;s data. Try
+          again after the service is available.
+        </Typography>
+      </Card>
+    );
+  }
+
+  const cards = [
     {
-      label: "Total Revenue (Month)",
-      value: "$21,500",
-      change: "+15.2%",
+      label: "Revenue this month",
+      value: formatCurrency(analytics.currentMonth.revenue),
+      detail: formatChange(analytics.currentMonth.revenueChangePercent),
+      change: analytics.currentMonth.revenueChangePercent,
     },
     {
-      label: "Total Orders (Month)",
-      value: "520",
-      change: "+8.5%",
+      label: "Orders this month",
+      value: String(analytics.currentMonth.orders),
+      detail: formatChange(analytics.currentMonth.ordersChangePercent),
+      change: analytics.currentMonth.ordersChangePercent,
     },
     {
-      label: "Average Order Value",
-      value: "$41.35",
-      change: "+3.2%",
+      label: "Average order value",
+      value: formatCurrency(analytics.currentMonth.averageOrderValue),
+      detail: formatChange(
+        analytics.currentMonth.averageOrderValueChangePercent,
+      ),
+      change: analytics.currentMonth.averageOrderValueChangePercent,
     },
     {
-      label: "Customer Satisfaction",
-      value: "4.7/5",
-      change: "+0.2",
+      label: "Unique customers",
+      value: String(analytics.currentMonth.uniqueCustomers),
+      detail: "Recognized orders this month",
+      change: null,
     },
   ];
 
   return (
     <Box>
-      {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
-          Analytics & Insights
+        <Typography variant="h4" sx={{ fontWeight: 900, mb: 1 }}>
+          Analytics &amp; Insights
         </Typography>
-        <Typography variant="body2" sx={{ color: Colors.text.default }}>
-          Detailed analytics about your restaurant's performance
+        <Typography sx={{ color: Colors.text.lighter }}>
+          Order and revenue performance. Reporting periods use UTC.
         </Typography>
       </Box>
 
-      {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {analyticsCards.map((card, idx) => (
-          <Grid item xs={12} sm={6} md={3} key={idx}>
+        {cards.map((card) => (
+          <Grid item xs={12} sm={6} xl={3} key={card.label}>
             <Card
               sx={{
                 p: 3,
+                height: "100%",
                 bgcolor: Colors.background.light,
                 border: `1px solid ${Colors.border.default}`,
               }}
             >
-              <Typography variant="body2" sx={{ color: Colors.text.default }}>
+              <Typography sx={{ color: Colors.text.lighter }}>
                 {card.label}
               </Typography>
               <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: "bold",
-                  my: 1,
-                  color: Colors.background.brand,
-                }}
+                variant="h4"
+                sx={{ fontWeight: 900, color: Colors.text.default, my: 1 }}
               >
                 {card.value}
               </Typography>
               <Typography
                 variant="caption"
-                sx={{ color: Colors.status.success }}
+                sx={{
+                  color:
+                    card.change === null || card.change >= 0
+                      ? Colors.status.success
+                      : Colors.error.main,
+                }}
               >
-                {card.change}
+                {card.detail}
               </Typography>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      {/* Charts */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {/* Weekly Revenue */}
-        <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              p: 3,
-              bgcolor: Colors.background.light,
-              border: `1px solid ${Colors.border.default}`,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-              Weekly Revenue & Orders
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} lg={7}>
+          <Card sx={{ p: 3, border: `1px solid ${Colors.border.default}` }}>
+            <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>
+              Weekly revenue and orders
             </Typography>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={revenueData}>
+              <LineChart data={analytics.weeklyTrend}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
+                <XAxis dataKey="label" />
+                <YAxis yAxisId="revenue" />
+                <YAxis yAxisId="orders" orientation="right" />
+                <Tooltip
+                  formatter={(value, name) =>
+                    name === "Revenue"
+                      ? formatCurrency(Number(value))
+                      : Number(value)
+                  }
+                />
                 <Legend />
                 <Line
-                  yAxisId="left"
+                  yAxisId="revenue"
                   type="monotone"
                   dataKey="revenue"
                   stroke={Colors.background.brand}
-                  strokeWidth={2}
-                  name="Revenue ($)"
+                  strokeWidth={3}
+                  name="Revenue"
                 />
                 <Line
-                  yAxisId="right"
+                  yAxisId="orders"
                   type="monotone"
                   dataKey="orders"
                   stroke={Colors.status.success}
@@ -196,98 +256,91 @@ const RestaurantAnalyticsPage = () => {
           </Card>
         </Grid>
 
-        {/* Category Breakdown */}
-        <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              p: 3,
-              bgcolor: Colors.background.light,
-              border: `1px solid ${Colors.border.default}`,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-              Orders by Category
+        <Grid item xs={12} lg={5}>
+          <Card sx={{ p: 3, border: `1px solid ${Colors.border.default}` }}>
+            <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>
+              Items sold by category
             </Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={categoryBreakdown}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name} ${value}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {categoryBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            {categoryBreakdown.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={categoryBreakdown}
+                    dataKey="quantity"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={90}
+                  >
+                    {categoryBreakdown.map((category) => (
+                      <Cell key={category.categoryId} fill={category.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <Box sx={{ height: 300, display: "grid", placeItems: "center" }}>
+                <Typography sx={{ color: Colors.text.lighter }}>
+                  No recognized orders this month.
+                </Typography>
+              </Box>
+            )}
           </Card>
         </Grid>
       </Grid>
 
-      {/* More Charts */}
       <Grid container spacing={3}>
-        {/* Monthly Trend */}
-        <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              p: 3,
-              bgcolor: Colors.background.light,
-              border: `1px solid ${Colors.border.default}`,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-              6-Month Revenue Trend
+        <Grid item xs={12} lg={7}>
+          <Card sx={{ p: 3, border: `1px solid ${Colors.border.default}` }}>
+            <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>
+              Six-month revenue trend
             </Typography>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyStats}>
+              <BarChart data={analytics.monthlyTrend}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="label" />
                 <YAxis />
-                <Tooltip />
-                <Legend />
+                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                 <Bar
                   dataKey="revenue"
                   fill={Colors.background.brand}
-                  name="Revenue ($)"
+                  name="Revenue"
+                  radius={[4, 4, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>
           </Card>
         </Grid>
 
-        {/* Peak Hours */}
-        <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              p: 3,
-              bgcolor: Colors.background.light,
-              border: `1px solid ${Colors.border.default}`,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-              Peak Order Hours
+        <Grid item xs={12} lg={5}>
+          <Card sx={{ p: 3, border: `1px solid ${Colors.border.default}` }}>
+            <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>
+              Peak order hours
             </Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={peakHours}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="hour" />
-                <YAxis />
-                <Tooltip />
-                <Bar
-                  dataKey="orders"
-                  fill={Colors.status.warning}
-                  name="Orders"
-                  radius={[8, 8, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            {analytics.peakHours.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={analytics.peakHours}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="hour" />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Bar
+                    dataKey="orders"
+                    fill={Colors.status.warning}
+                    name="Orders"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <Box sx={{ height: 300, display: "grid", placeItems: "center" }}>
+                <Typography sx={{ color: Colors.text.lighter }}>
+                  No recognized orders this month.
+                </Typography>
+              </Box>
+            )}
           </Card>
         </Grid>
       </Grid>

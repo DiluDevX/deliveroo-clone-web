@@ -3,6 +3,8 @@ import {
   Add,
   CategoryOutlined,
   CheckCircle,
+  DeleteOutline,
+  EditOutlined,
   FastfoodOutlined,
   ImageOutlined,
   LocalFireDepartmentOutlined,
@@ -40,10 +42,12 @@ import Button from "../../features/menu/components/Button";
 import {
   createMenuCategory,
   createMenuDish,
+  deleteMenuDish,
   getMenuCategories,
   getMenuDishes,
   MenuCategory,
   MenuDish,
+  updateMenuDish,
 } from "../../services/menu-management.service";
 import { useAppSelector } from "../../store/hooks/cartHooks";
 import { Colors } from "../../theme";
@@ -51,9 +55,10 @@ import {
   showErrorSnackbar,
   showSuccessSnackbar,
 } from "../../utils/notifications";
+import PopUpDialog from "../../features/menu/components/PopUpDialog";
 
 const optionalImageUrlSchema = z.preprocess((value) => {
-  if (value === "string") {
+  if (typeof value === "string") {
     const trimmed = value.trim();
     return trimmed === "" ? undefined : trimmed;
   }
@@ -127,6 +132,13 @@ const RestaurantMenuPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isDishDialogOpen, setIsDishDialogOpen] = useState(false);
+  const [editingDish, setEditingDish] = useState<MenuDish | null>(null);
+  const [dishPendingDeletion, setDishPendingDeletion] =
+    useState<MenuDish | null>(null);
+  const [isDeletingDish, setIsDeletingDish] = useState(false);
+  const [updatingDishIds, setUpdatingDishIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const categoryForm = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
@@ -223,6 +235,7 @@ const RestaurantMenuPage = () => {
       return;
     }
 
+    setEditingDish(null);
     dishForm.reset({
       ...dishFormDefaults,
       categoryId: selectedCategoryId || categories[0]?.id || "",
@@ -230,9 +243,28 @@ const RestaurantMenuPage = () => {
     setIsDishDialogOpen(true);
   };
 
+  const openEditDishDialog = (dish: MenuDish) => {
+    if (!canManageMenu) return;
+
+    setEditingDish(dish);
+    dishForm.reset({
+      categoryId: dish.categoryId,
+      name: dish.name,
+      description: dish.description ?? "",
+      price: dish.price,
+      image: dish.image ?? "",
+      isVegetarian: dish.isVegetarian,
+      isSpicy: dish.isSpicy,
+      isAvailable: dish.isAvailable,
+      isPopular: Boolean(dish.isPopular),
+    });
+    setIsDishDialogOpen(true);
+  };
+
   const closeDishDialog = () => {
     if (!dishForm.formState.isSubmitting) {
       setIsDishDialogOpen(false);
+      setEditingDish(null);
     }
   };
 
@@ -266,13 +298,38 @@ const RestaurantMenuPage = () => {
     }
   });
 
-  const handleCreateDish = dishForm.handleSubmit(async (values) => {
+  const handleSaveDish = dishForm.handleSubmit(async (values) => {
     if (!canManageMenu) {
       showErrorSnackbar("You do not have permission to manage menu items");
       return;
     }
 
     try {
+      if (editingDish) {
+        const updatedDish = await updateMenuDish(editingDish.id, {
+          categoryId: values.categoryId,
+          name: values.name,
+          description: values.description ?? "",
+          price: values.price,
+          image: values.image || null,
+          isVegetarian: values.isVegetarian,
+          isSpicy: values.isSpicy,
+          isAvailable: values.isAvailable,
+          isPopular: values.isPopular,
+        });
+
+        setDishes((currentDishes) =>
+          currentDishes.map((dish) =>
+            dish.id === updatedDish.id ? updatedDish : dish,
+          ),
+        );
+        setSelectedCategoryId(updatedDish.categoryId);
+        setIsDishDialogOpen(false);
+        setEditingDish(null);
+        showSuccessSnackbar("Dish updated");
+        return;
+      }
+
       const createdDish = await createMenuDish({
         categoryId: values.categoryId,
         name: values.name,
@@ -294,9 +351,59 @@ const RestaurantMenuPage = () => {
       setIsDishDialogOpen(false);
       showSuccessSnackbar("Dish created");
     } catch {
-      showErrorSnackbar("Failed to create dish");
+      showErrorSnackbar(
+        editingDish ? "Failed to update dish" : "Failed to create dish",
+      );
     }
   });
+
+  const handleAvailabilityChange = async (
+    dish: MenuDish,
+    isAvailable: boolean,
+  ) => {
+    if (!canManageMenu || updatingDishIds.has(dish.id)) return;
+
+    setUpdatingDishIds((currentIds) => new Set(currentIds).add(dish.id));
+    try {
+      const updatedDish = await updateMenuDish(dish.id, { isAvailable });
+      setDishes((currentDishes) =>
+        currentDishes.map((currentDish) =>
+          currentDish.id === updatedDish.id ? updatedDish : currentDish,
+        ),
+      );
+      showSuccessSnackbar(
+        isAvailable ? "Dish is now available" : "Dish marked unavailable",
+      );
+    } catch {
+      showErrorSnackbar("Failed to update dish availability");
+    } finally {
+      setUpdatingDishIds((currentIds) => {
+        const nextIds = new Set(currentIds);
+        nextIds.delete(dish.id);
+        return nextIds;
+      });
+    }
+  };
+
+  const handleDeleteDish = async () => {
+    if (!dishPendingDeletion || isDeletingDish) return;
+
+    setIsDeletingDish(true);
+    try {
+      await deleteMenuDish(dishPendingDeletion.id);
+      setDishes((currentDishes) =>
+        currentDishes.filter((dish) => dish.id !== dishPendingDeletion.id),
+      );
+      setDishPendingDeletion(null);
+      setEditingDish(null);
+      setIsDishDialogOpen(false);
+      showSuccessSnackbar("Dish deleted");
+    } catch {
+      showErrorSnackbar("Failed to delete dish");
+    } finally {
+      setIsDeletingDish(false);
+    }
+  };
 
   if (!restaurantId) {
     return (
@@ -630,6 +737,18 @@ const RestaurantMenuPage = () => {
                   {visibleDishes.map((dish) => (
                     <Grid item xs={12} md={6} key={dish.id}>
                       <Card
+                        role={canManageMenu ? "button" : undefined}
+                        tabIndex={canManageMenu ? 0 : undefined}
+                        onClick={() => openEditDishDialog(dish)}
+                        onKeyDown={(event) => {
+                          if (
+                            canManageMenu &&
+                            (event.key === "Enter" || event.key === " ")
+                          ) {
+                            event.preventDefault();
+                            openEditDishDialog(dish);
+                          }
+                        }}
                         sx={{
                           height: "100%",
                           display: "flex",
@@ -640,6 +759,7 @@ const RestaurantMenuPage = () => {
                           boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
                           transition:
                             "box-shadow 0.18s ease, transform 0.18s ease",
+                          cursor: canManageMenu ? "pointer" : "default",
                           "&:hover": {
                             boxShadow: "0 12px 28px rgba(0, 0, 0, 0.14)",
                             transform: "translateY(-1px)",
@@ -718,15 +838,47 @@ const RestaurantMenuPage = () => {
                             sx={{
                               mt: 1,
                               display: "flex",
+                              alignItems: "center",
                               flexWrap: "wrap",
                               gap: 0.75,
                             }}
                           >
-                            <Chip
-                              size="small"
-                              label={dish.isAvailable ? "Available" : "Hidden"}
-                              color={dish.isAvailable ? "success" : "default"}
-                            />
+                            {canManageMenu ? (
+                              <FormControlLabel
+                                onClick={(event) => event.stopPropagation()}
+                                control={
+                                  <Switch
+                                    size="small"
+                                    checked={dish.isAvailable}
+                                    disabled={updatingDishIds.has(dish.id)}
+                                    onChange={(_, checked) =>
+                                      void handleAvailabilityChange(
+                                        dish,
+                                        checked,
+                                      )
+                                    }
+                                  />
+                                }
+                                label={
+                                  dish.isAvailable ? "Available" : "Unavailable"
+                                }
+                                sx={{
+                                  m: 0,
+                                  "& .MuiFormControlLabel-label": {
+                                    fontSize: "0.8rem",
+                                    fontWeight: 700,
+                                  },
+                                }}
+                              />
+                            ) : (
+                              <Chip
+                                size="small"
+                                label={
+                                  dish.isAvailable ? "Available" : "Unavailable"
+                                }
+                                color={dish.isAvailable ? "success" : "default"}
+                              />
+                            )}
                             {dish.isPopular && (
                               <Chip
                                 size="small"
@@ -748,6 +900,15 @@ const RestaurantMenuPage = () => {
                             )}
                             {dish.isVegetarian && (
                               <Chip size="small" label="Vegetarian" />
+                            )}
+                            {canManageMenu && (
+                              <EditOutlined
+                                sx={{
+                                  ml: "auto",
+                                  color: Colors.background.brand,
+                                  fontSize: 20,
+                                }}
+                              />
                             )}
                           </Box>
                         </Box>
@@ -822,15 +983,18 @@ const RestaurantMenuPage = () => {
         fullScreen={isMobile}
         PaperProps={{
           component: "form",
-          onSubmit: handleCreateDish,
+          onSubmit: handleSaveDish,
           sx: { borderRadius: isMobile ? 0 : "12px" },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 900 }}>Create dish</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 900 }}>
+          {editingDish ? "Edit dish" : "Create dish"}
+        </DialogTitle>
         <DialogContent>
           <Typography sx={{ color: Colors.text.lighter, mb: 3 }}>
-            Keep the name short, price trusted, and image inspectable. Customers
-            should know what they are ordering without guessing.
+            {editingDish
+              ? "Update what customers see, or temporarily make this dish unavailable."
+              : "Keep the name short, price trusted, and image inspectable. Customers should know what they are ordering without guessing."}
           </Typography>
 
           <Grid container spacing={2.5}>
@@ -1024,6 +1188,23 @@ const RestaurantMenuPage = () => {
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 1 }}>
+          {editingDish && (
+            <Button
+              type="button"
+              variant="border"
+              onClick={() => setDishPendingDeletion(editingDish)}
+              disabled={dishForm.formState.isSubmitting}
+              sx={{
+                mr: "auto",
+                px: 2,
+                fontWeight: 800,
+                color: Colors.background.danger,
+              }}
+            >
+              <DeleteOutline sx={{ mr: 1 }} />
+              Delete
+            </Button>
+          )}
           <Button
             type="button"
             variant="border"
@@ -1040,10 +1221,29 @@ const RestaurantMenuPage = () => {
             sx={{ px: 2, fontWeight: 800 }}
           >
             <FastfoodOutlined sx={{ mr: 1 }} />
-            {dishForm.formState.isSubmitting ? "Creating..." : "Create dish"}
+            {dishForm.formState.isSubmitting
+              ? editingDish
+                ? "Saving..."
+                : "Creating..."
+              : editingDish
+                ? "Save changes"
+                : "Create dish"}
           </Button>
         </DialogActions>
       </Dialog>
+
+      <PopUpDialog
+        open={Boolean(dishPendingDeletion)}
+        title="Delete dish?"
+        description={`${dishPendingDeletion?.name ?? "This dish"} will be removed from the menu. Existing orders will keep their historical item details.`}
+        confirmLabel="Delete dish"
+        loadingLabel="Deleting..."
+        danger
+        loading={isDeletingDish}
+        disableClose={isDeletingDish}
+        onClose={() => setDishPendingDeletion(null)}
+        onConfirm={() => void handleDeleteDish()}
+      />
     </Box>
   );
 };
