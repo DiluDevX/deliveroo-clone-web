@@ -1,3 +1,9 @@
+## [1.41.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.40.0...v1.41.0) (2026-07-16)
+
+### Features
+
+* enhance RestaurantOrdersPage with unavailable action icons and related tests ([edc38eb](https://github.com/DiluDevX/deliveroo-clone-web/commit/edc38eb92b8a0afb071649e4ea8446b091de9b42))
+
 ## [1.40.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.39.0...v1.40.0) (2026-07-16)
 
 ### Features
