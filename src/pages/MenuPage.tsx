@@ -108,6 +108,8 @@ const MenuPage = () => {
   const [isRestaurantLoading, setIsRestaurantLoading] = useState(true);
   const [isDishesLoading, setIsDishesLoading] = useState(true);
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  const user = useAppSelector((state) => state.auth.user);
+  const canUseCart = !user || user.role === "user";
   const cartItems = useAppSelector((state) => state.cart.items);
   const cartItemCount = cartItems.reduce(
     (total, item) => total + Number(item.quantity || 0),
@@ -241,72 +243,76 @@ const MenuPage = () => {
                 md: 4,
               }}
             >
-              {!isDishesLoading && <Cart />}
+              {!isDishesLoading && canUseCart && <Cart />}
             </Grid>
           </Grid>
         </Container>
       </Box>
-      <Fab
-        aria-label={
-          cartItemCount > 0
-            ? `Open cart with ${cartItemCount} item${cartItemCount === 1 ? "" : "s"}`
-            : "Open empty cart"
-        }
-        onClick={() => setIsMobileCartOpen(true)}
-        sx={{
-          position: "fixed",
-          right: 18,
-          bottom: 24,
-          zIndex: 120,
-          display: { xs: "flex", md: "none" },
-          width: 64,
-          height: 64,
-          minHeight: 64,
-          color: Colors.text.inverse,
-          backgroundColor: Colors.background.brand,
-          borderRadius: "14px",
-          boxShadow: `0px 8px 22px ${Colors.boxShadow.default}`,
-          "&:hover": {
-            backgroundColor: Colors.background.brandHover,
-          },
-        }}
-      >
-        <Badge
-          badgeContent={cartItemCount}
-          color="error"
-          invisible={cartItemCount === 0}
+      {canUseCart && (
+        <Fab
+          aria-label={
+            cartItemCount > 0
+              ? `Open cart with ${cartItemCount} item${cartItemCount === 1 ? "" : "s"}`
+              : "Open empty cart"
+          }
+          onClick={() => setIsMobileCartOpen(true)}
           sx={{
-            "& .MuiBadge-badge": {
-              fontWeight: 700,
-              minWidth: 22,
-              height: 22,
-              borderRadius: "50%",
-              top: 2,
-              right: 1,
-              color: Colors.text.inverse,
-              border: `2px solid ${Colors.background.light}`,
+            position: "fixed",
+            right: 18,
+            bottom: 24,
+            zIndex: 120,
+            display: { xs: "flex", md: "none" },
+            width: 64,
+            height: 64,
+            minHeight: 64,
+            color: Colors.text.inverse,
+            backgroundColor: Colors.background.brand,
+            borderRadius: "14px",
+            boxShadow: `0px 8px 22px ${Colors.boxShadow.default}`,
+            "&:hover": {
+              backgroundColor: Colors.background.brandHover,
             },
           }}
         >
-          <ShoppingCart sx={{ fontSize: 30 }} />
-        </Badge>
-      </Fab>
-      <Drawer
-        anchor="bottom"
-        open={isMobileCartOpen}
-        onClose={() => setIsMobileCartOpen(false)}
-        sx={{
-          display: { xs: "block", md: "none" },
-          "& .MuiDrawer-paper": {
-            borderRadius: "16px 16px 0 0",
-            backgroundColor: Colors.background.light,
-            maxHeight: "88vh",
-            p: { xs: 1.5, sm: 2 },
-          },
-        }}
-      >
-        <Cart layout="drawer" />
-      </Drawer>
+          <Badge
+            badgeContent={cartItemCount}
+            color="error"
+            invisible={cartItemCount === 0}
+            sx={{
+              "& .MuiBadge-badge": {
+                fontWeight: 700,
+                minWidth: 22,
+                height: 22,
+                borderRadius: "50%",
+                top: 2,
+                right: 1,
+                color: Colors.text.inverse,
+                border: `2px solid ${Colors.background.light}`,
+              },
+            }}
+          >
+            <ShoppingCart sx={{ fontSize: 30 }} />
+          </Badge>
+        </Fab>
+      )}
+      {canUseCart && (
+        <Drawer
+          anchor="bottom"
+          open={isMobileCartOpen}
+          onClose={() => setIsMobileCartOpen(false)}
+          sx={{
+            display: { xs: "block", md: "none" },
+            "& .MuiDrawer-paper": {
+              borderRadius: "16px 16px 0 0",
+              backgroundColor: Colors.background.light,
+              maxHeight: "88vh",
+              p: { xs: 1.5, sm: 2 },
+            },
+          }}
+        >
+          <Cart layout="drawer" />
+        </Drawer>
+      )}
     </Box>
   );
 };

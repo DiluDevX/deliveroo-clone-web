@@ -6,8 +6,9 @@ import { useCartSync } from "../store/hooks/useCartSync";
 import { useEffect } from "react";
 import { useAppDispatch } from "../store/hooks/cartHooks";
 import { setAuthInitialized, setCredentials } from "../store/authSlice";
-import { fetchCart, removeDummyCartItems } from "../store/cartSlice";
+import { clearCart, fetchCart, removeDummyCartItems } from "../store/cartSlice";
 import { checkAuthStatus, refreshToken } from "../services/auth.service";
+import { isCustomerUser } from "../utils/auth-role";
 
 const MainLayout = () => {
   // Sync cart with server when user logs in
@@ -41,7 +42,11 @@ const MainLayout = () => {
       } finally {
         if (result && typeof result !== "boolean") {
           dispatch(setCredentials({ user: result.user }));
-          dispatch(fetchCart());
+          if (isCustomerUser(result.user)) {
+            dispatch(fetchCart());
+          } else {
+            dispatch(clearCart());
+          }
         } else {
           dispatch(setCredentials({}));
         }

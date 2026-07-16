@@ -17,7 +17,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { setAuthInitialized, setCredentials } from "../store/authSlice";
 import { useAppDispatch } from "../store/hooks/cartHooks";
 import SignUpPage from "./SignUpPage";
-import { fetchCart } from "../store/cartSlice";
+import { clearCart, fetchCart } from "../store/cartSlice";
 import { showErrorSnackbar, showSuccessSnackbar } from "../utils/notifications";
 import { IUser } from "../types/user.types";
 
@@ -106,7 +106,11 @@ export default function Login() {
         authenticatedUser = authStatus.user;
       }
 
-      await dispatch(fetchCart());
+      if (authenticatedUser.role === "user") {
+        await dispatch(fetchCart());
+      } else {
+        dispatch(clearCart());
+      }
 
       localStorage.removeItem("existingUser");
 

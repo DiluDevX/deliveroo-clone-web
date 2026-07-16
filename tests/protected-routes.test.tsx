@@ -10,6 +10,11 @@ const ProtectedRouteHarness = () => (
   <MemoryRouter initialEntries={["/checkout"]}>
     <Routes>
       <Route path="/account/login" element={<div>Login page</div>} />
+      <Route
+        path="/restaurant/dashboard"
+        element={<div>Restaurant dashboard</div>}
+      />
+      <Route path="/admin/dashboard" element={<div>Admin dashboard</div>} />
       <Route element={<ProtectedRoute />}>
         <Route path="/checkout" element={<div>Checkout page</div>} />
       </Route>
@@ -76,11 +81,58 @@ describe("protected routes", () => {
         auth: {
           isAuthInitialized: true,
           isAuthenticated: true,
+          user: {
+            firstName: "Customer",
+            lastName: "User",
+            email: "customer@example.com",
+            role: "user",
+          },
         },
       },
     });
 
     expect(screen.getByText("Checkout page")).toBeInTheDocument();
+  });
+
+  it("redirects restaurant users away from customer checkout", () => {
+    renderWithProviders(<ProtectedRouteHarness />, {
+      preloadedState: {
+        auth: {
+          isAuthInitialized: true,
+          isAuthenticated: true,
+          user: {
+            firstName: "Restaurant",
+            lastName: "User",
+            email: "restaurant@example.com",
+            role: "restaurant_user",
+            restaurantId: "restaurant-1",
+          },
+        },
+      },
+    });
+
+    expect(screen.getByText("Restaurant dashboard")).toBeInTheDocument();
+    expect(screen.queryByText("Checkout page")).not.toBeInTheDocument();
+  });
+
+  it("redirects platform admins away from customer checkout", () => {
+    renderWithProviders(<ProtectedRouteHarness />, {
+      preloadedState: {
+        auth: {
+          isAuthInitialized: true,
+          isAuthenticated: true,
+          user: {
+            firstName: "Platform",
+            lastName: "Admin",
+            email: "admin@example.com",
+            role: "platform_admin",
+          },
+        },
+      },
+    });
+
+    expect(screen.getByText("Admin dashboard")).toBeInTheDocument();
+    expect(screen.queryByText("Checkout page")).not.toBeInTheDocument();
   });
 
   it("requires the platform admin role for admin routes", () => {

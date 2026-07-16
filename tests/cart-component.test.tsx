@@ -104,6 +104,14 @@ const renderCart = (
         auth: {
           isAuthenticated,
           isAuthInitialized: true,
+          user: isAuthenticated
+            ? {
+                firstName: "Customer",
+                lastName: "User",
+                email: "customer@example.com",
+                role: "user",
+              }
+            : null,
         },
         cart: {
           items: cartItems,

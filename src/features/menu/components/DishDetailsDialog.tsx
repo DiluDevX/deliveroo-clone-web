@@ -38,6 +38,8 @@ const DishDetailsDialog = ({ dish, open, onClose }: DishDetailsDialogProps) => {
   const cartRestaurantName = useAppSelector(
     (state) => state.cart.restaurantName,
   );
+  const user = useAppSelector((state) => state.auth.user);
+  const canUseCart = !user || user.role === "user";
 
   const cartItem = cartItems.find((item) => item._id === dish?._id);
   const cartItemId = cartItem?.cartItemId || cartItem?._id;
@@ -174,54 +176,56 @@ const DishDetailsDialog = ({ dish, open, onClose }: DishDetailsDialogProps) => {
             </Typography>
           </Box>
 
-          <Box
-            sx={{
-              borderTop: `1px solid ${Colors.border.default}`,
-              p: { xs: 2, sm: 2.5 },
-              position: "sticky",
-              bottom: 0,
-              backgroundColor: Colors.background.light,
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-            }}
-          >
+          {canUseCart && (
             <Box
               sx={{
+                borderTop: `1px solid ${Colors.border.default}`,
+                p: { xs: 2, sm: 2.5 },
+                position: "sticky",
+                bottom: 0,
+                backgroundColor: Colors.background.light,
                 display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 4,
+                flexDirection: "column",
+                gap: 2,
               }}
             >
-              <IconButton
-                aria-label="Decrease quantity"
-                disabled={selectedQuantity === 1}
-                onClick={() =>
-                  setSelectedQuantity((current) => Math.max(1, current - 1))
-                }
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 4,
+                }}
               >
-                <RemoveIcon />
-              </IconButton>
-              <Typography sx={{ fontWeight: 800, fontSize: "1.2rem" }}>
-                {selectedQuantity}
-              </Typography>
-              <IconButton
-                aria-label="Increase quantity"
-                onClick={() => setSelectedQuantity((current) => current + 1)}
-              >
-                <AddIcon />
-              </IconButton>
-            </Box>
+                <IconButton
+                  aria-label="Decrease quantity"
+                  disabled={selectedQuantity === 1}
+                  onClick={() =>
+                    setSelectedQuantity((current) => Math.max(1, current - 1))
+                  }
+                >
+                  <RemoveIcon />
+                </IconButton>
+                <Typography sx={{ fontWeight: 800, fontSize: "1.2rem" }}>
+                  {selectedQuantity}
+                </Typography>
+                <IconButton
+                  aria-label="Increase quantity"
+                  onClick={() => setSelectedQuantity((current) => current + 1)}
+                >
+                  <AddIcon />
+                </IconButton>
+              </Box>
 
-            <Button
-              variant="filled"
-              onClick={() => void handleAddToCart()}
-              sx={{ width: "100%", py: 1.5, fontWeight: 800 }}
-            >
-              {cartItem ? "Update" : "Add"} for £{total.toFixed(2)}
-            </Button>
-          </Box>
+              <Button
+                variant="filled"
+                onClick={() => void handleAddToCart()}
+                sx={{ width: "100%", py: 1.5, fontWeight: 800 }}
+              >
+                {cartItem ? "Update" : "Add"} for £{total.toFixed(2)}
+              </Button>
+            </Box>
+          )}
         </DialogContent>
       </Dialog>
 

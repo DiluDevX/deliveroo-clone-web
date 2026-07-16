@@ -33,6 +33,7 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
   const navigate = useNavigate();
   const cartItems = useAppSelector((state) => state.cart.items);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const user = useAppSelector((state) => state.auth.user);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [isPreparingCheckout, setIsPreparingCheckout] = useState(false);
   const isDrawer = layout === "drawer";
@@ -95,6 +96,11 @@ const Cart = ({ layout = "sidebar" }: CartProps) => {
   const handleCheckout = async () => {
     if (!isAuthenticated) {
       setShowLoginDialog(true);
+      return;
+    }
+
+    if (user?.role !== "user") {
+      showErrorSnackbar("This account cannot place customer orders.");
       return;
     }
 
