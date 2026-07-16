@@ -34,6 +34,9 @@ import {
   showSuccessSnackbar,
 } from "../../utils/notifications";
 
+const DISH_IMAGE_FALLBACK =
+  "https://assets.dilum.me/deliveroo-clone/svgs/NotFound.svg";
+
 const NEXT_STATUS: Partial<
   Record<RestaurantOrderStatus, RestaurantOrderStatus>
 > = {
@@ -241,25 +244,61 @@ const RestaurantOrdersPage = () => {
           </Box>
         ) : (
           <>
-            <TableContainer>
+            <TableContainer sx={{ overflowX: "hidden" }}>
               <Table
                 sx={{
-                  minWidth: 1080,
+                  width: "100%",
+                  tableLayout: "fixed",
                   "& .MuiTableCell-root:not(:last-of-type)": {
                     borderRight: `1px solid ${Colors.border.default}`,
+                  },
+                  "& .MuiTableCell-root": {
+                    px: { xs: 1, lg: 2 },
                   },
                 }}
               >
                 <TableHead>
                   <TableRow sx={{ bgcolor: Colors.background.default }}>
-                    <TableCell>Order</TableCell>
-                    <TableCell>Customer</TableCell>
-                    <TableCell>Items</TableCell>
-                    <TableCell>Total</TableCell>
-                    <TableCell>Payment</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Placed</TableCell>
-                    <TableCell align="right" sx={{ width: 236 }}>
+                    <TableCell sx={{ width: { xs: "25%", lg: "16%" } }}>
+                      Order
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        width: "10%",
+                        display: { xs: "none", lg: "table-cell" },
+                      }}
+                    >
+                      Customer
+                    </TableCell>
+                    <TableCell sx={{ width: { xs: "10%", lg: "7%" } }}>
+                      Items
+                    </TableCell>
+                    <TableCell sx={{ width: { xs: "15%", lg: "9%" } }}>
+                      Total
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        width: "11%",
+                        display: { xs: "none", lg: "table-cell" },
+                      }}
+                    >
+                      Payment
+                    </TableCell>
+                    <TableCell sx={{ width: { xs: "20%", lg: "13%" } }}>
+                      Status
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        width: "19%",
+                        display: { xs: "none", lg: "table-cell" },
+                      }}
+                    >
+                      Placed
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{ width: { xs: "30%", lg: "15%" } }}
+                    >
                       Actions
                     </TableCell>
                   </TableRow>
@@ -269,13 +308,49 @@ const RestaurantOrdersPage = () => {
                     const nextStatus = getNextStatus(order.status);
 
                     return (
-                      <TableRow key={order.id} hover>
+                      <TableRow
+                        key={order.id}
+                        hover
+                        tabIndex={0}
+                        aria-label={`View order ${order.orderNumber}`}
+                        onClick={() => setSelectedOrder(order)}
+                        onKeyDown={(event) => {
+                          if (event.target !== event.currentTarget) return;
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            setSelectedOrder(order);
+                          }
+                        }}
+                        sx={{
+                          cursor: "pointer",
+                          "&:focus-visible": {
+                            outline: `2px solid ${Colors.background.brand}`,
+                            outlineOffset: -2,
+                          },
+                        }}
+                      >
                         <TableCell
-                          sx={{ fontWeight: 800, whiteSpace: "nowrap" }}
+                          title={order.orderNumber}
+                          sx={{
+                            fontWeight: 800,
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
                         >
                           {order.orderNumber}
                         </TableCell>
-                        <TableCell>{order.userId.slice(0, 8)}</TableCell>
+                        <TableCell
+                          title={order.userId}
+                          sx={{
+                            display: { xs: "none", lg: "table-cell" },
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {order.userId.slice(0, 8)}
+                        </TableCell>
                         <TableCell>
                           {order.items.reduce(
                             (total, item) => total + item.quantity,
@@ -285,7 +360,9 @@ const RestaurantOrdersPage = () => {
                         <TableCell>
                           {formatCurrency(order.totalAmount)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell
+                          sx={{ display: { xs: "none", lg: "table-cell" } }}
+                        >
                           {formatStatus(order.paymentStatus)}
                         </TableCell>
                         <TableCell>
@@ -295,15 +372,22 @@ const RestaurantOrdersPage = () => {
                             size="small"
                           />
                         </TableCell>
-                        <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        <TableCell
+                          title={formatDateTime(order.createdAt)}
+                          sx={{
+                            display: { xs: "none", lg: "table-cell" },
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
                           {formatDateTime(order.createdAt)}
                         </TableCell>
-                        <TableCell align="right" sx={{ width: 236 }}>
+                        <TableCell align="right">
                           <Box
                             sx={{
                               display: "flex",
                               justifyContent: "flex-end",
-                              gap: 1,
                               width: "100%",
                             }}
                           >
@@ -311,9 +395,13 @@ const RestaurantOrdersPage = () => {
                               <Button
                                 variant="filled"
                                 disabled={Boolean(updatingOrderId)}
-                                onClick={() => void handleAdvanceStatus(order)}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  void handleAdvanceStatus(order);
+                                }}
                                 sx={{
-                                  width: 142,
+                                  width: "100%",
+                                  maxWidth: 142,
                                   minHeight: 36,
                                   px: 1,
                                   fontSize: "0.8rem",
@@ -325,20 +413,6 @@ const RestaurantOrdersPage = () => {
                                   : `Mark ${formatStatus(nextStatus)}`}
                               </Button>
                             )}
-                            <Button
-                              variant="border"
-                              onClick={() => setSelectedOrder(order)}
-                              sx={{
-                                width: 72,
-                                minHeight: 36,
-                                px: 1,
-                                fontSize: "0.8rem",
-                                fontWeight: 700,
-                                ml: nextStatus && canManageOrders ? 0 : "auto",
-                              }}
-                            >
-                              View
-                            </Button>
                           </Box>
                         </TableCell>
                       </TableRow>
@@ -426,13 +500,41 @@ const RestaurantOrdersPage = () => {
                   key={item.id}
                   sx={{
                     display: "flex",
+                    alignItems: "center",
                     justifyContent: "space-between",
                     gap: 2,
                   }}
                 >
-                  <Typography>
-                    {item.quantity} × {item.dishName}
-                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      minWidth: 0,
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={item.dishImageUrl || DISH_IMAGE_FALLBACK}
+                      alt={item.dishName}
+                      onError={(event) => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = DISH_IMAGE_FALLBACK;
+                      }}
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        flexShrink: 0,
+                        objectFit: "cover",
+                        borderRadius: 1,
+                        border: `1px solid ${Colors.border.default}`,
+                        bgcolor: Colors.background.default,
+                      }}
+                    />
+                    <Typography sx={{ overflowWrap: "anywhere" }}>
+                      {item.quantity} × {item.dishName}
+                    </Typography>
+                  </Box>
                   <Typography sx={{ fontWeight: 700 }}>
                     {formatCurrency(item.lineTotal)}
                   </Typography>

@@ -2,7 +2,7 @@
 
 ### Features
 
-* enhance restaurant settings management with validation and update functionality ([6b7d423](https://github.com/DiluDevX/deliveroo-clone-web/commit/6b7d4232096fc2fee7f1c6a7f3fab04964de388b))
+- enhance restaurant settings management with validation and update functionality ([6b7d423](https://github.com/DiluDevX/deliveroo-clone-web/commit/6b7d4232096fc2fee7f1c6a7f3fab04964de388b))
 
 ## [1.38.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.37.0...v1.38.0) (2026-07-16)
 
