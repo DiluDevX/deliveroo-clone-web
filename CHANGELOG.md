@@ -1,3 +1,15 @@
+## [1.37.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.36.1...v1.37.0) (2026-07-16)
+
+### Features
+
+* enhance restaurant menu management with dish editing and deletion functionality ([e1b14cb](https://github.com/DiluDevX/deliveroo-clone-web/commit/e1b14cbe8280bda91bbc1d6d338448f5811c63c0))
+* update customer metrics to reflect last 30 days in restaurant dashboard ([423e5a9](https://github.com/DiluDevX/deliveroo-clone-web/commit/423e5a91a2a3051e54c058dd43a9f909ac542b01))
+
+### Bug Fixes
+
+* improve validation and error handling for restaurant admin routes and services ([3197f80](https://github.com/DiluDevX/deliveroo-clone-web/commit/3197f80b32bbfcb1eb218bd13b4217cc0b506f21))
+* update user roles and authentication logic for restaurant access ([09c86c3](https://github.com/DiluDevX/deliveroo-clone-web/commit/09c86c3381c0ecfdc3e592e36a47892d93851725))
+
 ## [1.36.1](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.36.0...v1.36.1) (2026-07-13)
 
 ### Bug Fixes
