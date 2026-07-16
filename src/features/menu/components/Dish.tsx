@@ -28,6 +28,8 @@ const Dish = ({ data }: DishProps) => {
   const cartRestaurantName = useAppSelector(
     (state) => state.cart.restaurantName,
   );
+  const user = useAppSelector((state) => state.auth.user);
+  const canUseCart = !user || user.role === "user";
   const cartItem = cartItems.find((item) => item._id === data._id);
   const quantity = cartItem?.quantity ?? 0;
   const cartItemId = cartItem?.cartItemId || cartItem?._id;
@@ -221,24 +223,26 @@ const Dish = ({ data }: DishProps) => {
               }}
             />
           </Box>
-          <Box
-            sx={{
-              position: "absolute",
-              right: { xs: -6, sm: -10 },
-              bottom: { xs: 4, sm: 2 },
-              zIndex: 2,
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <DishQuantityControl
-              dishName={data.name}
-              quantity={quantity}
-              onAdd={handleAddToCart}
-              onDecrease={handleDecreaseQuantity}
-              onIncrease={handleIncreaseQuantity}
-            />
-          </Box>
+          {canUseCart && (
+            <Box
+              sx={{
+                position: "absolute",
+                right: { xs: -6, sm: -10 },
+                bottom: { xs: 4, sm: 2 },
+                zIndex: 2,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <DishQuantityControl
+                dishName={data.name}
+                quantity={quantity}
+                onAdd={handleAddToCart}
+                onDecrease={handleDecreaseQuantity}
+                onIncrease={handleIncreaseQuantity}
+              />
+            </Box>
+          )}
         </Box>
       </Card>
       <DishDetailsDialog

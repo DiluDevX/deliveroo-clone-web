@@ -14,6 +14,11 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import {
+  getOperationalDashboardPath,
+  isCustomerUser,
+} from "../../../utils/auth-role";
 
 type AnchorTemporaryDrawerProps = {
   open: boolean;
@@ -31,7 +36,7 @@ export default function AnchorTemporaryDrawer({
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const menuItems = [
+  const customerMenuItems = [
     {
       icon: ShoppingCartIcon,
       label: "Cart",
@@ -63,6 +68,18 @@ export default function AnchorTemporaryDrawer({
       path: "/profile",
     },
   ];
+  const dashboardPath = getOperationalDashboardPath(user);
+  const menuItems = isCustomerUser(user)
+    ? customerMenuItems
+    : dashboardPath
+      ? [
+          {
+            icon: DashboardOutlinedIcon,
+            label: "Dashboard",
+            path: dashboardPath,
+          },
+        ]
+      : [];
 
   const handleNavigation = (path: string, section?: string) => {
     navigate(path, { state: section ? { selectedItem: section } : undefined });

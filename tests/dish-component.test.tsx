@@ -27,6 +27,33 @@ const existingCartItem: CartItem = {
 };
 
 describe("Dish", () => {
+  it("does not offer cart controls to restaurant staff", () => {
+    renderWithProviders(
+      <MemoryRouter>
+        <Dish data={dish} />
+      </MemoryRouter>,
+      {
+        preloadedState: {
+          auth: {
+            isAuthenticated: true,
+            isAuthInitialized: true,
+            user: {
+              firstName: "Restaurant",
+              lastName: "Staff",
+              email: "staff@example.com",
+              role: "restaurant_user",
+              restaurantId: "restaurant-1",
+            },
+          },
+        },
+      },
+    );
+
+    expect(
+      screen.queryByRole("button", { name: "Add Chicken Katsu to cart" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("asks before replacing a cart from another restaurant", async () => {
     const user = userEvent.setup();
     localStorage.setItem("selected-restaurant-id", "restaurant-2");

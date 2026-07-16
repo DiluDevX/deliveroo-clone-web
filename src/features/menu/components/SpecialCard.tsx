@@ -37,6 +37,8 @@ const SpecialCard = ({
   const cartRestaurantName = useAppSelector(
     (state) => state.cart.restaurantName,
   );
+  const user = useAppSelector((state) => state.auth.user);
+  const canUseCart = !user || user.role === "user";
   const cartItem = cartItems.find((item) => item._id === data._id);
   const quantity = cartItem?.quantity ?? 0;
   const cartItemId = cartItem?.cartItemId || cartItem?._id;
@@ -281,31 +283,33 @@ const SpecialCard = ({
             £{Number(data.price).toFixed(2)}
           </Typography>
         </CardContent>
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
+        {canUseCart && (
           <Box
             sx={{
-              position: "absolute",
-              right: compact ? 8 : 12,
-              top: quantityTop,
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
-            <DishQuantityControl
-              dishName={data.name}
-              quantity={quantity}
-              compact={compact}
-              onAdd={handleAddToCart}
-              onDecrease={handleDecreaseQuantity}
-              onIncrease={handleIncreaseQuantity}
-            />
+            <Box
+              sx={{
+                position: "absolute",
+                right: compact ? 8 : 12,
+                top: quantityTop,
+              }}
+            >
+              <DishQuantityControl
+                dishName={data.name}
+                quantity={quantity}
+                compact={compact}
+                onAdd={handleAddToCart}
+                onDecrease={handleDecreaseQuantity}
+                onIncrease={handleIncreaseQuantity}
+              />
+            </Box>
           </Box>
-        </Box>
+        )}
       </Card>
       <DishDetailsDialog
         dish={data}

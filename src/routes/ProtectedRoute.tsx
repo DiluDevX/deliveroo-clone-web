@@ -1,8 +1,12 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAppSelector } from "../store/hooks/cartHooks";
+import {
+  getOperationalDashboardPath,
+  isCustomerUser,
+} from "../utils/auth-role";
 
 const ProtectedRoute = () => {
-  const { isAuthenticated, isAuthInitialized } = useAppSelector(
+  const { isAuthenticated, isAuthInitialized, user } = useAppSelector(
     (state) => state.auth,
   );
   const location = useLocation();
@@ -13,6 +17,10 @@ const ProtectedRoute = () => {
 
   if (!isAuthenticated) {
     return <Navigate to="/account/login" state={{ from: location }} replace />;
+  }
+
+  if (!isCustomerUser(user)) {
+    return <Navigate to={getOperationalDashboardPath(user) ?? "/"} replace />;
   }
 
   return <Outlet />;

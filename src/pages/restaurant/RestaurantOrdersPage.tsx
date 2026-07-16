@@ -39,16 +39,12 @@ const NEXT_STATUS: Partial<
 > = {
   CONFIRMED: "PREPARING",
   PREPARING: "READY",
-  READY: "OUT_FOR_DELIVERY",
-  OUT_FOR_DELIVERY: "DELIVERED",
 };
 
 const getNextStatus = (status: string): RestaurantOrderStatus | undefined => {
   switch (status) {
     case "CONFIRMED":
     case "PREPARING":
-    case "READY":
-    case "OUT_FOR_DELIVERY":
       return NEXT_STATUS[status];
     default:
       return undefined;
@@ -206,7 +202,7 @@ const RestaurantOrdersPage = () => {
           Orders
         </Typography>
         <Typography sx={{ color: Colors.text.lighter }}>
-          Review incoming orders and move them through preparation and delivery.
+          Review incoming orders and move them through kitchen preparation.
         </Typography>
       </Box>
 
@@ -246,7 +242,14 @@ const RestaurantOrdersPage = () => {
         ) : (
           <>
             <TableContainer>
-              <Table sx={{ minWidth: 920 }}>
+              <Table
+                sx={{
+                  minWidth: 1080,
+                  "& .MuiTableCell-root:not(:last-of-type)": {
+                    borderRight: `1px solid ${Colors.border.default}`,
+                  },
+                }}
+              >
                 <TableHead>
                   <TableRow sx={{ bgcolor: Colors.background.default }}>
                     <TableCell>Order</TableCell>
@@ -256,7 +259,9 @@ const RestaurantOrdersPage = () => {
                     <TableCell>Payment</TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell>Placed</TableCell>
-                    <TableCell align="right">Actions</TableCell>
+                    <TableCell align="right" sx={{ width: 236 }}>
+                      Actions
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -265,7 +270,9 @@ const RestaurantOrdersPage = () => {
 
                     return (
                       <TableRow key={order.id} hover>
-                        <TableCell sx={{ fontWeight: 800 }}>
+                        <TableCell
+                          sx={{ fontWeight: 800, whiteSpace: "nowrap" }}
+                        >
                           {order.orderNumber}
                         </TableCell>
                         <TableCell>{order.userId.slice(0, 8)}</TableCell>
@@ -288,34 +295,50 @@ const RestaurantOrdersPage = () => {
                             size="small"
                           />
                         </TableCell>
-                        <TableCell>{formatDateTime(order.createdAt)}</TableCell>
-                        <TableCell align="right">
+                        <TableCell sx={{ whiteSpace: "nowrap" }}>
+                          {formatDateTime(order.createdAt)}
+                        </TableCell>
+                        <TableCell align="right" sx={{ width: 236 }}>
                           <Box
                             sx={{
                               display: "flex",
                               justifyContent: "flex-end",
                               gap: 1,
+                              width: "100%",
                             }}
                           >
-                            <Button
-                              variant="border"
-                              onClick={() => setSelectedOrder(order)}
-                              sx={{ px: 1.5, fontWeight: 700 }}
-                            >
-                              View
-                            </Button>
                             {canManageOrders && nextStatus && (
                               <Button
                                 variant="filled"
                                 disabled={Boolean(updatingOrderId)}
                                 onClick={() => void handleAdvanceStatus(order)}
-                                sx={{ px: 1.5, fontWeight: 700 }}
+                                sx={{
+                                  width: 142,
+                                  minHeight: 36,
+                                  px: 1,
+                                  fontSize: "0.8rem",
+                                  fontWeight: 700,
+                                }}
                               >
                                 {updatingOrderId === order.id
                                   ? "Updating..."
                                   : `Mark ${formatStatus(nextStatus)}`}
                               </Button>
                             )}
+                            <Button
+                              variant="border"
+                              onClick={() => setSelectedOrder(order)}
+                              sx={{
+                                width: 72,
+                                minHeight: 36,
+                                px: 1,
+                                fontSize: "0.8rem",
+                                fontWeight: 700,
+                                ml: nextStatus && canManageOrders ? 0 : "auto",
+                              }}
+                            >
+                              View
+                            </Button>
                           </Box>
                         </TableCell>
                       </TableRow>
