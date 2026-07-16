@@ -1,4 +1,5 @@
 import { apiClient } from "./api.client";
+import { z } from "zod";
 
 export type MenuCategory = {
   id: string;
@@ -55,6 +56,33 @@ export type CreateMenuDishInput = {
   sortOrder?: number;
 };
 
+export type UpdateMenuDishInput = Partial<
+  Omit<CreateMenuDishInput, "image" | "description">
+> & {
+  description?: string;
+  image?: string | null;
+};
+
+const dishIdSchema = z.string().min(1, "Dish id is required");
+const updateMenuDishSchema = z
+  .object({
+    categoryId: z.string().min(1).optional(),
+    name: z.string().trim().min(1).max(200).optional(),
+    description: z.string().trim().max(1000).optional(),
+    price: z.number().min(0).optional(),
+    image: z.string().url().nullable().optional(),
+    isVegetarian: z.boolean().optional(),
+    isSpicy: z.boolean().optional(),
+    isAvailable: z.boolean().optional(),
+    isPopular: z.boolean().optional(),
+    discountPercent: z.number().min(0).max(100).nullable().optional(),
+    tags: z.array(z.enum(["BESTSELLER", "NEW", "SPECIAL"])).optional(),
+    sortOrder: z.number().int().min(0).optional(),
+  })
+  .refine((payload) => Object.keys(payload).length > 0, {
+    message: "At least one dish field must be updated",
+  });
+
 export const getMenuCategories = async (
   restaurantId: string,
 ): Promise<MenuCategory[]> => {
@@ -102,4 +130,23 @@ export const createMenuDish = async (
   );
 
   return response.data.data;
+};
+
+export const updateMenuDish = async (
+  dishId: string,
+  payload: UpdateMenuDishInput,
+): Promise<MenuDish> => {
+  const parsedDishId = dishIdSchema.parse(dishId);
+  const parsedPayload = updateMenuDishSchema.parse(payload);
+  const response = await apiClient.patch<ApiResponse<MenuDish>>(
+    `/dishes/${encodeURIComponent(parsedDishId)}`,
+    parsedPayload,
+  );
+
+  return response.data.data;
+};
+
+export const deleteMenuDish = async (dishId: string): Promise<void> => {
+  const parsedDishId = dishIdSchema.parse(dishId);
+  await apiClient.delete(`/dishes/${encodeURIComponent(parsedDishId)}`);
 };
