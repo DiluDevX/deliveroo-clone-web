@@ -2,11 +2,11 @@
 
 ### Features
 
-* implement role-based navigation and cart access for users and restaurant staff ([41e2cfe](https://github.com/DiluDevX/deliveroo-clone-web/commit/41e2cfe5036d0b047b1556b2e7dd24640d6d06bf))
+- implement role-based navigation and cart access for users and restaurant staff ([41e2cfe](https://github.com/DiluDevX/deliveroo-clone-web/commit/41e2cfe5036d0b047b1556b2e7dd24640d6d06bf))
 
 ### Bug Fixes
 
-* trigger azure deployment ([88f798c](https://github.com/DiluDevX/deliveroo-clone-web/commit/88f798cf4e761cef25136d94990cc4f6687fe9c2))
+- trigger azure deployment ([88f798c](https://github.com/DiluDevX/deliveroo-clone-web/commit/88f798cf4e761cef25136d94990cc4f6687fe9c2))
 
 ## [1.37.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.36.1...v1.37.0) (2026-07-16)
 

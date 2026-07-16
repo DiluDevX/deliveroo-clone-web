@@ -1,6 +1,22 @@
 import { apiClient } from "./api.client";
 import { GetASingleRestaurant, Restaurant } from "../types/restaurants";
 import { getAuthHeader } from "./auth-headers";
+import { z } from "zod";
+
+const updateRestaurantSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  image: z.string().url(),
+  address: z.string().trim().max(500),
+  description: z.string().trim().max(1000),
+  tags: z.array(z.string().trim().min(1)),
+  openingAt: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  closingAt: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  minimumValue: z.number().min(0),
+  deliveryCharge: z.number().min(0),
+  cuisine: z.string().trim().max(100),
+});
+
+export type UpdateRestaurantInput = z.infer<typeof updateRestaurantSchema>;
 
 export interface RestaurantFilters {
   search?: string;
@@ -147,6 +163,24 @@ export const getSingleRestaurant = async (restaurantId: string) => {
     }
     return null;
   }
+};
+
+export const updateRestaurant = async (
+  restaurantId: string,
+  payload: UpdateRestaurantInput,
+): Promise<Restaurant> => {
+  const parsedRestaurantId = z
+    .string()
+    .min(1, "Restaurant id is required")
+    .parse(restaurantId);
+  const parsedPayload = updateRestaurantSchema.parse(payload);
+  const response = await apiClient.patch<{
+    success: boolean;
+    message: string;
+    data: Restaurant;
+  }>(`/restaurants/${encodeURIComponent(parsedRestaurantId)}`, parsedPayload);
+
+  return response.data.data;
 };
 
 export const createRestaurant = async (
