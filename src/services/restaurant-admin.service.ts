@@ -27,7 +27,7 @@ export interface RestaurantDashboardSummary {
   salesChangePercent: number | null;
   activeOrders: number;
   averageOrderValue: number;
-  totalCustomers: number;
+  customersLast30Days: number;
   weeklyTrend: ReportTrendPoint[];
   topItems: Array<{
     dishId: string;

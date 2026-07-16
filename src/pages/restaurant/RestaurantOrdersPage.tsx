@@ -19,7 +19,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Button from "../../features/menu/components/Button";
 import {
   getRestaurantOrders,
@@ -111,29 +111,39 @@ const RestaurantOrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
 
-  const loadOrders = useCallback(async () => {
-    if (!restaurantId) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setHasLoadError(false);
-    try {
-      const result = await getRestaurantOrders(restaurantId, page, 10);
-      setOrders(result.orders);
-      setTotalPages(Math.max(result.totalPages, 1));
-    } catch {
-      setHasLoadError(true);
-      showErrorSnackbar("Failed to load restaurant orders");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [page, restaurantId]);
-
   useEffect(() => {
+    let isActive = true;
+
+    const loadOrders = async () => {
+      if (!restaurantId) {
+        if (isActive) setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setHasLoadError(false);
+      try {
+        const result = await getRestaurantOrders(restaurantId, page, 10);
+        if (!isActive) return;
+
+        setOrders(result.orders);
+        setTotalPages(Math.max(result.totalPages, 1));
+      } catch {
+        if (!isActive) return;
+
+        setHasLoadError(true);
+        showErrorSnackbar("Failed to load restaurant orders");
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    };
+
     void loadOrders();
-  }, [loadOrders]);
+
+    return () => {
+      isActive = false;
+    };
+  }, [page, restaurantId]);
 
   const filteredOrders = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();

@@ -141,8 +141,8 @@ const RestaurantDashboardPage = () => {
       color: Colors.status.warning,
     },
     {
-      label: "Total customers",
-      value: String(summary.totalCustomers),
+      label: "Customers (30 days)",
+      value: String(summary.customersLast30Days),
       detail: `Average ${formatCurrency(summary.averageOrderValue)} today`,
       icon: People,
       color: "#7C3AED",
