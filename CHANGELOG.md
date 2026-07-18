@@ -1,3 +1,9 @@
+## [1.45.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.44.0...v1.45.0) (2026-07-18)
+
+### Features
+
+* update AdminSidebar and RestaurantMenuPage styles for improved layout and responsiveness ([a457a38](https://github.com/DiluDevX/deliveroo-clone-web/commit/a457a38182e478296aa10163c66f4900995b88b3))
+
 ## [1.44.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.43.0...v1.44.0) (2026-07-18)
 
 ### Features
