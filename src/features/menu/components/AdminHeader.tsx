@@ -39,9 +39,7 @@ const AdminHeader = ({ isMobile, menuOpen, onMenuClick }: AdminHeaderProps) => {
         position: "fixed",
         top: "0",
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        borderBottomWidth: "0.5px",
-        borderColor: Colors.border.subtle,
-        borderStyle: "solid",
+        borderBottom: `1px solid ${Colors.border.subtle}`,
         p: 0,
       }}
     >

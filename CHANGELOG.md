@@ -2,7 +2,7 @@
 
 ### Features
 
-* update AdminHeader and AdminSidebar for improved mobile navigation and styling ([1b3b635](https://github.com/DiluDevX/deliveroo-clone-web/commit/1b3b6351fd6e5ba4d59af3e72fa2b26c2b2359d1))
+- update AdminHeader and AdminSidebar for improved mobile navigation and styling ([1b3b635](https://github.com/DiluDevX/deliveroo-clone-web/commit/1b3b6351fd6e5ba4d59af3e72fa2b26c2b2359d1))
 
 ## [1.41.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.40.0...v1.41.0) (2026-07-16)
 

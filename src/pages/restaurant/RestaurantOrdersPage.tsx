@@ -299,10 +299,16 @@ const RestaurantOrdersPage = () => {
           </Box>
         ) : (
           <>
-            <TableContainer sx={{ overflowX: "hidden" }}>
+            <TableContainer
+              sx={{
+                overflowX: { xs: "auto", md: "hidden" },
+                WebkitOverflowScrolling: "touch",
+              }}
+            >
               <Table
                 sx={{
                   width: "100%",
+                  minWidth: { xs: 760, md: "100%" },
                   tableLayout: "fixed",
                   "& .MuiTableCell-root:not(:last-of-type)": {
                     borderRight: `1px solid ${Colors.border.default}`,
