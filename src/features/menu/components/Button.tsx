@@ -52,6 +52,7 @@ function Button({
   const borderColor =
     variant === "outlined" ? Colors.border.brand : Colors.border.subtle;
   const usesLightBackground = variant === "border" || variant === "outlined";
+  const hasPrefixContent = Boolean(PrefixIcon || PrefixComponent);
 
   return (
     <ButtonBase
@@ -75,8 +76,11 @@ function Button({
         minHeight: "42px",
         alignItems: "center",
         justifyContent: "center",
-        paddingRight: { xs: "0.2rem", sm: "1rem" },
         paddingLeft: { xs: "0.5rem", sm: "1rem" },
+        paddingRight: {
+          xs: hasPrefixContent ? "0.2rem" : "0.5rem",
+          sm: "1rem",
+        },
         color: disabled
           ? Colors.text.placeholder
           : usesLightBackground

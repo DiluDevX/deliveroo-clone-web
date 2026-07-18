@@ -55,9 +55,9 @@ const Header = () => {
         zIndex: "101",
         paddingBottom: "3.2rem",
         paddingTop: "1rem",
-        borderBottomWidth: isTransparent ? 0 : "0.5px",
-        borderColor: Colors.border.subtle,
-        borderStyle: "solid",
+        borderBottom: isTransparent
+          ? "none"
+          : `1px solid ${Colors.border.subtle}`,
       }}
     >
       <Container

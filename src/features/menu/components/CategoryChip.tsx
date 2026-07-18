@@ -11,6 +11,7 @@ type CategoryChipProps = {
   onClick: (id: string) => void;
   selected: boolean;
   pending?: boolean;
+  compact?: boolean;
 };
 
 const CategoryChip = ({
@@ -18,6 +19,7 @@ const CategoryChip = ({
   onClick,
   selected,
   pending = false,
+  compact = false,
 }: CategoryChipProps) => {
   const handleOnClick = () => {
     onClick(data.id);
@@ -35,14 +37,18 @@ const CategoryChip = ({
           : "2px solid transparent",
         fontWeight: selected ? 800 : 500,
         cursor: "pointer",
-        mr: { xs: 1, sm: 1.5, md: 2 },
-        px: {
-          xs: selected ? 1.65 : 1.1,
-          sm: selected ? 2 : 1.25,
-          md: selected ? 1.8 : 1.1,
-        },
+        mr: compact ? 0 : { xs: 1, sm: 1.5, md: 2 },
+        px: compact
+          ? 1
+          : {
+              xs: selected ? 1.65 : 1.1,
+              sm: selected ? 2 : 1.25,
+              md: selected ? 1.8 : 1.1,
+            },
         py: 0.45,
-        maxWidth: { xs: 152, sm: 190, md: "none" },
+        width: compact ? "100%" : "auto",
+        minWidth: 0,
+        maxWidth: compact ? "100%" : { xs: 152, sm: 190, md: "none" },
         overflow: "hidden",
         whiteSpace: "nowrap",
         transition:

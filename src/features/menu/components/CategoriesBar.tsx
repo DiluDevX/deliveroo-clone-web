@@ -106,6 +106,11 @@ export const CategoriesBar = ({
   const updateVisibleCategoryCount = useCallback(() => {
     const containerWidth = containerRef.current?.clientWidth ?? 0;
 
+    if (isMobile) {
+      setVisibleCategoryCount(Math.min(2, categories.length));
+      return;
+    }
+
     if (containerWidth <= 0 || categories.length === 0) {
       setVisibleCategoryCount(categories.length);
       return;
@@ -140,7 +145,7 @@ export const CategoriesBar = ({
     }
 
     setVisibleCategoryCount(Math.max(1, nextVisibleCount));
-  }, [categories, estimateCategoryWidth]);
+  }, [categories, estimateCategoryWidth, isMobile]);
 
   useEffect(() => {
     updateVisibleCategoryCount();
@@ -308,8 +313,9 @@ export const CategoriesBar = ({
           display: "flex",
           alignItems: "center",
           minWidth: 0,
-          overflowX: "auto",
+          overflowX: { xs: "hidden", sm: "auto" },
           flexWrap: "nowrap",
+          gap: { xs: 0.75, sm: 0 },
           "::-webkit-scrollbar": {
             display: "none",
           },
@@ -340,10 +346,14 @@ export const CategoriesBar = ({
         )}
         {!isLoading &&
           visibleCategories.map((category) => (
-            <div
+            <Box
               key={category.id}
-              ref={(el) => {
+              ref={(el: HTMLDivElement | null) => {
                 categoryRefs.current[category.id] = el;
+              }}
+              sx={{
+                minWidth: 0,
+                flex: { xs: "1 1 0", sm: "0 0 auto" },
               }}
             >
               <CategoryChip
@@ -351,8 +361,9 @@ export const CategoriesBar = ({
                 onClick={() => handleOnCategoryClick(category.id)}
                 selected={selectedCategoryId === category.id}
                 pending={pendingCategoryId === category.id}
+                compact={isMobile && overflowCategories.length > 0}
               />
-            </div>
+            </Box>
           ))}
         {overflowCategories.length > 0 && (
           <>
@@ -370,8 +381,8 @@ export const CategoriesBar = ({
                 },
                 py: 0.45,
                 minWidth: 0,
-                maxWidth: { xs: 164, sm: 210, md: 260 },
-                flexShrink: 0,
+                maxWidth: { xs: 112, sm: 210, md: 260 },
+                flex: { xs: "0 1 112px", sm: "0 0 auto" },
                 whiteSpace: "nowrap",
                 textTransform: "none",
                 fontWeight: isMoreSelected ? 800 : 500,

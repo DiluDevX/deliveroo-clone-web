@@ -174,9 +174,10 @@ export default function Login() {
         height: "auto",
         display: "flex",
         alignItems: "center",
-        marginLeft: "1.1rem",
-        marginRight: "1.5rem",
         flexDirection: "column",
+        width: "100%",
+        boxSizing: "border-box",
+        px: { xs: 2, sm: 0 },
       }}
     >
       <Box sx={{ width: "100%", minWidth: "200px", maxWidth: "400px" }}>
@@ -191,7 +192,10 @@ export default function Login() {
             fontWeight: "normal",
             borderRadius: "150px",
             pl: 0,
+            pr: 0,
             mb: 3,
+            gap: 0.5,
+            justifyContent: "flex-start",
             "&:hover": {
               border: "none",
             },

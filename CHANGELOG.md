@@ -2,7 +2,7 @@
 
 ### Features
 
-* enhance AdminHeader styling and improve RestaurantOrdersPage responsiveness ([ed7a848](https://github.com/DiluDevX/deliveroo-clone-web/commit/ed7a8484177c049e73caecd506a3347b81162296))
+- enhance AdminHeader styling and improve RestaurantOrdersPage responsiveness ([ed7a848](https://github.com/DiluDevX/deliveroo-clone-web/commit/ed7a8484177c049e73caecd506a3347b81162296))
 
 ## [1.42.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.41.0...v1.42.0) (2026-07-18)
 

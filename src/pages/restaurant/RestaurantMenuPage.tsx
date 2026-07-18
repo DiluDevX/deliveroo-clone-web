@@ -7,6 +7,7 @@ import {
   EditOutlined,
   FastfoodOutlined,
   ImageOutlined,
+  KeyboardArrowDown,
   LocalFireDepartmentOutlined,
   RestaurantMenu,
   SearchOutlined,
@@ -14,6 +15,7 @@ import {
 } from "@mui/icons-material";
 import {
   Box,
+  Button as MuiButton,
   Card,
   Chip,
   CircularProgress,
@@ -27,7 +29,9 @@ import {
   Grid,
   InputAdornment,
   InputLabel,
+  Menu,
   MenuItem,
+  Pagination,
   Select,
   Switch,
   TextField,
@@ -111,6 +115,7 @@ const getDishImage = (dish: MenuDish) =>
   dish.image || "https://assets.dilum.me/deliveroo-clone/svgs/NotFound.svg";
 
 const MENU_MANAGER_ROLES = ["super_admin", "admin"];
+const DISHES_PER_PAGE = 6;
 
 const RestaurantMenuPage = () => {
   const user = useAppSelector((state) => state.auth.user);
@@ -124,11 +129,15 @@ const RestaurantMenuPage = () => {
     );
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isWideLayout = useMediaQuery(theme.breakpoints.up("xl"));
 
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [dishes, setDishes] = useState<MenuDish[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [dishPage, setDishPage] = useState(1);
+  const [categoryMenuAnchorEl, setCategoryMenuAnchorEl] =
+    useState<HTMLElement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isDishDialogOpen, setIsDishDialogOpen] = useState(false);
@@ -169,6 +178,29 @@ const RestaurantMenuPage = () => {
       return matchesCategory && matchesSearch;
     });
   }, [dishes, searchTerm, selectedCategoryId]);
+
+  const visibleCategoryLimit = isMobile ? 2 : isWideLayout ? 8 : 5;
+  const visibleMenuCategories = categories.slice(0, visibleCategoryLimit);
+  const overflowMenuCategories = categories.slice(visibleCategoryLimit);
+  const selectedOverflowCategory = overflowMenuCategories.find(
+    (category) => category.id === selectedCategoryId,
+  );
+  const dishPageCount = Math.max(
+    1,
+    Math.ceil(visibleDishes.length / DISHES_PER_PAGE),
+  );
+  const paginatedDishes = visibleDishes.slice(
+    (dishPage - 1) * DISHES_PER_PAGE,
+    dishPage * DISHES_PER_PAGE,
+  );
+
+  useEffect(() => {
+    setDishPage(1);
+  }, [searchTerm, selectedCategoryId]);
+
+  useEffect(() => {
+    setDishPage((currentPage) => Math.min(currentPage, dishPageCount));
+  }, [dishPageCount]);
 
   const loadMenu = useCallback(async () => {
     if (!restaurantId) {
@@ -500,16 +532,14 @@ const RestaurantMenuPage = () => {
         )}
       </Box>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} lg={4}>
+      <Box sx={{ display: "grid", gap: 3 }}>
+        <Box>
           <Card
             sx={{
               bgcolor: Colors.background.light,
               border: `1px solid ${Colors.border.default}`,
               borderRadius: "8px",
               overflow: "hidden",
-              position: { lg: "sticky" },
-              top: { lg: 96 },
             }}
           >
             <Box
@@ -564,8 +594,16 @@ const RestaurantMenuPage = () => {
                 )}
               </Box>
             ) : (
-              <Box sx={{ p: 1.5 }}>
-                {categories.map((category) => {
+              <Box
+                sx={{
+                  p: 1.5,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  overflow: "hidden",
+                }}
+              >
+                {visibleMenuCategories.map((category) => {
                   const categoryDishCount = dishes.filter(
                     (dish) => dish.categoryId === category.id,
                   ).length;
@@ -577,13 +615,13 @@ const RestaurantMenuPage = () => {
                       key={category.id}
                       onClick={() => setSelectedCategoryId(category.id)}
                       sx={{
-                        width: "100%",
+                        minWidth: 0,
+                        maxWidth: { xs: "none", md: 220 },
+                        flex: { xs: "1 1 0", md: "0 1 auto" },
                         border: "none",
-                        textAlign: "left",
-                        borderRadius: "8px",
-                        px: 2,
-                        py: 1.5,
-                        mb: 1,
+                        borderRadius: "999px",
+                        px: { xs: 1.25, sm: 2 },
+                        py: 0.75,
                         bgcolor: selected
                           ? Colors.background.brand
                           : Colors.background.light,
@@ -593,9 +631,12 @@ const RestaurantMenuPage = () => {
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 2,
+                        justifyContent: "center",
+                        gap: 0.75,
                         transition: "background-color 0.18s ease",
+                        outline: selected
+                          ? "none"
+                          : `1px solid ${Colors.border.default}`,
                         "&:hover": {
                           bgcolor: selected
                             ? Colors.background.brand
@@ -603,38 +644,107 @@ const RestaurantMenuPage = () => {
                         },
                       }}
                     >
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography
-                          sx={{
-                            fontWeight: 900,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {category.name}
-                        </Typography>
-                        <Typography
-                          sx={{
-                            color: selected
-                              ? "rgba(255,255,255,0.85)"
-                              : Colors.text.lighter,
-                            fontSize: "0.85rem",
-                          }}
-                        >
-                          {categoryDishCount} dishes
-                        </Typography>
-                      </Box>
-                      {selected && <CheckCircle sx={{ fontSize: 20 }} />}
+                      <Typography
+                        component="span"
+                        sx={{
+                          minWidth: 0,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          color: "inherit",
+                          fontWeight: 800,
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        {category.name} ({categoryDishCount})
+                      </Typography>
+                      {selected && (
+                        <CheckCircle sx={{ fontSize: 17, flexShrink: 0 }} />
+                      )}
                     </Box>
                   );
                 })}
+                {overflowMenuCategories.length > 0 && (
+                  <>
+                    <MuiButton
+                      endIcon={<KeyboardArrowDown />}
+                      onClick={(event) =>
+                        setCategoryMenuAnchorEl(event.currentTarget)
+                      }
+                      sx={{
+                        minWidth: 0,
+                        maxWidth: { xs: 112, sm: 220 },
+                        flex: { xs: "0 1 112px", md: "0 0 auto" },
+                        borderRadius: "999px",
+                        px: { xs: 1.25, sm: 2 },
+                        py: 0.75,
+                        textTransform: "none",
+                        color: selectedOverflowCategory
+                          ? Colors.text.inverse
+                          : Colors.background.brand,
+                        bgcolor: selectedOverflowCategory
+                          ? Colors.background.brand
+                          : Colors.background.light,
+                        outline: selectedOverflowCategory
+                          ? "none"
+                          : `1px solid ${Colors.border.default}`,
+                        fontWeight: 800,
+                        "&:hover": {
+                          bgcolor: selectedOverflowCategory
+                            ? Colors.background.brandHover
+                            : "rgba(0, 204, 188, 0.08)",
+                        },
+                        "& .MuiButton-endIcon": {
+                          ml: 0.5,
+                          flexShrink: 0,
+                        },
+                      }}
+                    >
+                      <Box
+                        component="span"
+                        sx={{
+                          minWidth: 0,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {selectedOverflowCategory?.name ?? "More"}
+                      </Box>
+                    </MuiButton>
+                    <Menu
+                      anchorEl={categoryMenuAnchorEl}
+                      open={Boolean(categoryMenuAnchorEl)}
+                      onClose={() => setCategoryMenuAnchorEl(null)}
+                      PaperProps={{ sx: { mt: 1, minWidth: 210 } }}
+                    >
+                      {overflowMenuCategories.map((category) => (
+                        <MenuItem
+                          key={category.id}
+                          selected={category.id === selectedCategoryId}
+                          onClick={() => {
+                            setSelectedCategoryId(category.id);
+                            setCategoryMenuAnchorEl(null);
+                          }}
+                        >
+                          {category.name} (
+                          {
+                            dishes.filter(
+                              (dish) => dish.categoryId === category.id,
+                            ).length
+                          }
+                          )
+                        </MenuItem>
+                      ))}
+                    </Menu>
+                  </>
+                )}
               </Box>
             )}
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} lg={8}>
+        <Box>
           <Card
             sx={{
               bgcolor: Colors.background.light,
@@ -734,7 +844,7 @@ const RestaurantMenuPage = () => {
             ) : (
               <Box sx={{ p: { xs: 2, md: 3 } }}>
                 <Grid container spacing={2}>
-                  {visibleDishes.map((dish) => (
+                  {paginatedDishes.map((dish) => (
                     <Grid item xs={12} md={6} key={dish.id}>
                       <Card
                         role={canManageMenu ? "button" : undefined}
@@ -916,11 +1026,32 @@ const RestaurantMenuPage = () => {
                     </Grid>
                   ))}
                 </Grid>
+                {dishPageCount > 1 && (
+                  <Pagination
+                    count={dishPageCount}
+                    page={dishPage}
+                    onChange={(_, nextPage) => setDishPage(nextPage)}
+                    color="primary"
+                    shape="rounded"
+                    sx={{
+                      mt: 3,
+                      display: "flex",
+                      justifyContent: "center",
+                      "& .MuiPaginationItem-root.Mui-selected": {
+                        bgcolor: Colors.background.brand,
+                        color: Colors.text.inverse,
+                        "&:hover": {
+                          bgcolor: Colors.background.brandHover,
+                        },
+                      },
+                    }}
+                  />
+                )}
               </Box>
             )}
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       <Dialog
         open={isCategoryDialogOpen}
