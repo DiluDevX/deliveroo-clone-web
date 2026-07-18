@@ -2,7 +2,7 @@
 
 ### Features
 
-* enhance RestaurantMenuPage with pagination and category dropdown for better navigation ([57c750e](https://github.com/DiluDevX/deliveroo-clone-web/commit/57c750e6a4db64a1692701189fc2294edb81778f))
+- enhance RestaurantMenuPage with pagination and category dropdown for better navigation ([57c750e](https://github.com/DiluDevX/deliveroo-clone-web/commit/57c750e6a4db64a1692701189fc2294edb81778f))
 
 ## [1.43.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.42.0...v1.43.0) (2026-07-18)
 

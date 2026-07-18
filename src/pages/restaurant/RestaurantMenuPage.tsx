@@ -458,7 +458,7 @@ const RestaurantMenuPage = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ width: "100%", minWidth: 0, maxWidth: "100%" }}>
       <Box
         sx={{
           display: "flex",
@@ -532,10 +532,22 @@ const RestaurantMenuPage = () => {
         )}
       </Box>
 
-      <Box sx={{ display: "grid", gap: 3 }}>
-        <Box>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1fr)",
+          gap: 3,
+          width: "100%",
+          minWidth: 0,
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
           <Card
             sx={{
+              width: "100%",
+              minWidth: 0,
+              maxWidth: "100%",
+              boxSizing: "border-box",
               bgcolor: Colors.background.light,
               border: `1px solid ${Colors.border.default}`,
               borderRadius: "8px",
@@ -744,9 +756,13 @@ const RestaurantMenuPage = () => {
           </Card>
         </Box>
 
-        <Box>
+        <Box sx={{ minWidth: 0 }}>
           <Card
             sx={{
+              width: "100%",
+              minWidth: 0,
+              maxWidth: "100%",
+              boxSizing: "border-box",
               bgcolor: Colors.background.light,
               border: `1px solid ${Colors.border.default}`,
               borderRadius: "8px",
@@ -764,7 +780,7 @@ const RestaurantMenuPage = () => {
                 gap: 2,
               }}
             >
-              <Box>
+              <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{ fontWeight: 900, fontSize: "1.2rem" }}>
                   {selectedCategory?.name ?? "All dishes"}
                 </Typography>
@@ -843,9 +859,19 @@ const RestaurantMenuPage = () => {
               </Box>
             ) : (
               <Box sx={{ p: { xs: 2, md: 3 } }}>
-                <Grid container spacing={2}>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: {
+                      xs: "minmax(0, 1fr)",
+                      md: "repeat(2, minmax(0, 1fr))",
+                    },
+                    gap: 2,
+                    minWidth: 0,
+                  }}
+                >
                   {paginatedDishes.map((dish) => (
-                    <Grid item xs={12} md={6} key={dish.id}>
+                    <Box key={dish.id} sx={{ minWidth: 0 }}>
                       <Card
                         role={canManageMenu ? "button" : undefined}
                         tabIndex={canManageMenu ? 0 : undefined}
@@ -862,8 +888,11 @@ const RestaurantMenuPage = () => {
                         sx={{
                           height: "100%",
                           display: "flex",
-                          gap: 2,
-                          p: 1.5,
+                          gap: { xs: 1.25, sm: 2 },
+                          p: { xs: 1.25, sm: 1.5 },
+                          minWidth: 0,
+                          maxWidth: "100%",
+                          boxSizing: "border-box",
                           borderRadius: "8px",
                           border: `1px solid ${Colors.border.default}`,
                           boxShadow: "0 1px 4px rgba(0, 0, 0, 0.08)",
@@ -878,8 +907,8 @@ const RestaurantMenuPage = () => {
                       >
                         <Box
                           sx={{
-                            width: 112,
-                            height: 112,
+                            width: { xs: 88, sm: 112 },
+                            height: { xs: 88, sm: 112 },
                             flexShrink: 0,
                             borderRadius: "6px",
                             overflow: "hidden",
@@ -1023,9 +1052,9 @@ const RestaurantMenuPage = () => {
                           </Box>
                         </Box>
                       </Card>
-                    </Grid>
+                    </Box>
                   ))}
-                </Grid>
+                </Box>
                 {dishPageCount > 1 && (
                   <Pagination
                     count={dishPageCount}

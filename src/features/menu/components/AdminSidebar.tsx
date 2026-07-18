@@ -37,7 +37,7 @@ const AdminSidebar = ({
         width: isMobile ? (drawerOpen ? 280 : 0) : 280,
         "& .MuiDrawer-paper": {
           width: 280,
-          bgcolor: Colors.background.light,
+          bgcolor: Colors.background.default,
           color: Colors.text.default,
           pt: 2,
           position: "fixed",
@@ -52,12 +52,17 @@ const AdminSidebar = ({
           top: "60px",
           display: "flex",
           flexDirection: "column",
-          width: "100%",
+          width: "calc(100% - 32px)",
           alignItems: "flex-start",
           justifyContent: "center",
+          bgcolor: Colors.background.light,
+          border: `1px solid ${Colors.border.subtle}`,
+          borderRadius: "12px",
+          overflow: "hidden",
+          py: 0,
         }}
       >
-        {menuItems.map((item) => {
+        {menuItems.map((item, index) => {
           const isSelected =
             location.pathname === item.path ||
             location.pathname.startsWith(`${item.path}/`);
@@ -71,31 +76,42 @@ const AdminSidebar = ({
                 if (isMobile) setDrawerOpen(false);
               }}
               sx={{
-                mb: 0.5,
-                py: 1.25,
-                borderLeft: "3px solid",
-                borderLeftColor: isSelected
-                  ? Colors.background.brand
-                  : "transparent",
-                backgroundColor: isSelected
-                  ? Colors.background.default
-                  : "transparent",
+                width: "100%",
+                py: 1.5,
+                px: 3,
+                position: "relative",
+                backgroundColor: "transparent",
+                transition: "background-color 0.2s ease",
+                ...(index < menuItems.length - 1 && {
+                  "&::after": {
+                    content: '""',
+                    position: "absolute",
+                    left: 24,
+                    right: 24,
+                    bottom: 0,
+                    height: "1px",
+                    backgroundColor: Colors.border.subtle,
+                  },
+                }),
                 "&.Mui-selected": {
-                  backgroundColor: Colors.background.default,
+                  backgroundColor: "transparent",
                 },
                 "&.Mui-selected:hover": {
-                  backgroundColor: Colors.background.default,
+                  backgroundColor: "rgba(0, 0, 0, 0.03)",
                 },
-                "&:hover": { backgroundColor: Colors.background.default },
+                "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.02)" },
               }}
             >
               <ListItemIcon
                 sx={{
                   color: isSelected
                     ? Colors.background.brand
-                    : Colors.text.placeholder,
-                  minWidth: 48,
-                  ml: 2,
+                    : Colors.text.default,
+                  minWidth: 0,
+                  mr: 2,
+                  "& .MuiSvgIcon-root": {
+                    fontSize: "1.3rem",
+                  },
                 }}
               >
                 <item.icon />
@@ -103,11 +119,11 @@ const AdminSidebar = ({
               <ListItemText
                 primaryTypographyProps={{
                   sx: {
-                    fontWeight: isSelected ? 800 : 400,
-                    fontSize: 14,
+                    fontWeight: 500,
+                    fontSize: "1rem",
                     color: isSelected
-                      ? Colors.text.default
-                      : Colors.text.placeholder,
+                      ? Colors.background.brand
+                      : Colors.text.default,
                   },
                 }}
                 primary={item.label}
