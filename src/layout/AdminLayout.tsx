@@ -46,7 +46,7 @@ const AdminLayout = () => {
     return () => {};
   }, [dispatch, navigate]);
 
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -76,10 +76,14 @@ const AdminLayout = () => {
           height: "64px",
           width: "100%",
           position: "fixed",
-          zIndex: 100,
+          zIndex: theme.zIndex.drawer + 1,
         }}
       >
-        <AdminHeader />
+        <AdminHeader
+          isMobile={isMobile}
+          menuOpen={drawerOpen}
+          onMenuClick={() => setDrawerOpen((open) => !open)}
+        />
       </Box>
 
       <Box
@@ -109,7 +113,16 @@ const AdminLayout = () => {
           />
         )}
 
-        <Box sx={{ flex: 1, pl: 10, pr: 10, overflow: "auto", pt: 4, pb: 6 }}>
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            px: { xs: 2, sm: 3, md: 5, lg: 10 },
+            overflow: "auto",
+            pt: { xs: 2, sm: 3, md: 4 },
+            pb: { xs: 3, md: 6 },
+          }}
+        >
           <Outlet />
         </Box>
       </Box>

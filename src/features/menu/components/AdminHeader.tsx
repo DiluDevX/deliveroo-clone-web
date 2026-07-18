@@ -1,12 +1,23 @@
 import { Link } from "react-router-dom";
-import { Box, Typography } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
 import Button from "./Button";
 import { Colors } from "../../../theme";
 import { useState } from "react";
-import { Notifications, NotificationsOffRounded } from "@mui/icons-material";
+import {
+  CloseRounded,
+  MenuRounded,
+  Notifications,
+  NotificationsOffRounded,
+} from "@mui/icons-material";
 import { showSuccessSnackbar } from "../../../utils/notifications";
 
-const AdminHeader = () => {
+interface AdminHeaderProps {
+  isMobile: boolean;
+  menuOpen: boolean;
+  onMenuClick: () => void;
+}
+
+const AdminHeader = ({ isMobile, menuOpen, onMenuClick }: AdminHeaderProps) => {
   const [isNotificationsClicked, setIsNotificationsClicked] = useState(false);
 
   function handleNotificationsClick() {
@@ -27,7 +38,7 @@ const AdminHeader = () => {
         justifyContent: "center",
         position: "fixed",
         top: "0",
-        zIndex: "101",
+        zIndex: (theme) => theme.zIndex.drawer + 1,
         borderBottomWidth: "0.5px",
         borderColor: Colors.border.subtle,
         borderStyle: "solid",
@@ -42,7 +53,7 @@ const AdminHeader = () => {
           alignItems: "center",
           justifyContent: "space-between",
           position: "relative",
-          px: 2,
+          px: { xs: 1, sm: 2 },
         }}
       >
         <Box
@@ -52,6 +63,22 @@ const AdminHeader = () => {
             alignItems: "center",
           }}
         >
+          {isMobile && (
+            <IconButton
+              aria-label={
+                menuOpen ? "Close admin navigation" : "Open admin navigation"
+              }
+              onClick={onMenuClick}
+              sx={{
+                width: 40,
+                height: 40,
+                mr: 0.5,
+                color: Colors.text.default,
+              }}
+            >
+              {menuOpen ? <CloseRounded /> : <MenuRounded />}
+            </IconButton>
+          )}
           <Link
             to="/"
             style={{
@@ -65,10 +92,17 @@ const AdminHeader = () => {
             <img
               src="https://assets.dilum.me/deliveroo-clone/images/delveroo-logo-no-text.png"
               alt="Deliveroo Logo"
-              style={{ height: 32, marginLeft: 10 }}
+              style={{ height: 32, marginLeft: isMobile ? 0 : 10 }}
             />
 
-            <Typography sx={{ pl: 2, fontWeight: 800, fontSize: 20 }}>
+            <Typography
+              sx={{
+                pl: { xs: 1, sm: 2 },
+                fontWeight: 800,
+                fontSize: { xs: 17, sm: 20 },
+                whiteSpace: "nowrap",
+              }}
+            >
               Admin Hub
             </Typography>
           </Link>

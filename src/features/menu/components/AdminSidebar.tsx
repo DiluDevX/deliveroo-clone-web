@@ -6,8 +6,7 @@ import {
   ListItemText,
 } from "@mui/material";
 import { Colors } from "../../../theme";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export interface AdminSidebarProps {
   isMobile: boolean;
@@ -26,19 +25,16 @@ const AdminSidebar = ({
   setDrawerOpen,
   menuItems,
 }: AdminSidebarProps) => {
-  const [selectedItem, setSelectedItem] = useState<number>(0);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  useEffect(() => {
-    navigate(menuItems[selectedItem].path);
-  }, [selectedItem, menuItems, navigate]);
   return (
     <Drawer
       variant={isMobile ? "temporary" : "permanent"}
       open={drawerOpen}
       onClose={() => setDrawerOpen(false)}
       sx={{
-        width: drawerOpen ? 280 : 0,
+        width: isMobile ? (drawerOpen ? 280 : 0) : 280,
         "& .MuiDrawer-paper": {
           width: 280,
           bgcolor: Colors.background.light,
@@ -61,49 +57,64 @@ const AdminSidebar = ({
           justifyContent: "center",
         }}
       >
-        {menuItems.map((item, index) => (
-          <ListItemButton
-            key={item.label}
-            disableRipple={true}
-            onClick={() => {
-              setSelectedItem(index);
-              navigate(item.path);
-              if (isMobile) setDrawerOpen(false);
-            }}
-            sx={{
-              mb: 1,
-              backgroundColor: "transparent",
-              "&:hover": { backgroundColor: "transparent" },
-              "&:focus": { backgroundColor: "transparent" },
-            }}
-          >
-            <ListItemIcon
+        {menuItems.map((item) => {
+          const isSelected =
+            location.pathname === item.path ||
+            location.pathname.startsWith(`${item.path}/`);
+
+          return (
+            <ListItemButton
+              key={item.label}
+              selected={isSelected}
+              onClick={() => {
+                navigate(item.path);
+                if (isMobile) setDrawerOpen(false);
+              }}
               sx={{
-                color:
-                  selectedItem === index
-                    ? Colors.background.brand
-                    : Colors.text.placeholder,
-                mr: -3,
-                ml: 2,
+                mb: 0.5,
+                py: 1.25,
+                borderLeft: "3px solid",
+                borderLeftColor: isSelected
+                  ? Colors.background.brand
+                  : "transparent",
+                backgroundColor: isSelected
+                  ? Colors.background.default
+                  : "transparent",
+                "&.Mui-selected": {
+                  backgroundColor: Colors.background.default,
+                },
+                "&.Mui-selected:hover": {
+                  backgroundColor: Colors.background.default,
+                },
+                "&:hover": { backgroundColor: Colors.background.default },
               }}
             >
-              <item.icon />
-            </ListItemIcon>
-            <ListItemText
-              primaryTypographyProps={{
-                sx: {
-                  fontWeight: selectedItem === index ? 800 : 400,
-                  fontSize: 14,
-                  color:
-                    selectedItem === index
+              <ListItemIcon
+                sx={{
+                  color: isSelected
+                    ? Colors.background.brand
+                    : Colors.text.placeholder,
+                  minWidth: 48,
+                  ml: 2,
+                }}
+              >
+                <item.icon />
+              </ListItemIcon>
+              <ListItemText
+                primaryTypographyProps={{
+                  sx: {
+                    fontWeight: isSelected ? 800 : 400,
+                    fontSize: 14,
+                    color: isSelected
                       ? Colors.text.default
                       : Colors.text.placeholder,
-                },
-              }}
-              primary={item.label}
-            />
-          </ListItemButton>
-        ))}
+                  },
+                }}
+                primary={item.label}
+              />
+            </ListItemButton>
+          );
+        })}
       </List>
     </Drawer>
   );
