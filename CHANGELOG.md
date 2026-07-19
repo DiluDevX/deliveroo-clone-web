@@ -1,3 +1,10 @@
+## [1.46.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.45.0...v1.46.0) (2026-07-19)
+
+### Features
+
+* add restaurant invitation management and team functionality ([b55a896](https://github.com/DiluDevX/deliveroo-clone-web/commit/b55a8965aab7526beebeb980616a726be4f5f05a))
+* enhance restaurant invitation handling and improve auth initialization checks ([2231012](https://github.com/DiluDevX/deliveroo-clone-web/commit/223101233ca890d96e4ce62162a5289ab97b79ad))
+
 ## [1.45.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.44.0...v1.45.0) (2026-07-18)
 
 ### Features
