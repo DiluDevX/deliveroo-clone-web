@@ -40,6 +40,9 @@ import RestaurantMenuPage from "./pages/restaurant/RestaurantMenuPage";
 import RestaurantAnalyticsPage from "./pages/restaurant/RestaurantAnalyticsPage";
 import RestaurantSettingsPage from "./pages/restaurant/RestaurantSettingsPage";
 import RestaurantAdminProtectedRoute from "./routes/RestaurantAdminProtectedRoute";
+import RestaurantCapabilityProtectedRoute from "./routes/RestaurantCapabilityProtectedRoute";
+import RestaurantTeamPage from "./pages/restaurant/RestaurantTeamPage";
+import RestaurantInvitationPage from "./pages/RestaurantInvitationPage";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -60,6 +63,14 @@ const App = () => {
             element={
               <WithPageTitle title="Menu">
                 <MenuPage />
+              </WithPageTitle>
+            }
+          />
+          <Route
+            path="/account/restaurant-invitation"
+            element={
+              <WithPageTitle title="Restaurant Invitation">
+                <RestaurantInvitationPage />
               </WithPageTitle>
             }
           />
@@ -251,45 +262,89 @@ const App = () => {
         <Route element={<RestaurantAdminLayout />}>
           <Route element={<RestaurantAdminProtectedRoute />}>
             <Route
-              path="/restaurant/dashboard"
               element={
-                <WithPageTitle title="Restaurant Dashboard">
-                  <RestaurantDashboardPage />
-                </WithPageTitle>
+                <RestaurantCapabilityProtectedRoute capability="view_dashboard" />
               }
-            />
+            >
+              <Route
+                path="/restaurant/dashboard"
+                element={
+                  <WithPageTitle title="Restaurant Dashboard">
+                    <RestaurantDashboardPage />
+                  </WithPageTitle>
+                }
+              />
+            </Route>
             <Route
-              path="/restaurant/orders"
               element={
-                <WithPageTitle title="Restaurant Orders">
-                  <RestaurantOrdersPage />
-                </WithPageTitle>
+                <RestaurantCapabilityProtectedRoute capability="manage_orders" />
               }
-            />
+            >
+              <Route
+                path="/restaurant/orders"
+                element={
+                  <WithPageTitle title="Restaurant Orders">
+                    <RestaurantOrdersPage />
+                  </WithPageTitle>
+                }
+              />
+            </Route>
             <Route
-              path="/restaurant/menu"
               element={
-                <WithPageTitle title="Restaurant Menu">
-                  <RestaurantMenuPage />
-                </WithPageTitle>
+                <RestaurantCapabilityProtectedRoute capability="manage_menu" />
               }
-            />
+            >
+              <Route
+                path="/restaurant/menu"
+                element={
+                  <WithPageTitle title="Restaurant Menu">
+                    <RestaurantMenuPage />
+                  </WithPageTitle>
+                }
+              />
+            </Route>
             <Route
-              path="/restaurant/analytics"
               element={
-                <WithPageTitle title="Restaurant Analytics">
-                  <RestaurantAnalyticsPage />
-                </WithPageTitle>
+                <RestaurantCapabilityProtectedRoute capability="view_analytics" />
               }
-            />
+            >
+              <Route
+                path="/restaurant/analytics"
+                element={
+                  <WithPageTitle title="Restaurant Analytics">
+                    <RestaurantAnalyticsPage />
+                  </WithPageTitle>
+                }
+              />
+            </Route>
             <Route
-              path="/restaurant/settings"
               element={
-                <WithPageTitle title="Restaurant Settings">
-                  <RestaurantSettingsPage />
-                </WithPageTitle>
+                <RestaurantCapabilityProtectedRoute capability="manage_team" />
               }
-            />
+            >
+              <Route
+                path="/restaurant/team"
+                element={
+                  <WithPageTitle title="Restaurant Team">
+                    <RestaurantTeamPage />
+                  </WithPageTitle>
+                }
+              />
+            </Route>
+            <Route
+              element={
+                <RestaurantCapabilityProtectedRoute capability="manage_settings" />
+              }
+            >
+              <Route
+                path="/restaurant/settings"
+                element={
+                  <WithPageTitle title="Restaurant Settings">
+                    <RestaurantSettingsPage />
+                  </WithPageTitle>
+                }
+              />
+            </Route>
           </Route>
         </Route>
       </>,

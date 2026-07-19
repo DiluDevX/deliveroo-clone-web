@@ -45,6 +45,7 @@ import {
   showErrorSnackbar,
   showSuccessSnackbar,
 } from "../../utils/notifications";
+import { hasRestaurantCapability } from "../../utils/restaurant-permissions";
 
 const DISH_IMAGE_FALLBACK =
   "https://assets.dilum.me/deliveroo-clone/svgs/NotFound.svg";
@@ -148,13 +149,10 @@ const getUnavailableActionIcon = (status: string) => {
 const RestaurantOrdersPage = () => {
   const user = useAppSelector((state) => state.auth.user);
   const restaurantId = user?.restaurantId;
-  const canManageOrders =
-    user?.role === "platform_admin" ||
-    (user?.role === "restaurant_user" &&
-      Boolean(
-        user.restaurantRole &&
-          ["employee", "super_admin", "admin"].includes(user.restaurantRole),
-      ));
+  const canManageOrders = hasRestaurantCapability(
+    user?.restaurantRole,
+    "manage_orders",
+  );
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState("");

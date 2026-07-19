@@ -60,6 +60,7 @@ import {
   showSuccessSnackbar,
 } from "../../utils/notifications";
 import PopUpDialog from "../../features/menu/components/PopUpDialog";
+import { hasRestaurantCapability } from "../../utils/restaurant-permissions";
 
 const optionalImageUrlSchema = z.preprocess((value) => {
   if (typeof value === "string") {
@@ -114,19 +115,15 @@ const formatCurrency = (amount: number) =>
 const getDishImage = (dish: MenuDish) =>
   dish.image || "https://assets.dilum.me/deliveroo-clone/svgs/NotFound.svg";
 
-const MENU_MANAGER_ROLES = ["super_admin", "admin"];
 const DISHES_PER_PAGE = 6;
 
 const RestaurantMenuPage = () => {
   const user = useAppSelector((state) => state.auth.user);
   const restaurantId = user?.restaurantId;
-  const canManageMenu =
-    user?.role === "platform_admin" ||
-    Boolean(
-      user?.role === "restaurant_user" &&
-        user.restaurantRole &&
-        MENU_MANAGER_ROLES.includes(user.restaurantRole),
-    );
+  const canManageMenu = hasRestaurantCapability(
+    user?.restaurantRole,
+    "manage_menu",
+  );
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const isWideLayout = useMediaQuery(theme.breakpoints.up("xl"));

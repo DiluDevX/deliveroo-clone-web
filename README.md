@@ -17,6 +17,8 @@ This project is an educational portfolio app. It is not affiliated with Delivero
 - View order confirmation and order history.
 - Show skeleton loading states for restaurant info, categories, and menu content.
 - Use Sonner toast notifications for success/error feedback.
+- Use a role-aware restaurant workspace for dashboard, orders, menu, analytics, settings, and team management.
+- Invite restaurant employees, finance users, and administrators without sharing credentials.
 
 ## System Context
 
@@ -161,6 +163,19 @@ npm run release:dry-run # Preview semantic-release output
 ### Authentication
 
 The app authenticates through the BFF/auth service. JWTs are stored client-side and attached to authenticated BFF requests. Protected routes wait for auth initialization before deciding whether to render or redirect.
+
+### Restaurant Workspace
+
+Restaurant navigation and routes are capability-driven:
+
+- `employee`: dashboard and orders
+- `finance`: dashboard and analytics
+- `admin`: dashboard, orders, menu, analytics, settings, and team management
+- `super_admin`: owner access to the same workspace plus broader role assignment
+
+Team members join through an expiring email link and set or confirm their own
+password. The frontend hides inaccessible actions, while the BFF and owning
+services enforce the same permissions independently.
 
 ### Restaurant And Menu
 

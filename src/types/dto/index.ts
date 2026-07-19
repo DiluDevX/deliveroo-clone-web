@@ -10,3 +10,4 @@ export * from "./order.dto";
 export * from "./restaurant.dto";
 export * from "./user.dto";
 export * from "./mail.dto";
+export * from "./restaurant-team.dto";

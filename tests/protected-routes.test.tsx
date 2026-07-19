@@ -194,7 +194,41 @@ describe("protected routes", () => {
     expect(screen.queryByText("Restaurant dashboard")).not.toBeInTheDocument();
   });
 
+  it("renders nothing for restaurant routes while auth initialization is pending", () => {
+    const { container } = renderWithProviders(<RestaurantAdminRouteHarness />, {
+      preloadedState: {
+        auth: {
+          isAuthInitialized: false,
+          isAuthenticated: false,
+        },
+      },
+    });
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it("allows restaurant users with a restaurant id through", () => {
+    renderWithProviders(<RestaurantAdminRouteHarness />, {
+      preloadedState: {
+        auth: {
+          isAuthInitialized: true,
+          isAuthenticated: true,
+          user: {
+            firstName: "Restaurant",
+            lastName: "User",
+            email: "restaurant-user@example.com",
+            role: "restaurant_user",
+            restaurantId: "restaurant-1",
+            restaurantRole: "employee",
+          },
+        },
+      },
+    });
+
+    expect(screen.getByText("Restaurant dashboard")).toBeInTheDocument();
+  });
+
+  it("redirects restaurant users without a recognized restaurant role", () => {
     renderWithProviders(<RestaurantAdminRouteHarness />, {
       preloadedState: {
         auth: {
@@ -211,6 +245,7 @@ describe("protected routes", () => {
       },
     });
 
-    expect(screen.getByText("Restaurant dashboard")).toBeInTheDocument();
+    expect(screen.getByText("Login page")).toBeInTheDocument();
+    expect(screen.queryByText("Restaurant dashboard")).not.toBeInTheDocument();
   });
 });
