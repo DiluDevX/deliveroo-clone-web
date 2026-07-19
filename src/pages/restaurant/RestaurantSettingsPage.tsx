@@ -22,8 +22,8 @@ import {
   showErrorSnackbar,
   showSuccessSnackbar,
 } from "../../utils/notifications";
+import { hasRestaurantCapability } from "../../utils/restaurant-permissions";
 
-const SETTINGS_MANAGER_ROLES = ["super_admin", "admin"];
 const RESTAURANT_IMAGE_FALLBACK =
   "https://assets.dilum.me/deliveroo-clone/svgs/NotFound.svg";
 
@@ -79,10 +79,9 @@ const toFormValues = (restaurant: Restaurant): SettingsFormValues => ({
 const RestaurantSettingsPage = () => {
   const user = useAppSelector((state) => state.auth.user);
   const restaurantId = user?.restaurantId;
-  const canManageSettings = Boolean(
-    user?.role === "restaurant_user" &&
-      user.restaurantRole &&
-      SETTINGS_MANAGER_ROLES.includes(user.restaurantRole),
+  const canManageSettings = hasRestaurantCapability(
+    user?.restaurantRole,
+    "manage_settings",
   );
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [isLoading, setIsLoading] = useState(true);

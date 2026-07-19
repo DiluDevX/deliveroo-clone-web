@@ -7,25 +7,77 @@ import {
   AssignmentOutlined,
   RestaurantMenu,
   BarChart,
+  GroupsOutlined,
 } from "@mui/icons-material";
 import { Colors } from "../theme";
 import AdminSidebar from "../features/menu/components/AdminSidebar";
 import AdminHeader from "../features/menu/components/AdminHeader";
+import { useAppSelector } from "../store/hooks/cartHooks";
+import {
+  hasRestaurantCapability,
+  RestaurantCapability,
+} from "../utils/restaurant-permissions";
+
+type RestaurantMenuItem = {
+  label: string;
+  icon: React.ElementType;
+  path: string;
+  capability: RestaurantCapability;
+};
 
 const RestaurantAdminLayout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const restaurantRole = useAppSelector(
+    (state) => state.auth.user?.restaurantRole,
+  );
 
   const menuItems = useMemo(
-    () => [
-      { label: "Dashboard", icon: Home, path: "/restaurant/dashboard" },
-      { label: "Orders", icon: AssignmentOutlined, path: "/restaurant/orders" },
-      { label: "Menu", icon: RestaurantMenu, path: "/restaurant/menu" },
-      { label: "Analytics", icon: BarChart, path: "/restaurant/analytics" },
-      { label: "Settings", icon: Settings, path: "/restaurant/settings" },
-    ],
-    [],
+    () =>
+      (
+        [
+          {
+            label: "Dashboard",
+            icon: Home,
+            path: "/restaurant/dashboard",
+            capability: "view_dashboard",
+          },
+          {
+            label: "Orders",
+            icon: AssignmentOutlined,
+            path: "/restaurant/orders",
+            capability: "manage_orders",
+          },
+          {
+            label: "Menu",
+            icon: RestaurantMenu,
+            path: "/restaurant/menu",
+            capability: "manage_menu",
+          },
+          {
+            label: "Analytics",
+            icon: BarChart,
+            path: "/restaurant/analytics",
+            capability: "view_analytics",
+          },
+          {
+            label: "Team",
+            icon: GroupsOutlined,
+            path: "/restaurant/team",
+            capability: "manage_team",
+          },
+          {
+            label: "Settings",
+            icon: Settings,
+            path: "/restaurant/settings",
+            capability: "manage_settings",
+          },
+        ] satisfies RestaurantMenuItem[]
+      ).filter((item) =>
+        hasRestaurantCapability(restaurantRole, item.capability),
+      ),
+    [restaurantRole],
   );
 
   return (

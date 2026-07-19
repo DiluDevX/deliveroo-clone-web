@@ -206,11 +206,33 @@ describe("protected routes", () => {
             email: "restaurant-user@example.com",
             role: "restaurant_user",
             restaurantId: "restaurant-1",
+            restaurantRole: "employee",
           },
         },
       },
     });
 
     expect(screen.getByText("Restaurant dashboard")).toBeInTheDocument();
+  });
+
+  it("redirects restaurant users without a recognized restaurant role", () => {
+    renderWithProviders(<RestaurantAdminRouteHarness />, {
+      preloadedState: {
+        auth: {
+          isAuthInitialized: true,
+          isAuthenticated: true,
+          user: {
+            firstName: "Restaurant",
+            lastName: "User",
+            email: "restaurant-user@example.com",
+            role: "restaurant_user",
+            restaurantId: "restaurant-1",
+          },
+        },
+      },
+    });
+
+    expect(screen.getByText("Login page")).toBeInTheDocument();
+    expect(screen.queryByText("Restaurant dashboard")).not.toBeInTheDocument();
   });
 });

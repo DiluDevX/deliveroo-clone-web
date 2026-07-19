@@ -2,12 +2,15 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useEffect } from "react";
 import { useAppSelector } from "../store/hooks/cartHooks";
 import { showErrorSnackbar } from "../utils/notifications";
+import { isRestaurantUserRole } from "../utils/restaurant-permissions";
 
 const RestaurantAdminProtectedRoute = () => {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const user = useAppSelector((state) => state.auth.user);
   const hasRestaurantAccess =
-    user?.role === "restaurant_user" && Boolean(user.restaurantId);
+    user?.role === "restaurant_user" &&
+    Boolean(user.restaurantId) &&
+    isRestaurantUserRole(user.restaurantRole);
   const shouldRedirect = !isAuthenticated || !hasRestaurantAccess;
 
   useEffect(() => {
