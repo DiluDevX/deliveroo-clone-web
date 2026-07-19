@@ -116,7 +116,11 @@ const RestaurantInvitationPage = () => {
     if (!token || !invitation) return;
 
     try {
-      await acceptRestaurantInvitation(token, values);
+      const payload = invitation.existingUser
+        ? { password: values.password }
+        : values;
+
+      await acceptRestaurantInvitation(token, payload);
 
       const isMatchingAuthenticatedUser =
         isAuthenticated &&

@@ -194,6 +194,19 @@ describe("protected routes", () => {
     expect(screen.queryByText("Restaurant dashboard")).not.toBeInTheDocument();
   });
 
+  it("renders nothing for restaurant routes while auth initialization is pending", () => {
+    const { container } = renderWithProviders(<RestaurantAdminRouteHarness />, {
+      preloadedState: {
+        auth: {
+          isAuthInitialized: false,
+          isAuthenticated: false,
+        },
+      },
+    });
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it("allows restaurant users with a restaurant id through", () => {
     renderWithProviders(<RestaurantAdminRouteHarness />, {
       preloadedState: {
