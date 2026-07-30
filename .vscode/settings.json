@@ -1,9 +1,12 @@
 {
   "cSpell.words": [
+    "azuread",
     "Bambalapitiya",
     "Deliveroo",
+    "deliveroodevacr",
     "Fastfood",
     "favourite",
+    "foodflowtfstateazvm",
     "giftcard",
     "hocs",
     "Katsu",
@@ -11,8 +14,13 @@
     "resto",
     "rooute",
     "scrollspy",
+    "southeastasia",
     "Svgs",
+    "tfstate",
     "unstub"
   ],
-  "postman.settings.dotenv-detection-notification-visibility": false
+  "postman.settings.dotenv-detection-notification-visibility": false,
+  "terminal.integrated.fontFamily": "MesloLGS Nerd Font",
+  "terminal.integrated.fontSize": 16,
+  "terminal.integrated.minimumContrastRatio": 1
 }

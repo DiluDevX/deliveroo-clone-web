@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - develop
+    paths-ignore:
+      - "terraform/**"
   workflow_dispatch:
 
 permissions:

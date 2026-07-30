@@ -24,3 +24,15 @@ dist-ssr
 *.sw?
 .playwright-cli
 *output
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+**/backend.hcl
+!**/backend.hcl.example
+crash.log
+crash.*.log

@@ -1,0 +1,7 @@
+resource_group_name  = "deliveroo-terraform-state-rg"
+storage_account_name = "replacewithuniquename"
+container_name       = "tfstate"
+key                  = "foodflow/bootstrap.tfstate"
+subscription_id      = "00000000-0000-0000-0000-000000000000"
+use_azuread_auth     = true
+use_cli              = true
