@@ -36,3 +36,4 @@ dist-ssr
 !**/backend.hcl.example
 crash.log
 crash.*.log
+**/terraform.tfvars

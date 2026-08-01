@@ -2,6 +2,7 @@
   "cSpell.words": [
     "azuread",
     "Bambalapitiya",
+    "computevm",
     "Deliveroo",
     "deliveroodevacr",
     "Fastfood",
@@ -17,7 +18,8 @@
     "southeastasia",
     "Svgs",
     "tfstate",
-    "unstub"
+    "unstub",
+    "vtpm"
   ],
   "postman.settings.dotenv-detection-notification-visibility": false,
   "terminal.integrated.fontFamily": "MesloLGS Nerd Font",

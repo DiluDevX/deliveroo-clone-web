@@ -36,3 +36,28 @@ variable "container_registry_name" {
   type        = string
   default     = "deliveroodevacr"
 }
+
+variable "ssh_source_address_prefix" {
+  description = "Public IP allowed to access the development VM over SSH."
+  type        = string
+}
+
+variable "vm_admin_ssh_public_key" {
+  description = "Existing SSH public key configured on the development VM."
+  type        = string
+}
+
+import {
+  to = azurerm_static_web_app.frontend
+  id = "/subscriptions/${var.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Web/staticSites/deliveroo-web-dev"
+}
+
+variable "vm_shutdown_notification_email" {
+  description = "Email receiving VM shutdown notifications."
+  type        = string
+
+  validation {
+    condition     = length(trimspace(var.vm_shutdown_notification_email)) > 0
+    error_message = "vm_shutdown_notification_email must not be empty."
+  }
+}

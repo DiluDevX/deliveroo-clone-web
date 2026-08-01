@@ -1,1 +1,4 @@
 subscription_id = "00000000-0000-0000-0000-000000000000"
+ssh_source_address_prefix      = "<<your ip address>>>"
+vm_admin_ssh_public_key        = "ssh-0uGZ8RZI8rW7yQJqD....IU= generated-by-azure"
+vm_shutdown_notification_email = "student@example.com"
