@@ -41,8 +41,8 @@ export const ProvisionRestaurantRequestBodySchema = z.object({
     address: z.string().trim().max(500).optional(),
     description: z.string().trim().max(1000).optional(),
     tags: z.array(z.string()),
-    openingAt: z.string().min(1),
-    closingAt: z.string().min(1),
+    openingAt: z.string().trim().min(1),
+    closingAt: z.string().trim().min(1),
     minimumValue: z.number().min(0),
     deliveryCharge: z.number().min(0),
     commissionPercentage: z.number().min(0).max(100),
@@ -51,7 +51,7 @@ export const ProvisionRestaurantRequestBodySchema = z.object({
   owner: z.object({
     firstName: z.string().trim().min(1).max(50),
     lastName: z.string().trim().min(1).max(50),
-    email: z.string().email(),
+    email: z.string().trim().email(),
     password: z.string().min(8),
   }),
 });

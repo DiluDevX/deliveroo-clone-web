@@ -7,6 +7,8 @@ vi.mock("../src/services/api.client", () => ({
 }));
 
 import { provisionRestaurant } from "../src/services/admin.service";
+import { restaurantFormSchema } from "../src/features/menu/validations/restaurant-form.schema";
+import { ProvisionRestaurantRequestBodySchema } from "../src/types/dto/admin.dto";
 import type { ProvisionRestaurantRequestBodyDTO } from "../src/types/dto/admin.dto";
 
 const request: ProvisionRestaurantRequestBodyDTO = {
@@ -70,5 +72,55 @@ describe("platform restaurant provisioning service", () => {
       provisionRestaurant({ ...request, provisioningId: "not-a-uuid" }),
     ).rejects.toThrow();
     expect(post).not.toHaveBeenCalled();
+  });
+
+  it("trims owner email and restaurant times at the provisioning boundary", () => {
+    const parsed = ProvisionRestaurantRequestBodySchema.parse({
+      ...request,
+      restaurant: {
+        ...request.restaurant,
+        openingAt: " 09:00 ",
+        closingAt: " 21:00 ",
+      },
+      owner: { ...request.owner, email: " owner@example.com " },
+    });
+
+    expect(parsed.restaurant.openingAt).toBe("09:00");
+    expect(parsed.restaurant.closingAt).toBe("21:00");
+    expect(parsed.owner.email).toBe("owner@example.com");
+  });
+
+  it("enforces description and owner-name limits in the modal", () => {
+    const validForm = {
+      name: "Test Kitchen",
+      cuisine: "Sri Lankan",
+      image: "https://example.com/restaurant.jpg",
+      address: "1 Test Street",
+      description: "A test restaurant",
+      tags: "test",
+      openingAt: "09:00",
+      closingAt: "21:00",
+      minimumValue: "10",
+      deliveryCharge: "2",
+      commissionPercentage: "15",
+      ownerFirstName: "Test",
+      ownerLastName: "Owner",
+      adminEmail: "owner@example.com",
+      adminPassword: "Password1",
+    };
+
+    expect(restaurantFormSchema.safeParse(validForm).success).toBe(true);
+    expect(
+      restaurantFormSchema.safeParse({
+        ...validForm,
+        description: "x".repeat(1001),
+      }).success,
+    ).toBe(false);
+    expect(
+      restaurantFormSchema.safeParse({
+        ...validForm,
+        ownerFirstName: "x".repeat(51),
+      }).success,
+    ).toBe(false);
   });
 });
