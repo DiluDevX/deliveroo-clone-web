@@ -9,8 +9,6 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { Restaurant } from "../../../types/restaurants";
-import { createRestaurant } from "../../../services/restaurant.service";
 import {
   showErrorSnackbar,
   showSuccessSnackbar,
@@ -18,35 +16,7 @@ import {
 import { textFieldStyles } from "../../../utils/MuiTextFieldCustom";
 import Button from "./Button";
 import { Colors } from "../../../theme/colors";
-import {
-  createNewRestaurantAdmin,
-  updateRestaurantAdmin,
-} from "../../../services/admin.service";
-import { useAppSelector } from "../../../store/hooks/cartHooks";
-
-const optionalNonNegativeNumberString = (fieldName: string) =>
-  z
-    .string()
-    .trim()
-    .refine((value) => {
-      if (!value) return true;
-      const parsedValue = Number(value);
-      return Number.isFinite(parsedValue) && parsedValue >= 0;
-    }, `${fieldName} must be a positive number`);
-
-const optionalNonNegativeIntegerString = (fieldName: string) =>
-  z
-    .string()
-    .trim()
-    .refine((value) => {
-      if (!value) return true;
-      const parsedValue = Number(value);
-      return (
-        Number.isInteger(parsedValue) &&
-        Number.isFinite(parsedValue) &&
-        parsedValue >= 0
-      );
-    }, `${fieldName} must be a positive whole number`);
+import { provisionRestaurant } from "../../../services/admin.service";
 
 const restaurantFormSchema = z.object({
   name: z
@@ -69,6 +39,7 @@ const restaurantFormSchema = z.object({
     .trim()
     .min(1, "Image URL is required")
     .url("Image must be a valid URL"),
+  address: z.string().trim().max(500, "Address is too long"),
   description: z.string().trim(),
   tags: z.string().trim(),
   openingAt: z.string().trim().min(1, "Opening time is required"),
@@ -87,10 +58,14 @@ const restaurantFormSchema = z.object({
       (val) => Number.isFinite(Number(val)) && Number(val) >= 0,
       "Delivery charge must be a positive number",
     ),
-  rating: optionalNonNegativeNumberString("Rating"),
-  totalOrders: optionalNonNegativeIntegerString("Total orders"),
-  totalRevenue: optionalNonNegativeNumberString("Total revenue"),
-  status: z.enum(["active", "disabled"]),
+  commissionPercentage: z
+    .string()
+    .trim()
+    .refine(
+      (val) =>
+        Number.isFinite(Number(val)) && Number(val) >= 0 && Number(val) <= 100,
+      "Commission percentage must be between 0 and 100",
+    ),
   adminEmail: z.string().trim().email({ message: "Invalid email" }),
   adminPassword: z
     .string()
@@ -110,16 +85,14 @@ export interface CreateRestaurantFormData {
   name: string;
   cuisine: string;
   image: string;
+  address: string;
   description: string;
   tags: string;
   openingAt: string;
   closingAt: string;
   minimumValue: string;
   deliveryCharge: string;
-  rating: string;
-  totalOrders: string;
-  totalRevenue: string;
-  status: "active" | "disabled";
+  commissionPercentage: string;
   adminEmail: string;
   adminPassword: string;
 }
@@ -128,31 +101,23 @@ const resetFormData = (): CreateRestaurantFormData => ({
   name: "",
   cuisine: "",
   image: "",
+  address: "",
   description: "",
   tags: "",
   openingAt: "09:00",
   closingAt: "21:00",
   minimumValue: "0",
   deliveryCharge: "2.99",
-  rating: "",
-  totalOrders: "",
-  totalRevenue: "",
-  status: "active",
+  commissionPercentage: "15",
   adminEmail: "",
   adminPassword: "",
 });
 
-const parseOptionalNumber = (value: string) => (value ? Number(value) : 0);
-
-const parseOptionalInteger = (value: string) =>
-  value ? Number.parseInt(value, 10) : 0;
-
-const buildRestaurantPayload = (
-  data: CreateRestaurantFormData,
-): Partial<Restaurant> => ({
+const buildRestaurantPayload = (data: CreateRestaurantFormData) => ({
   name: data.name,
   image: data.image,
-  description: data.description,
+  address: data.address || undefined,
+  description: data.description || undefined,
   tags: data.tags
     .split(",")
     .map((tag) => tag.trim())
@@ -161,47 +126,9 @@ const buildRestaurantPayload = (
   closingAt: data.closingAt,
   minimumValue: Number(data.minimumValue),
   deliveryCharge: Number(data.deliveryCharge),
+  commissionPercentage: Number(data.commissionPercentage),
   cuisine: data.cuisine,
-  rating: parseOptionalNumber(data.rating),
-  totalOrders: parseOptionalInteger(data.totalOrders),
-  totalRevenue: parseOptionalNumber(data.totalRevenue),
-  status: data.status === "active" ? "ACTIVE" : "DISABLED",
 });
-
-const createRestaurantWithAdmin = async (
-  data: CreateRestaurantFormData,
-  isPlatformAdmin: boolean,
-): Promise<Restaurant> => {
-  const user = await createNewRestaurantAdmin(
-    data.adminEmail,
-    data.adminPassword,
-    data.name,
-    isPlatformAdmin,
-  );
-
-  if (!user?.id) {
-    throw new Error("Failed to create restaurant admin user");
-  }
-
-  const restaurant = await createRestaurant({
-    ...buildRestaurantPayload(data),
-    adminId: user.id,
-  });
-
-  if (!restaurant) {
-    throw new Error("Failed to create restaurant");
-  }
-
-  const res = await updateRestaurantAdmin(user.id, {
-    restaurantId: restaurant.id,
-  });
-
-  if (!res || !res.restaurantId) {
-    throw new Error("Failed to link restaurant admin to restaurant");
-  }
-
-  return restaurant;
-};
 
 const AddRestaurantModal = ({
   open,
@@ -214,8 +141,8 @@ const AddRestaurantModal = ({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const isPlatformAdmin = useAppSelector(
-    (state) => state.auth.user?.role === "platform_admin",
+  const [provisioningId, setProvisioningId] = useState(() =>
+    crypto.randomUUID(),
   );
 
   const handleInputChange = (
@@ -243,12 +170,21 @@ const AddRestaurantModal = ({
 
     setLoading(true);
     try {
-      await createRestaurantWithAdmin(validationResult.data, isPlatformAdmin);
+      await provisionRestaurant({
+        provisioningId,
+        restaurant: buildRestaurantPayload(validationResult.data),
+        owner: {
+          firstName: validationResult.data.name,
+          lastName: "Owner",
+          email: validationResult.data.adminEmail,
+          password: validationResult.data.adminPassword,
+        },
+      });
       showSuccessSnackbar("Restaurant created successfully");
 
       setFormData(resetFormData());
+      setProvisioningId(crypto.randomUUID());
 
-      onClose();
       onSuccess();
     } catch (err) {
       const message =
@@ -266,6 +202,7 @@ const AddRestaurantModal = ({
     setError("");
     onClose();
     setFormData(resetFormData());
+    setProvisioningId(crypto.randomUUID());
   };
 
   return (
@@ -360,6 +297,17 @@ const AddRestaurantModal = ({
           />
           <TextField
             sx={{ ...textFieldStyles }}
+            label="Address"
+            name="address"
+            value={formData.address}
+            onChange={handleInputChange}
+            fullWidth
+            size="small"
+            placeholder="Restaurant address"
+            disabled={loading}
+          />
+          <TextField
+            sx={{ ...textFieldStyles }}
             label="Tags (comma-separated)"
             name="tags"
             value={formData.tags}
@@ -394,6 +342,18 @@ const AddRestaurantModal = ({
               InputLabelProps={{ shrink: true }}
             />
           </Box>
+          <TextField
+            sx={{ ...textFieldStyles }}
+            label="Platform Commission (%)"
+            name="commissionPercentage"
+            type="number"
+            value={formData.commissionPercentage}
+            onChange={handleInputChange}
+            fullWidth
+            size="small"
+            disabled={loading}
+            inputProps={{ step: "0.1", min: "0", max: "100" }}
+          />
           <Box sx={{ display: "flex", gap: 2 }}>
             <TextField
               sx={{ ...textFieldStyles }}
