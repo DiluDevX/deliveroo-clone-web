@@ -5,8 +5,12 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
+import { LogoutRounded } from "@mui/icons-material";
 import { Colors } from "../../../theme";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useAppDispatch } from "../../../store/hooks/cartHooks";
+import { logOutUser } from "../../../store/authThunks";
 
 export interface AdminSidebarProps {
   isMobile: boolean;
@@ -27,6 +31,17 @@ const AdminSidebar = ({
 }: AdminSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+    await dispatch(logOutUser());
+    setDrawerOpen(false);
+    navigate("/account/login", { replace: true });
+  };
 
   return (
     <Drawer
@@ -131,6 +146,29 @@ const AdminSidebar = ({
             </ListItemButton>
           );
         })}
+        <ListItemButton
+          aria-label="Log out"
+          disabled={isLoggingOut}
+          onClick={() => void handleLogout()}
+          sx={{
+            width: "100%",
+            py: 1.5,
+            px: 3,
+            borderTop: `1px solid ${Colors.border.subtle}`,
+            color: Colors.error.main,
+            "&:hover": { backgroundColor: Colors.error.lighter },
+          }}
+        >
+          <ListItemIcon sx={{ color: "inherit", minWidth: 0, mr: 2 }}>
+            <LogoutRounded sx={{ fontSize: "1.3rem" }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={isLoggingOut ? "Logging out…" : "Log out"}
+            primaryTypographyProps={{
+              sx: { fontWeight: 500, fontSize: "1rem" },
+            }}
+          />
+        </ListItemButton>
       </List>
     </Drawer>
   );

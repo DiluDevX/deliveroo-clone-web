@@ -172,6 +172,9 @@ Restaurant navigation and routes are capability-driven:
 - `finance`: dashboard and analytics
 - `admin`: dashboard, orders, menu, analytics, settings, and team management
 - `super_admin`: owner access to the same workspace plus broader role assignment
+- Platform admins create a restaurant and its initial `super_admin` through one retry-safe BFF
+  provisioning command. Owners continue to invite later `admin`, `finance`, and `employee` staff
+  through the existing team workflow.
 
 Team members join through an expiring email link and set or confirm their own
 password. The frontend hides inaccessible actions, while the BFF and owning

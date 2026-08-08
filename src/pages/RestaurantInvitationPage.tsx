@@ -42,6 +42,7 @@ const RestaurantInvitationPage = () => {
   const token = searchParams.get("token");
   const [invitation, setInvitation] =
     useState<RestaurantInvitationPreview | null>(null);
+  const isOwnerInvitation = invitation?.role === "super_admin";
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isAccepted, setIsAccepted] = useState(false);
@@ -211,11 +212,15 @@ const RestaurantInvitationPage = () => {
               sx={{ mb: 2, fontWeight: 800 }}
             />
             <Typography variant="h4" sx={{ fontWeight: 900, mb: 1.5 }}>
-              Join the restaurant team
+              {isOwnerInvitation
+                ? "Set up your restaurant owner account"
+                : "Join the restaurant team"}
             </Typography>
             <Typography sx={{ color: Colors.text.lighter, mb: 3 }}>
               This invitation is for <strong>{invitation.email}</strong>. For
-              security, confirm the account password before joining.
+              security, {invitation.existingUser ? "confirm" : "create"} the
+              account password before{" "}
+              {isOwnerInvitation ? "taking ownership" : "joining"}.
             </Typography>
 
             <Box

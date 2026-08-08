@@ -1,6 +1,10 @@
 import axios from "axios";
-import { IUser } from "../types/user.types";
-import { CreateRestaurantAdminRequestBodySchema } from "../types/dto/admin.dto";
+import {
+  ProvisionRestaurantRequestBodyDTO,
+  ProvisionRestaurantRequestBodySchema,
+} from "../types/dto/admin.dto";
+import { Restaurant } from "../types/restaurants";
+import { apiClient } from "./api.client";
 
 export const verifyApiKey = async (
   apiKey: string,
@@ -20,47 +24,29 @@ export const verifyApiKey = async (
   }
 };
 
-export const updateRestaurantAdmin = async (
-  userId: string,
-  data: Partial<IUser>,
-) => {
-  const response = await axios.patch(
-    `/api/auth/admin/update-partially/${userId}`,
-    {
-      data,
-    },
-  );
-  return response.data.user;
-};
+export const provisionRestaurant = async (
+  input: ProvisionRestaurantRequestBodyDTO,
+): Promise<Restaurant> => {
+  const payload = ProvisionRestaurantRequestBodySchema.parse(input);
 
-export const createNewRestaurantAdmin = async (
-  email: string,
-  password: string,
-  restaurantName: string,
-  isPlatformAdmin: boolean,
-): Promise<IUser> => {
-  if (!isPlatformAdmin) {
-    throw new Error("Platform admins can only create restaurant admins.");
+  try {
+    const response = await apiClient.post<{
+      success: boolean;
+      message: string;
+      data: { restaurant: Restaurant };
+    }>("/admin/restaurants", payload);
+
+    return response.data.data.restaurant;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const data = error.response?.data;
+      if (typeof data === "object" && data !== null && "message" in data) {
+        const message = data.message;
+        if (typeof message === "string") {
+          throw new Error(message);
+        }
+      }
+    }
+    throw error;
   }
-
-  const payload = CreateRestaurantAdminRequestBodySchema.parse({
-    email,
-    password,
-    role: "restaurant_user",
-    restaurantRole: "super_admin",
-    firstName: restaurantName,
-    lastName: "admin",
-  });
-
-  const response = await axios.post(
-    "/api/auth/admin/create-restaurant-admin",
-    payload,
-    {
-      headers: {
-        platform_admin: isPlatformAdmin ? "true" : "false",
-      },
-    },
-  );
-
-  return response.data.user;
 };

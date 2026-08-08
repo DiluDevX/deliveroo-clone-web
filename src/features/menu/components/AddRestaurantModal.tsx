@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { z } from "zod";
+import type { z } from "zod";
 import {
   Dialog,
   DialogTitle,
@@ -9,8 +9,6 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { Restaurant } from "../../../types/restaurants";
-import { createRestaurant } from "../../../services/restaurant.service";
 import {
   showErrorSnackbar,
   showSuccessSnackbar,
@@ -18,87 +16,8 @@ import {
 import { textFieldStyles } from "../../../utils/MuiTextFieldCustom";
 import Button from "./Button";
 import { Colors } from "../../../theme/colors";
-import {
-  createNewRestaurantAdmin,
-  updateRestaurantAdmin,
-} from "../../../services/admin.service";
-import { useAppSelector } from "../../../store/hooks/cartHooks";
-
-const optionalNonNegativeNumberString = (fieldName: string) =>
-  z
-    .string()
-    .trim()
-    .refine((value) => {
-      if (!value) return true;
-      const parsedValue = Number(value);
-      return Number.isFinite(parsedValue) && parsedValue >= 0;
-    }, `${fieldName} must be a positive number`);
-
-const optionalNonNegativeIntegerString = (fieldName: string) =>
-  z
-    .string()
-    .trim()
-    .refine((value) => {
-      if (!value) return true;
-      const parsedValue = Number(value);
-      return (
-        Number.isInteger(parsedValue) &&
-        Number.isFinite(parsedValue) &&
-        parsedValue >= 0
-      );
-    }, `${fieldName} must be a positive whole number`);
-
-const restaurantFormSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Restaurant name is required")
-    .max(200, "Restaurant name is too long")
-    .regex(
-      /^[a-zA-Z0-9\s'&\-.,]+$/,
-      "Restaurant name contains unsupported characters",
-    ),
-  cuisine: z
-    .string()
-    .trim()
-    .min(1, "Cuisine type is required")
-    .max(100, "Cuisine type is too long")
-    .regex(/^[a-zA-Z\s'\-&]+$/, "Cuisine contains unsupported characters"),
-  image: z
-    .string()
-    .trim()
-    .min(1, "Image URL is required")
-    .url("Image must be a valid URL"),
-  description: z.string().trim(),
-  tags: z.string().trim(),
-  openingAt: z.string().trim().min(1, "Opening time is required"),
-  closingAt: z.string().trim().min(1, "Closing time is required"),
-  minimumValue: z
-    .string()
-    .trim()
-    .refine(
-      (val) => Number.isFinite(Number(val)) && Number(val) >= 0,
-      "Minimum value must be a positive number",
-    ),
-  deliveryCharge: z
-    .string()
-    .trim()
-    .refine(
-      (val) => Number.isFinite(Number(val)) && Number(val) >= 0,
-      "Delivery charge must be a positive number",
-    ),
-  rating: optionalNonNegativeNumberString("Rating"),
-  totalOrders: optionalNonNegativeIntegerString("Total orders"),
-  totalRevenue: optionalNonNegativeNumberString("Total revenue"),
-  status: z.enum(["active", "disabled"]),
-  adminEmail: z.string().trim().email({ message: "Invalid email" }),
-  adminPassword: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters" })
-    .regex(/[A-Z]/, { message: "Must include an uppercase letter" })
-    .regex(/[a-z]/, { message: "Must include a lowercase letter" })
-    .regex(/[0-9]/, { message: "Must include a number" }),
-});
+import { provisionRestaurant } from "../../../services/admin.service";
+import { restaurantFormSchema } from "../validations/restaurant-form.schema";
 
 interface AddRestaurantModalProps {
   open: boolean;
@@ -106,53 +25,30 @@ interface AddRestaurantModalProps {
   onSuccess: () => void;
 }
 
-export interface CreateRestaurantFormData {
-  name: string;
-  cuisine: string;
-  image: string;
-  description: string;
-  tags: string;
-  openingAt: string;
-  closingAt: string;
-  minimumValue: string;
-  deliveryCharge: string;
-  rating: string;
-  totalOrders: string;
-  totalRevenue: string;
-  status: "active" | "disabled";
-  adminEmail: string;
-  adminPassword: string;
-}
+export type CreateRestaurantFormData = z.infer<typeof restaurantFormSchema>;
 
 const resetFormData = (): CreateRestaurantFormData => ({
   name: "",
   cuisine: "",
   image: "",
+  address: "",
   description: "",
   tags: "",
   openingAt: "09:00",
   closingAt: "21:00",
   minimumValue: "0",
   deliveryCharge: "2.99",
-  rating: "",
-  totalOrders: "",
-  totalRevenue: "",
-  status: "active",
+  commissionPercentage: "15",
+  ownerFirstName: "",
+  ownerLastName: "",
   adminEmail: "",
-  adminPassword: "",
 });
 
-const parseOptionalNumber = (value: string) => (value ? Number(value) : 0);
-
-const parseOptionalInteger = (value: string) =>
-  value ? Number.parseInt(value, 10) : 0;
-
-const buildRestaurantPayload = (
-  data: CreateRestaurantFormData,
-): Partial<Restaurant> => ({
+const buildRestaurantPayload = (data: CreateRestaurantFormData) => ({
   name: data.name,
   image: data.image,
-  description: data.description,
+  address: data.address || undefined,
+  description: data.description || undefined,
   tags: data.tags
     .split(",")
     .map((tag) => tag.trim())
@@ -161,47 +57,9 @@ const buildRestaurantPayload = (
   closingAt: data.closingAt,
   minimumValue: Number(data.minimumValue),
   deliveryCharge: Number(data.deliveryCharge),
+  commissionPercentage: Number(data.commissionPercentage),
   cuisine: data.cuisine,
-  rating: parseOptionalNumber(data.rating),
-  totalOrders: parseOptionalInteger(data.totalOrders),
-  totalRevenue: parseOptionalNumber(data.totalRevenue),
-  status: data.status === "active" ? "ACTIVE" : "DISABLED",
 });
-
-const createRestaurantWithAdmin = async (
-  data: CreateRestaurantFormData,
-  isPlatformAdmin: boolean,
-): Promise<Restaurant> => {
-  const user = await createNewRestaurantAdmin(
-    data.adminEmail,
-    data.adminPassword,
-    data.name,
-    isPlatformAdmin,
-  );
-
-  if (!user?.id) {
-    throw new Error("Failed to create restaurant admin user");
-  }
-
-  const restaurant = await createRestaurant({
-    ...buildRestaurantPayload(data),
-    adminId: user.id,
-  });
-
-  if (!restaurant) {
-    throw new Error("Failed to create restaurant");
-  }
-
-  const res = await updateRestaurantAdmin(user.id, {
-    restaurantId: restaurant.id,
-  });
-
-  if (!res || !res.restaurantId) {
-    throw new Error("Failed to link restaurant admin to restaurant");
-  }
-
-  return restaurant;
-};
 
 const AddRestaurantModal = ({
   open,
@@ -214,8 +72,8 @@ const AddRestaurantModal = ({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const isPlatformAdmin = useAppSelector(
-    (state) => state.auth.user?.role === "platform_admin",
+  const [provisioningId, setProvisioningId] = useState(() =>
+    crypto.randomUUID(),
   );
 
   const handleInputChange = (
@@ -243,12 +101,20 @@ const AddRestaurantModal = ({
 
     setLoading(true);
     try {
-      await createRestaurantWithAdmin(validationResult.data, isPlatformAdmin);
-      showSuccessSnackbar("Restaurant created successfully");
+      await provisionRestaurant({
+        provisioningId,
+        restaurant: buildRestaurantPayload(validationResult.data),
+        owner: {
+          firstName: validationResult.data.ownerFirstName,
+          lastName: validationResult.data.ownerLastName,
+          email: validationResult.data.adminEmail,
+        },
+      });
+      showSuccessSnackbar("Restaurant created and owner invitation sent");
 
       setFormData(resetFormData());
+      setProvisioningId(crypto.randomUUID());
 
-      onClose();
       onSuccess();
     } catch (err) {
       const message =
@@ -266,6 +132,7 @@ const AddRestaurantModal = ({
     setError("");
     onClose();
     setFormData(resetFormData());
+    setProvisioningId(crypto.randomUUID());
   };
 
   return (
@@ -314,7 +181,25 @@ const AddRestaurantModal = ({
           />
           <TextField
             sx={{ ...textFieldStyles, flex: 1 }}
-            label="Admin Email"
+            label="Owner First Name"
+            name="ownerFirstName"
+            value={formData.ownerFirstName}
+            onChange={handleInputChange}
+            size="small"
+            disabled={loading}
+          />
+          <TextField
+            sx={{ ...textFieldStyles, flex: 1 }}
+            label="Owner Last Name"
+            name="ownerLastName"
+            value={formData.ownerLastName}
+            onChange={handleInputChange}
+            size="small"
+            disabled={loading}
+          />
+          <TextField
+            sx={{ ...textFieldStyles, flex: 1 }}
+            label="Owner Email"
             name="adminEmail"
             type="email"
             value={formData.adminEmail}
@@ -322,17 +207,6 @@ const AddRestaurantModal = ({
             size="small"
             placeholder="(restaurantName)-admin@gmail.com"
             disabled={loading}
-          />
-          <TextField
-            sx={{ ...textFieldStyles, flex: 1 }}
-            label="Admin Password"
-            name="adminPassword"
-            type="password"
-            value={formData.adminPassword}
-            onChange={handleInputChange}
-            size="small"
-            disabled={loading}
-            placeholder="Example@1234"
           />
           <TextField
             sx={{ ...textFieldStyles }}
@@ -357,6 +231,17 @@ const AddRestaurantModal = ({
             disabled={loading}
             multiline
             rows={2}
+          />
+          <TextField
+            sx={{ ...textFieldStyles }}
+            label="Address"
+            name="address"
+            value={formData.address}
+            onChange={handleInputChange}
+            fullWidth
+            size="small"
+            placeholder="Restaurant address"
+            disabled={loading}
           />
           <TextField
             sx={{ ...textFieldStyles }}
@@ -394,6 +279,18 @@ const AddRestaurantModal = ({
               InputLabelProps={{ shrink: true }}
             />
           </Box>
+          <TextField
+            sx={{ ...textFieldStyles }}
+            label="Platform Commission (%)"
+            name="commissionPercentage"
+            type="number"
+            value={formData.commissionPercentage}
+            onChange={handleInputChange}
+            fullWidth
+            size="small"
+            disabled={loading}
+            inputProps={{ step: "0.1", min: "0", max: "100" }}
+          />
           <Box sx={{ display: "flex", gap: 2 }}>
             <TextField
               sx={{ ...textFieldStyles }}
