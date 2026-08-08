@@ -59,10 +59,4 @@ export const restaurantFormSchema = z.object({
     .min(1, "Owner last name is required")
     .max(50, "Owner last name is too long"),
   adminEmail: z.string().trim().email({ message: "Invalid email" }),
-  adminPassword: z
-    .string()
-    .min(8, { message: "Password must be at least 8 characters" })
-    .regex(/[A-Z]/, { message: "Must include an uppercase letter" })
-    .regex(/[a-z]/, { message: "Must include a lowercase letter" })
-    .regex(/[0-9]/, { message: "Must include a number" }),
 });

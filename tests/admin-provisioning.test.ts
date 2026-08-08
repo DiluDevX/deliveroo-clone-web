@@ -30,7 +30,6 @@ const request: ProvisionRestaurantRequestBodyDTO = {
     firstName: "Test Kitchen",
     lastName: "Owner",
     email: "owner@example.com",
-    password: "Password1",
   },
 };
 
@@ -82,12 +81,17 @@ describe("platform restaurant provisioning service", () => {
         openingAt: " 09:00 ",
         closingAt: " 21:00 ",
       },
-      owner: { ...request.owner, email: " owner@example.com " },
+      owner: {
+        ...request.owner,
+        email: " owner@example.com ",
+        password: "must-not-cross-the-boundary",
+      },
     });
 
     expect(parsed.restaurant.openingAt).toBe("09:00");
     expect(parsed.restaurant.closingAt).toBe("21:00");
     expect(parsed.owner.email).toBe("owner@example.com");
+    expect(parsed.owner).not.toHaveProperty("password");
   });
 
   it("enforces description and owner-name limits in the modal", () => {
@@ -106,7 +110,6 @@ describe("platform restaurant provisioning service", () => {
       ownerFirstName: "Test",
       ownerLastName: "Owner",
       adminEmail: "owner@example.com",
-      adminPassword: "Password1",
     };
 
     expect(restaurantFormSchema.safeParse(validForm).success).toBe(true);

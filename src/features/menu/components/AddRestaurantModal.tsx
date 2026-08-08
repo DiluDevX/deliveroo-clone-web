@@ -39,7 +39,6 @@ export interface CreateRestaurantFormData {
   ownerFirstName: string;
   ownerLastName: string;
   adminEmail: string;
-  adminPassword: string;
 }
 
 const resetFormData = (): CreateRestaurantFormData => ({
@@ -57,7 +56,6 @@ const resetFormData = (): CreateRestaurantFormData => ({
   ownerFirstName: "",
   ownerLastName: "",
   adminEmail: "",
-  adminPassword: "",
 });
 
 const buildRestaurantPayload = (data: CreateRestaurantFormData) => ({
@@ -124,10 +122,9 @@ const AddRestaurantModal = ({
           firstName: validationResult.data.ownerFirstName,
           lastName: validationResult.data.ownerLastName,
           email: validationResult.data.adminEmail,
-          password: validationResult.data.adminPassword,
         },
       });
-      showSuccessSnackbar("Restaurant created successfully");
+      showSuccessSnackbar("Restaurant created and owner invitation sent");
 
       setFormData(resetFormData());
       setProvisioningId(crypto.randomUUID());
@@ -224,17 +221,6 @@ const AddRestaurantModal = ({
             size="small"
             placeholder="(restaurantName)-admin@gmail.com"
             disabled={loading}
-          />
-          <TextField
-            sx={{ ...textFieldStyles, flex: 1 }}
-            label="Owner Password"
-            name="adminPassword"
-            type="password"
-            value={formData.adminPassword}
-            onChange={handleInputChange}
-            size="small"
-            disabled={loading}
-            placeholder="Example@1234"
           />
           <TextField
             sx={{ ...textFieldStyles }}

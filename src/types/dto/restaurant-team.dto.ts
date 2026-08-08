@@ -78,6 +78,7 @@ export const AcceptRestaurantInvitationApiResponseSchema = z.object({
     email: z.string().email(),
     restaurantId: z.string().min(1),
     role: RestaurantUserRoleSchema,
+    provisioningId: z.string().uuid().optional(),
   }),
 });
 
