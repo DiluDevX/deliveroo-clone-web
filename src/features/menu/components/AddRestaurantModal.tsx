@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { z } from "zod";
 import {
   Dialog,
   DialogTitle,
@@ -24,22 +25,7 @@ interface AddRestaurantModalProps {
   onSuccess: () => void;
 }
 
-export interface CreateRestaurantFormData {
-  name: string;
-  cuisine: string;
-  image: string;
-  address: string;
-  description: string;
-  tags: string;
-  openingAt: string;
-  closingAt: string;
-  minimumValue: string;
-  deliveryCharge: string;
-  commissionPercentage: string;
-  ownerFirstName: string;
-  ownerLastName: string;
-  adminEmail: string;
-}
+export type CreateRestaurantFormData = z.infer<typeof restaurantFormSchema>;
 
 const resetFormData = (): CreateRestaurantFormData => ({
   name: "",

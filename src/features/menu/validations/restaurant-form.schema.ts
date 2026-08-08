@@ -29,20 +29,23 @@ export const restaurantFormSchema = z.object({
   minimumValue: z
     .string()
     .trim()
+    .min(1, "Minimum value is required")
     .refine(
       (val) => Number.isFinite(Number(val)) && Number(val) >= 0,
-      "Minimum value must be a positive number",
+      "Minimum value must be a non-negative number",
     ),
   deliveryCharge: z
     .string()
     .trim()
+    .min(1, "Delivery charge is required")
     .refine(
       (val) => Number.isFinite(Number(val)) && Number(val) >= 0,
-      "Delivery charge must be a positive number",
+      "Delivery charge must be a non-negative number",
     ),
   commissionPercentage: z
     .string()
     .trim()
+    .min(1, "Commission percentage is required")
     .refine(
       (val) =>
         Number.isFinite(Number(val)) && Number(val) >= 0 && Number(val) <= 100,

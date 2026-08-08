@@ -125,5 +125,15 @@ describe("platform restaurant provisioning service", () => {
         ownerFirstName: "x".repeat(51),
       }).success,
     ).toBe(false);
+    for (const field of [
+      "minimumValue",
+      "deliveryCharge",
+      "commissionPercentage",
+    ] as const) {
+      expect(
+        restaurantFormSchema.safeParse({ ...validForm, [field]: "   " })
+          .success,
+      ).toBe(false);
+    }
   });
 });
