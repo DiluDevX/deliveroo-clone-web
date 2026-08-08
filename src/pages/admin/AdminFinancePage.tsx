@@ -21,13 +21,15 @@ import {
 import { Colors } from "../../theme";
 import Button from "../../features/menu/components/Button";
 import LoadingIndicator from "../../features/menu/components/LoadingIndicator";
-import axios from "axios";
 import {
   transformFinanceToRevenueChart,
   formatChartDate,
   RevenueChartData,
 } from "../../utils/chartDataTransformers";
-import { getFinanceRecords } from "../../services/finance.service";
+import {
+  getAdminDashboardStats,
+  getFinanceRecords,
+} from "../../services/finance.service";
 
 const AdminFinancePage = () => {
   const [timePeriod, setTimePeriod] = useState("7days");
@@ -67,8 +69,8 @@ const AdminFinancePage = () => {
     setFinishedFetchingChartData(false);
     const fetchFinanceStats = async () => {
       try {
-        const response = await axios.get("/api/finance/admin-dashboard-stats");
-        const data = response.data.data;
+        const response = await getAdminDashboardStats();
+        const data = response.data;
         setFinanceStats(data.stats);
         setPendingPayouts(data.pendingPayouts || []);
 

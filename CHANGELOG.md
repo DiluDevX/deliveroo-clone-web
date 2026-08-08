@@ -2,10 +2,10 @@
 
 ### Features
 
-* enhance restaurant form validation and implement logout functionality ([091fc6e](https://github.com/DiluDevX/deliveroo-clone-web/commit/091fc6e773b23b265c60843e9af543dbe14cfd41))
-* implement restaurant provisioning functionality and update related schemas ([8b1ac61](https://github.com/DiluDevX/deliveroo-clone-web/commit/8b1ac61eb978f5c386ba50f5a0d1e0c36957da8c))
-* refactor restaurant form validation and enhance provisioning schema ([9f7efe8](https://github.com/DiluDevX/deliveroo-clone-web/commit/9f7efe8b64e23972665b0be196f6b44150a2ff6a))
-* remove admin password from restaurant creation and update related schemas ([bb85241](https://github.com/DiluDevX/deliveroo-clone-web/commit/bb852419d3ff6f6bc4830381b7c14fd1689fedc8))
+- enhance restaurant form validation and implement logout functionality ([091fc6e](https://github.com/DiluDevX/deliveroo-clone-web/commit/091fc6e773b23b265c60843e9af543dbe14cfd41))
+- implement restaurant provisioning functionality and update related schemas ([8b1ac61](https://github.com/DiluDevX/deliveroo-clone-web/commit/8b1ac61eb978f5c386ba50f5a0d1e0c36957da8c))
+- refactor restaurant form validation and enhance provisioning schema ([9f7efe8](https://github.com/DiluDevX/deliveroo-clone-web/commit/9f7efe8b64e23972665b0be196f6b44150a2ff6a))
+- remove admin password from restaurant creation and update related schemas ([bb85241](https://github.com/DiluDevX/deliveroo-clone-web/commit/bb852419d3ff6f6bc4830381b7c14fd1689fedc8))
 
 ## [1.46.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.45.0...v1.46.0) (2026-07-19)
 
