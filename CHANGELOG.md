@@ -2,7 +2,7 @@
 
 ### Features
 
-* update finance service to use apiClient and add admin dashboard stats fetching ([6b2aae7](https://github.com/DiluDevX/deliveroo-clone-web/commit/6b2aae7c9256311968d473e4d712b23dc3138206))
+- update finance service to use apiClient and add admin dashboard stats fetching ([6b2aae7](https://github.com/DiluDevX/deliveroo-clone-web/commit/6b2aae7c9256311968d473e4d712b23dc3138206))
 
 ## [1.47.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.46.0...v1.47.0) (2026-08-08)
 
