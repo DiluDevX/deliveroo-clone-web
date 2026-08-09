@@ -1,3 +1,15 @@
+## [1.49.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.48.0...v1.49.0) (2026-08-09)
+
+### Features
+
+* add Terraform configuration for development environment ([30757ba](https://github.com/DiluDevX/deliveroo-clone-web/commit/30757ba50977f2ab9f5a22aef96dcaf0c781ff48))
+* integrate Terraform workflows and add infrastructure management ([a3e0bfe](https://github.com/DiluDevX/deliveroo-clone-web/commit/a3e0bfe70480e8d19f70b907262eb71b772a1b62))
+* update Terraform configurations and workflows for improved resource management ([3e02dc4](https://github.com/DiluDevX/deliveroo-clone-web/commit/3e02dc440ae74a3a0e0f5978bd4e9c3546e07993))
+
+### Bug Fixes
+
+* trigger azure deployment ([4b906ed](https://github.com/DiluDevX/deliveroo-clone-web/commit/4b906ed54615ddba57fd6a821f1a72df747705ce))
+
 ## [1.48.0](https://github.com/DiluDevX/deliveroo-clone-web/compare/v1.47.0...v1.48.0) (2026-08-08)
 
 ### Features
