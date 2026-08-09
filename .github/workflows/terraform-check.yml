@@ -1,0 +1,54 @@
+name: Terraform Check
+
+on:
+  pull_request:
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform-check.yml"
+  push:
+    branches:
+      - develop
+      - main
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Format and validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.8"
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive terraform
+
+      - name: Initialize bootstrap without backend
+        working-directory: terraform/bootstrap
+        run: terraform init -backend=false -input=false
+
+      - name: Validate bootstrap
+        working-directory: terraform/bootstrap
+        run: terraform validate
+
+      - name: Initialize development without backend
+        working-directory: terraform/environments/development
+        run: terraform init -backend=false -input=false
+
+      - name: Validate development
+        working-directory: terraform/environments/development
+        run: terraform validate

@@ -1,9 +1,13 @@
 {
   "cSpell.words": [
+    "azuread",
     "Bambalapitiya",
+    "computevm",
     "Deliveroo",
+    "deliveroodevacr",
     "Fastfood",
     "favourite",
+    "foodflowtfstateazvm",
     "giftcard",
     "hocs",
     "Katsu",
@@ -11,8 +15,11 @@
     "resto",
     "rooute",
     "scrollspy",
+    "southeastasia",
     "Svgs",
-    "unstub"
+    "tfstate",
+    "unstub",
+    "vtpm"
   ],
   "postman.settings.dotenv-detection-notification-visibility": false
 }
