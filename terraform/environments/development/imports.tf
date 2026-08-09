@@ -57,3 +57,8 @@ import {
   to = azurerm_dev_test_global_vm_shutdown_schedule.vm
   id = "/subscriptions/${var.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.DevTestLab/schedules/shutdown-computevm-deliveroo-services-dev-vm"
 }
+
+import {
+  to = azurerm_static_web_app.frontend
+  id = "/subscriptions/${var.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Web/staticSites/deliveroo-web-dev"
+}

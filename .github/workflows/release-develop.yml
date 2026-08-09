@@ -6,6 +6,7 @@ on:
       - develop
     paths-ignore:
       - "terraform/**"
+      - ".github/workflows/terraform-check.yml"
   workflow_dispatch:
 
 permissions:

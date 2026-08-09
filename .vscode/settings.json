@@ -21,8 +21,5 @@
     "unstub",
     "vtpm"
   ],
-  "postman.settings.dotenv-detection-notification-visibility": false,
-  "terminal.integrated.fontFamily": "MesloLGS Nerd Font",
-  "terminal.integrated.fontSize": 16,
-  "terminal.integrated.minimumContrastRatio": 1
+  "postman.settings.dotenv-detection-notification-visibility": false
 }

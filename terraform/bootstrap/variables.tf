@@ -36,7 +36,11 @@ variable "container_name" {
   default     = "tfstate"
 
   validation {
-    condition     = can(regex("^[a-z0-9](?:[a-z0-9-]{1,61}[a-z0-9])?$", var.container_name))
-    error_message = "container_name must be a valid 3-63 character Azure container name."
+    condition = (
+      length(var.container_name) >= 3 &&
+      length(var.container_name) <= 63 &&
+      can(regex("^[a-z0-9]+(?:-[a-z0-9]+)*$", var.container_name))
+    )
+    error_message = "container_name must contain 3-63 lowercase letters, numbers, or single hyphens and must start and end with a letter or number."
   }
 }

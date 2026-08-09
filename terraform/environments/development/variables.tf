@@ -40,6 +40,14 @@ variable "container_registry_name" {
 variable "ssh_source_address_prefix" {
   description = "Public IP allowed to access the development VM over SSH."
   type        = string
+
+  validation {
+    condition = (
+      can(cidrhost(trimspace(var.ssh_source_address_prefix), 0)) &&
+      !contains(["0.0.0.0/0", "::/0"], trimspace(var.ssh_source_address_prefix))
+    )
+    error_message = "ssh_source_address_prefix must be a controlled IPv4 or IPv6 CIDR and must not allow the entire Internet."
+  }
 }
 
 variable "vm_admin_ssh_public_key" {
@@ -47,9 +55,15 @@ variable "vm_admin_ssh_public_key" {
   type        = string
 }
 
-import {
-  to = azurerm_static_web_app.frontend
-  id = "/subscriptions/${var.subscription_id}/resourceGroups/${var.resource_group_name}/providers/Microsoft.Web/staticSites/deliveroo-web-dev"
+variable "static_web_app_location" {
+  description = "Azure region of the existing development Static Web App."
+  type        = string
+  default     = "eastasia"
+
+  validation {
+    condition     = length(trimspace(var.static_web_app_location)) > 0
+    error_message = "static_web_app_location must not be empty."
+  }
 }
 
 variable "vm_shutdown_notification_email" {

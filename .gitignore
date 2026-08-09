@@ -29,6 +29,7 @@ dist-ssr
 **/.terraform/*
 *.tfstate
 *.tfstate.*
+tfplan
 *.tfplan
 *.tfvars
 !*.tfvars.example

@@ -24,10 +24,14 @@ terraform/
     └── development/
         ├── backend.hcl.example
         ├── backend.tf
+        ├── compute.tf
         ├── imports.tf
         ├── main.tf
+        ├── network.tf
         ├── outputs.tf
         ├── providers.tf
+        ├── shutdown.tf
+        ├── static-web-app.tf
         ├── terraform.tfvars.example
         └── variables.tf
 ```
@@ -37,10 +41,11 @@ Terraform state. Its first apply uses local state because the remote backend
 does not exist yet. After creation, migrate bootstrap state to
 `foodflow/bootstrap.tfstate`.
 
-`environments/development` will adopt and manage the existing development
-platform. It intentionally contains no Azure resource blocks yet: defining
-existing resources inaccurately and applying before importing could create
-duplicates or replace the current VM.
+`environments/development` models and adopts the existing development platform,
+including the resource group, registry, networking, VM, shutdown schedule, and
+Static Web App. Its declarative import blocks connect those resource definitions
+to existing Azure objects. Never apply this root until a fresh plan has been
+reviewed and contains no unintended creates, updates, replacements, or destroys.
 
 ## Prerequisites
 
@@ -68,11 +73,11 @@ cp terraform.tfvars.example terraform.tfvars
 Edit `terraform.tfvars`, then run:
 
 ```bash
-terraform init
+terraform init -backend=false
 terraform fmt -check
 terraform validate
-terraform plan -out=tfplan
-terraform apply tfplan
+terraform plan -out=bootstrap.tfplan
+terraform apply bootstrap.tfplan
 ```
 
 The bootstrap grants the current Azure principal `Storage Blob Data
@@ -98,7 +103,8 @@ cd terraform/bootstrap
 cp backend.hcl.example backend.hcl
 ```
 
-Fill `backend.hcl` with the bootstrap outputs and subscription ID, then migrate:
+Fill `backend.hcl` with the bootstrap outputs and subscription ID. Keep the
+bootstrap key as `foodflow/bootstrap.tfstate`, then migrate:
 
 ```bash
 terraform init -migrate-state -backend-config=backend.hcl
@@ -116,7 +122,10 @@ cp terraform.tfvars.example terraform.tfvars
 ```
 
 Fill in both ignored files using the bootstrap outputs and the selected Azure
-subscription ID. Then initialize:
+subscription ID. Keep the development key separate as
+`foodflow/development.tfstate`. Replace the documentation-only SSH CIDR and SSH
+key examples with your current public IP in CIDR notation and your real public
+key. Then initialize:
 
 ```bash
 terraform init -backend-config=backend.hcl
@@ -130,19 +139,29 @@ sensitive values even when output is marked sensitive.
 
 ## 4. Adopt existing development resources
 
-The following live resources were identified in `deliveroo-rg` and should be
-adopted incrementally:
+The development configuration models the following live resources in
+`deliveroo-rg`, which must be present in the development state before Terraform
+can manage them safely:
 
+- The `deliveroo-rg` resource group
 - `deliveroodevacr`
 - `deliveroo-services-dev-vm_key`
 - `deliveroo-services-dev-vm-nsg`
 - `deliveroo-services-dev-vnet`
 - `deliveroo-services-dev-vm`
-- The VM public IP, network interface, and OS disk
+- The subnet, NSG rules, public IP, network interface, and NSG association
+- The VM OS disk as part of the virtual-machine resource
 - The VM auto-shutdown schedule
 - `deliveroo-web-dev`
 
-For each resource:
+Before planning, inspect the current state:
+
+```bash
+terraform state list
+terraform plan -out=development.tfplan
+```
+
+For each resource not already in state:
 
 1. Write a resource block matching its current Azure configuration.
 2. Add a declarative `import` block in `imports.tf`.
@@ -150,6 +169,11 @@ For each resource:
 4. Correct every unexpected update or replacement.
 5. Apply only when the plan contains the intended import and no accidental
    infrastructure changes.
+
+Stop without applying if the plan proposes replacing the VM, public IP, network
+interface, registry, or Static Web App; destroying any resource; creating a
+duplicate live resource; or changing properties that were not deliberately
+requested. After adoption, regenerate the plan and require a no-change result.
 
 Do not import Azure-managed resources such as Network Watcher unless there is a
 clear reason for this project to own their lifecycle.
