@@ -300,11 +300,6 @@ const CheckoutPage = () => {
       }
 
       if (paymentMethod === "CASH_ON_DELIVERY") {
-        const restaurantName =
-          localStorage.getItem("selected-restaurant-name") || "Restaurant";
-        const restaurantAddress =
-          localStorage.getItem("selected-restaurant-address") || "";
-
         const checkoutRequest: CheckoutRequest = {
           deliveryAddress: {
             line1: data.address || "",
@@ -312,15 +307,8 @@ const CheckoutPage = () => {
             postcode: data.zipCode || "",
             country: "UK",
           },
-          restaurantName,
-          deliveryFee: shippingFee,
-          serviceFee: 0.99,
-          discountAmount: 0,
           paymentMethod: "cash",
         };
-        if (restaurantAddress.trim()) {
-          checkoutRequest.restaurantAddress = restaurantAddress.trim();
-        }
 
         const orderResponse = await checkoutCart(checkoutRequest);
 
@@ -331,11 +319,11 @@ const CheckoutPage = () => {
             state: {
               orderId: orderResponse.orderNumber,
               orderDetails: {
-                subtotal,
-                shippingFee,
-                serviceFee: 0.99,
-                discount: 0,
-                total: subtotal + shippingFee + 0.99,
+                subtotal: orderResponse.subtotal,
+                shippingFee: orderResponse.deliveryFee,
+                serviceFee: orderResponse.serviceFee,
+                discount: orderResponse.discountAmount,
+                total: orderResponse.totalAmount,
               },
               paymentMethod: "cash",
             },

@@ -68,22 +68,8 @@ export interface Order {
 }
 
 export interface CheckoutRequest {
-  userId?: string;
-  restaurantId?: string;
-  items?: Array<{
-    menuItemId: string;
-    quantity: number;
-    price: number;
-  }>;
   deliveryAddress: DeliveryAddress;
-  restaurantName?: string;
-  restaurantAddress?: string;
-  deliveryFee: number;
-  serviceFee: number;
-  discountAmount?: number;
-  promoCode?: string;
-  estimatedDeliveryAt?: string;
-  paymentMethod?: string;
+  paymentMethod: "card" | "cash";
 }
 
 export interface CheckoutResponse {

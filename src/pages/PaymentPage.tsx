@@ -151,14 +151,6 @@ const PaymentPage = () => {
     | "CARD"
     | "CASH_ON_DELIVERY";
   const resumeOrder = (location.state as ResumePaymentState | null)?.order;
-  const restaurantName =
-    resumeOrder?.restaurantName ||
-    localStorage.getItem("selected-restaurant-name") ||
-    "Restaurant";
-  const restaurantAddress =
-    resumeOrder?.restaurantAddress ||
-    localStorage.getItem("selected-restaurant-address") ||
-    "";
 
   const shippingFee =
     resumeOrder?.deliveryFee ?? (deliveryMethod === "delivery" ? 5 : 0);
@@ -254,36 +246,17 @@ const PaymentPage = () => {
 
   const buildCheckoutRequest = useCallback(
     (checkoutPaymentMethod: "card" | "cash"): CheckoutRequest => {
-      const checkoutRequest: CheckoutRequest = {
+      return {
         deliveryAddress: {
           line1: checkoutData?.address || "",
           city: checkoutData?.city || "",
           postcode: checkoutData?.zipCode || "",
           country: "UK",
         },
-        restaurantName,
-        deliveryFee: shippingFee,
-        serviceFee,
-        discountAmount: discount,
         paymentMethod: checkoutPaymentMethod,
       };
-
-      if (restaurantAddress.trim()) {
-        checkoutRequest.restaurantAddress = restaurantAddress.trim();
-      }
-
-      return checkoutRequest;
     },
-    [
-      checkoutData?.address,
-      checkoutData?.city,
-      checkoutData?.zipCode,
-      discount,
-      restaurantAddress,
-      restaurantName,
-      serviceFee,
-      shippingFee,
-    ],
+    [checkoutData?.address, checkoutData?.city, checkoutData?.zipCode],
   );
 
   const stopPaymentProcessing = () => {
