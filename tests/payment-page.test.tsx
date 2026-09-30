@@ -281,11 +281,6 @@ describe("PaymentPage", () => {
         postcode: "SW1A 1AA",
         country: "UK",
       },
-      restaurantName: "Test Restaurant",
-      restaurantAddress: "1 Food Street",
-      deliveryFee: 5,
-      serviceFee: 0.99,
-      discountAmount: 0,
       paymentMethod: "card",
     });
     expect(createPaymentIntent).toHaveBeenCalledWith({
